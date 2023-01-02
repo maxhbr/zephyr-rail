@@ -12,10 +12,10 @@ class Display {
   void init_header(lv_obj_t *parent);
   void init_tabview(lv_obj_t *parent);
 
-  const lv_font_t *font_title = &lv_font_montserrat_28;
-  const lv_font_t *font_subtitle = &lv_font_montserrat_24;
-  const lv_font_t *font_normal = &lv_font_montserrat_16;
-  const lv_font_t *font_small = &lv_font_montserrat_12;
+  const lv_font_t *font_title = &lv_font_montserrat_14; // _28;
+  const lv_font_t *font_subtitle = &lv_font_montserrat_14; // _24;
+  const lv_font_t *font_normal = &lv_font_montserrat_14; // _16;
+  const lv_font_t *font_small = &lv_font_montserrat_14; // _12;
 
 public:
   Display(const struct device *display_dev);

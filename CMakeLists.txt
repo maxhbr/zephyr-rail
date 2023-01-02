@@ -7,7 +7,6 @@
 
 set(BOARD nucleo_f767zi) # nucleo_h745zi_q_m7)
 set(SHIELD adafruit_2_8_tft_touch_v2)
-# set(SHIELD "adafruit_2_8_tft_touch_v2 esp_8266_arduino")
 
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)

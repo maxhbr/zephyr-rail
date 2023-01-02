@@ -2,14 +2,35 @@
 	"name": "Zephy devcontainer",
 	"build": {
 		"dockerfile": "Dockerfile",
-		"args": { }
+		"args": {}
 	},
-	"settings": {},
-	"extensions": [],
+	"settings": {
+		"editor.formatOnSave": true,
+	},
+	"extensions": [
+		"CoenraadS.bracket-pair-colorizer-2",
+		"samverschueren.final-newline",
+		"eamodio.gitlens",
+		"vscode-icons-team.vscode-icons",
+		"ms-vsliveshare.vsliveshare",
+		"vscodevim.vim",
+		"vscode-org-mode.org-mode",
+		// Zephyr
+		"nordic-semiconductor.nrf-devicetree",
+		"trond-snekvik.kconfig-lang",
+		// C/C++
+		"ms-vscode.cpptools",
+		"ms-vscode.cpptools-extension-pack"
+	],
+	"postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/devcontainer.post-create-commands.sh ${containerWorkspaceFolder}",
 	// "forwardPorts": [],
-	"postCreateCommand": "west init ; west update ; west zephyr-export",
 	// "mounts": [ "source=/dev,target=/dev,type=bind" ],
-	"mounts": [ "source=/dev/bus/usb,target=/dev/bus/usb,type=bind" ],
-	"runArgs": [  "-i", "--privileged" ], // "--device=/dev/ttyACM0" ],
+	"mounts": [
+		"source=/dev/bus/usb,target=/dev/bus/usb,type=bind"
+	],
+	"runArgs": [
+		"-i",
+		"--privileged"
+	], // "--device=/dev/ttyACM0" ],
 	"remoteUser": "user"
 }
