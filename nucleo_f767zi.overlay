@@ -51,6 +51,7 @@
 &arduino_spi {
 	ili9340@0 {
 		rotation = < 90 >;
+		compatible = "ilitek,ili9340";
 	};
 };
 

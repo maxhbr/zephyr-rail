@@ -20,7 +20,7 @@ View::View(Model *_model, Controller *_controller, Display *_display)
   static_view_pointer = this;
 
   pos_label = display->add_label(display->get_header());
-  lv_label_set_align(pos_label, LV_LABEL_ALIGN_CENTER);
+  lv_obj_set_style_text_align(pos_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
 
   lv_obj_t *move_tab = display->make_tab("move");
   fill_move_panel(move_tab);
@@ -45,7 +45,8 @@ void View::event_cb(char action_type, lv_obj_t *obj, lv_event_t event) {
   LOG_MODULE_DECLARE(view);
   char str[12] = {0};
 
-  if (!(event == LV_EVENT_PRESSED || event == LV_EVENT_LONG_PRESSED ||
+  if (!(event == LV_EVENT_PRESSED ||
+        event == LV_EVENT_LONG_PRESSED ||
         event == LV_EVENT_LONG_PRESSED_REPEAT ||
         event == LV_EVENT_VALUE_CHANGED)) {
     return;
@@ -142,26 +143,26 @@ void View::fill_move_panel(lv_obj_t *parent) {
                                                  "12\n"
                                                  "6\n"
                                                  "1");
-  lv_obj_align(step_size_roller, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+  lv_obj_align(step_size_roller, NULL, LV_ALIGN_TOP_MID, 0, 0);
 
   lv_obj_t *left_btn = display->add_button(parent, "<<", 100, 60);
-  lv_obj_align(left_btn, NULL, LV_ALIGN_IN_TOP_LEFT, 10, 10);
+  lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
   lv_obj_set_event_cb(left_btn, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_GO_LOWER, btn, event);
   });
   lv_obj_t *right_btn = display->add_button(parent, ">>", 100, 60);
-  lv_obj_align(right_btn, NULL, LV_ALIGN_IN_TOP_RIGHT, -10, 10);
+  lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
   lv_obj_set_event_cb(right_btn, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_GO_UPPER, btn, event);
   });
 
   lv_obj_t *set_lower = display->add_button(parent, "Set lower", 100, 30);
-  lv_obj_align(set_lower, NULL, LV_ALIGN_IN_TOP_LEFT, 10, 75);
+  lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
   lv_obj_set_event_cb(set_lower, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_SET_LOWER, btn, event);
   });
   lv_obj_t *set_upper = display->add_button(parent, "Set upper", 100, 30);
-  lv_obj_align(set_upper, NULL, LV_ALIGN_IN_TOP_RIGHT, -10, 75);
+  lv_obj_align(set_upper, LV_ALIGN_TOP_RIGHT, -10, 75);
   lv_obj_set_event_cb(set_upper, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_SET_UPPER, btn, event);
   });
@@ -169,7 +170,7 @@ void View::fill_move_panel(lv_obj_t *parent) {
   lv_obj_t *go_to_lower = display->add_button(parent, NULL, 100, 30);
   lower_label = display->add_label(go_to_lower);
   lv_label_set_text(lower_label, "Go to lower");
-  lv_obj_align(go_to_lower, NULL, LV_ALIGN_IN_TOP_LEFT, 10, 110);
+  lv_obj_align(go_to_lower, LV_ALIGN_TOP_LEFT, 10, 110);
   lv_obj_set_event_cb(go_to_lower, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_GO_TO_LOWER, btn, event);
   });
@@ -177,13 +178,13 @@ void View::fill_move_panel(lv_obj_t *parent) {
   lv_obj_t *go_to_upper = display->add_button(parent, NULL, 100, 30);
   upper_label = display->add_label(go_to_upper);
   lv_label_set_text(upper_label, "Go to upper");
-  lv_obj_align(go_to_upper, NULL, LV_ALIGN_IN_TOP_RIGHT, -10, 110);
+  lv_obj_align(go_to_upper, LV_ALIGN_TOP_RIGHT, -10, 110);
   lv_obj_set_event_cb(go_to_upper, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_GO_TO_UPPER, btn, event);
   });
 
   // lv_obj_t *slider = lv_slider_create(parent, NULL);
-  // lv_obj_align(slider, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -10);
+  // lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
   // lv_slider_set_range(slider, 0, 100);
   // lv_slider_set_value(slider, 50, 0);
   // // lv_obj_set_width(slider, LV_PCT(95))
@@ -199,7 +200,7 @@ void View::fill_stack_panel(lv_obj_t *parent) {
                                                    "300\n"
                                                    "500\n"
                                                    "1000");
-  lv_obj_align(step_number_roller, NULL, LV_ALIGN_IN_LEFT_MID, 20, 0);
+  lv_obj_align(step_number_roller, LV_ALIGN_LEFT_MID, 20, 0);
   lv_roller_set_selected(step_number_roller, 6, LV_ANIM_OFF);
   lv_obj_set_event_cb(step_number_roller, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_SET_STEP_NUMBER, btn, event);
@@ -207,17 +208,17 @@ void View::fill_stack_panel(lv_obj_t *parent) {
 
   lv_obj_t *plan_container =
       display->add_container(parent, LV_HOR_RES / 2, 100);
-  lv_obj_align(plan_container, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+  lv_obj_align(plan_container, LV_ALIGN_TOP_RIGHT, 0, 0);
   plan_label = display->add_label(plan_container);
 
   lv_obj_t *start_button = display->add_button(parent, "start", 70, 70);
-  lv_obj_align(start_button, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -70, -20);
+  lv_obj_align(start_button, LV_ALIGN_BOTTOM_RIGHT, -70, -20);
   lv_obj_set_event_cb(start_button, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_START_STACK, btn, event);
   });
 
   lv_obj_t *stop_button = display->add_button(parent, "stop", 50, 50);
-  lv_obj_align(stop_button, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -20, -20);
+  lv_obj_align(stop_button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
   lv_obj_set_event_cb(stop_button, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_STOP_STACK, btn, event);
   });
