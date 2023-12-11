@@ -15,17 +15,15 @@
 
 #include <zephyr/logging/log.h>
 
-#include "GyroWaiter.h"
 #include "IrSony.h"
 #include "Model.h"
 
 class Controller {
   Model *model;
   IrSony *irsony;
-  GyroWaiter *gyro_waiter;
   struct k_sem *work_in_progress_sem;
 public:
-  Controller(Model *_model, IrSony *_irsony, GyroWaiter *_gyro_waiter);
+  Controller(Model *_model, IrSony *_irsony);
   void work();
 
   void go(int dist);

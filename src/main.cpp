@@ -28,7 +28,6 @@
 LOG_MODULE_REGISTER(rail);
 
 #include "Display.h"
-#include "GyroWaiter.h"
 #include "IrSony.h"
 #include "StepperWithTarget.h"
 #include "View.h"
@@ -60,10 +59,6 @@ void start_stepper() {
 IrSony irsony;
 
 // ############################################################################
-// initialize GyroWaiter
-GyroWaiter gyro_waiter;
-
-// ############################################################################
 // initialize Button
 #define SW0_GPIO_LABEL DT_GPIO_LABEL(SW0_NODE, gpios)
 #define SW0_GPIO_PIN DT_GPIO_PIN(SW0_NODE, gpios)
@@ -76,7 +71,6 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb,
   ARG_UNUSED(pins);
 
   printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
-  gyro_waiter.wait();
 }
 void init_button() {
   const struct device *button;
@@ -102,7 +96,6 @@ Display get_display() {
 // Main
 
 int main(void) {
-  gyro_waiter.init();
 
 
   LOG_INF("stepper = %p", &stepper);
@@ -117,7 +110,7 @@ int main(void) {
   LOG_INF("model = %p", &model);
   model.log_state();
 
-  Controller controller(&model, &irsony, &gyro_waiter);
+  Controller controller(&model, &irsony);
   controller.prepare_stack();
   LOG_INF("controller = %p", &controller);
 

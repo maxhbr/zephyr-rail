@@ -38,14 +38,6 @@
 		/* Uncomment if IRQ line is available (requires to solder jumper) */
 		/* int-gpios = <&arduino_header 13 GPIO_ACTIVE_LOW>; */ /* D7 */
 	};
-
-	mpu6050@68 {
-		compatible = "invensense,mpu6050";
-		reg = <0x68>;
-		status = "okay";
-		/* label = "MPU6050"; */
-		int-gpios = <&arduino_header 10 GPIO_ACTIVE_HIGH>; /* D4 */
-	};
 };
 
 &arduino_spi {

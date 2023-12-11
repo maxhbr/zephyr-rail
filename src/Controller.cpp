@@ -3,8 +3,9 @@
 LOG_MODULE_REGISTER(controller);
 
 K_SEM_DEFINE(_work_in_progress_sem, 1, 1);
-Controller::Controller(Model *_model, IrSony *_irsony, GyroWaiter *_gyro_waiter)
-    : model{_model}, irsony{_irsony}, gyro_waiter{_gyro_waiter} {
+Controller::Controller(Model *_model, IrSony *_irsony)
+    : model{_model}, irsony{_irsony}
+{
   work_in_progress_sem = &_work_in_progress_sem;
 }
 
@@ -119,8 +120,6 @@ void Controller::do_next_stack_step() {
 
   LOG_INF("stacking, waiting");
   k_sleep(K_MSEC(2000));
-  LOG_INF("stacking, gyro_waiter, waiting");
-  gyro_waiter->wait();
   LOG_INF("stacking, take pickture");
   irsony->shoot();
   k_sleep(K_MSEC(500));
