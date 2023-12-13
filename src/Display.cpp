@@ -19,14 +19,14 @@ void Display::init_styles() {
 
 void Display::init_header(lv_obj_t *parent) {
   header = add_container(parent, LV_HOR_RES, 25);
-  lv_obj_align(header, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+  lv_obj_align(header, NULL, LV_ALIGN_TOP_MID, 0, 0);
 }
 
 void Display::init_tabview(lv_obj_t *parent) {
   tabview = lv_tabview_create(parent, NULL);
   lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 15);
   lv_obj_add_style(tabview, 0, &style_normal);
-  lv_obj_align(tabview, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+  lv_obj_align(tabview, NULL, LV_ALIGN_BOTTOM_MID, 0, 0);
 }
 
 Display::Display(const struct device *display_dev) {
