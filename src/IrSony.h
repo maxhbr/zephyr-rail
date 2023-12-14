@@ -1,6 +1,7 @@
 #ifndef IRSONY_H_
 #define IRSONY_H_
 
+
 #include <zephyr/device.h>
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/init.h>
@@ -29,8 +30,10 @@
 // pulses with approx 25% mark/space ratio
 #define PULSE_USEC (PERIOD_USEC / 4)
 
-class IrSony {
-  // const struct device *pwm = DEVICE_DT_GET(PWM_IR_CTLR);
+class IrSony
+{
+
+#if DT_NODE_EXISTS(DT_NODELABEL(rail_pwmir))
   const struct pwm_dt_spec pwmir_spec = PWM_DT_SPEC_GET(DT_CHOSEN(rail_pwmir));
   uint32_t max_period = MAX_PERIOD_USEC;
 
@@ -41,6 +44,7 @@ class IrSony {
   int send_bit(bool is_one);
   int send_code(unsigned long code);
   int send_command(unsigned long command);
+#endif // if exists
 
 public:
   IrSony();

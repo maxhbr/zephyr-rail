@@ -4,26 +4,38 @@
  */
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 #include <zephyr/dt-bindings/lvgl/lvgl.h>
- / {
+/ {
 	stepper: stepper {
 		compatible = "maxhbr,stepper";
-		gpios = <9 0 &porta 7 0>,	/* A2/D2 */
-				<10 0 &portb 4 0>;	/* A3/D3 */
+		gpios = <&porta 7 GPIO_ACTIVE_HIGH>, /* A2/D2 */
+		        <&portb 4 GPIO_ACTIVE_HIGH>;    /* A3/D3 */
 		//pitch = <2>;
 		//pulses_per_rev = <50000>;
 	};
 
-	lvgl_button_input {
-		compatible = "zephyr,lvgl-button-input";
-		//input = <&gpio_keys>;
-		input-codes = <INPUT_KEY_B>;
-		coordinates = <160 120>;
-	};
+	//    lvgl_button_input {
+		//        compatible = "zephyr,lvgl-button-input";
+		//        //input = <&gpio_keys>;
+		//        input-codes = <INPUT_KEY_B>;
+		//        coordinates = <160 120>;
+	//    };
 
-	lvgl_keypad_input {
-		compatible = "zephyr,lvgl-keypad-input";
-		//input = <&gpio_keys>;
-		input-codes = <INPUT_KEY_LEFT INPUT_KEY_RIGHT INPUT_KEY_ENTER>;
-		lvgl-codes = <LV_KEY_LEFT LV_KEY_RIGHT LV_KEY_ENTER>;
-	};
+	//    lvgl_keypad_input {
+		//        compatible = "zephyr,lvgl-keypad-input";
+		//        //input = <&gpio_keys>;
+		//        input-codes = <INPUT_KEY_LEFT INPUT_KEY_RIGHT INPUT_KEY_ENTER>;
+		//        lvgl-codes = <LV_KEY_LEFT LV_KEY_RIGHT LV_KEY_ENTER>;
+	//    };
+
+	// pwmleds {
+		//     compatible = "pwm-leds";
+		//     ir_pwm_led: ir_pwm_led {
+			//         pwms = <&tcc2 0 PWM_MSEC(20)>;
+			//         label = "IR LED - A0";
+		//     };
+	// };
+
+	// chosen {
+		//     rail,pwmir = &ir_pwm_led;
+	// };
 };

@@ -2,13 +2,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
- / {
+/ {
 	stepper: stepper {
-		compatible = "stepper";
+		compatible = "maxhbr,stepper";
 		gpios = <&gpioe 9 GPIO_ACTIVE_HIGH>, /* D6 */
-		        <&gpioe 11 GPIO_ACTIVE_HIGH>; /* D5 */
-		#pitch = <2>;
-		pulses_per_rev = <50000>;
+		<&gpioe 11 GPIO_ACTIVE_HIGH>; /* D5 */
+		// pitch = <2>;
+		// pulses_per_rev = <50000>;
 	};
 
 
@@ -42,30 +42,30 @@
 
 &arduino_spi {
 	ili9340@0 {
-		rotation = < 90 >;
+		rotation = <90>;
 		compatible = "ilitek,ili9340";
 	};
 };
 
 // &arduino_serial {
-// 	status = "okay";
-// 	current-speed = <115200>;
-// 
-// 	esp8266 {
-// 		compatible = "espressif,esp";
-// 		label = "esp8266";
-// 		status = "okay";
-// 	};
+	//     status = "okay";
+	//     current-speed = <115200>;
+	//
+	//     esp8266 {
+		//         compatible = "espressif,esp";
+		//         label = "esp8266";
+		//         status = "okay";
+	//     };
 // };
 
 &timers5 {
-    status = "okay";
+	status = "okay";
 
-    pwm5: pwm {
-        status = "okay";
-		/* st,prescaler = < 2 >; */
+	pwm5: pwm {
+		status = "okay";
+		/* st,prescaler = <2>; */
 		pinctrl-names = "default";
-        pinctrl-0 = <&tim5_ch4_pa3>; /* A0 */
-    };
+		pinctrl-0 = <&tim5_ch4_pa3>; /* A0 */
+	};
 };
 

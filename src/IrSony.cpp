@@ -16,6 +16,8 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(irsony);
 
+#if DT_NODE_EXISTS(DT_NODELABEL(rail_pwmir))
+
 // Remote control
 const unsigned long shutter_code = 0x2D;
 const unsigned long two_secs_code = 0x37;
@@ -129,9 +131,12 @@ int IrSony::send_command(unsigned long command)
   return ret;
 }
 
+#endif // if exists
+
 IrSony::IrSony()
 {
   LOG_MODULE_DECLARE(irsony);
+#if DT_NODE_EXISTS(DT_NODELABEL(rail_pwmir))
   int ret;
   if (!pwm_is_ready_dt(&pwmir_spec))
   {
@@ -146,14 +151,17 @@ IrSony::IrSony()
     LOG_ERR("failed to stop carrier");
     return;
   }
+#endif // if exists
 }
 
 void IrSony::shoot()
 {
   LOG_MODULE_DECLARE(irsony);
+#if DT_NODE_EXISTS(DT_NODELABEL(rail_pwmir))
   int ret = send_command(shutter_code);
   if (ret < 0)
   {
     LOG_ERR("failed to send shoot");
   }
+#endif // if exists
 }
