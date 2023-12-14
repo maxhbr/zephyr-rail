@@ -3,7 +3,7 @@
 
 description: the stepper, powering the rail
 
-compatible: "stepper"
+compatible: "maxhbr,stepper"
 
 properties:
   gpios:
@@ -11,3 +11,11 @@ properties:
     required: true
     description: |
       The GPIO connected to pulse and dir
+#  pitch:
+#    type: int
+#    required: true
+#    description: pitch in mm
+#  pulses_per_rev:
+#    type: int
+#    required: true
+#    description: pulses per revolution
