@@ -3,20 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
  / {
-	gpio_keys {
-		compatible = "gpio-keys";
-		pulse_gpio: pulse_gpio {
-			gpios = <&gpioe 9 GPIO_ACTIVE_HIGH>; /* D6 */
-			label = "Pulse GPIO";
-		};
-		dir_gpio: dir_gpio {
-			gpios = <&gpioe 11 GPIO_ACTIVE_HIGH>; /* D5 */
-			label = "Dir GPIO";
-		};
+	stepper: stepper {
+		compatible = "stepper";
+		gpios = <&gpioe 9 GPIO_ACTIVE_HIGH>, /* D6 */
+		        <&gpioe 11 GPIO_ACTIVE_HIGH>; /* D5 */
 	};
+
+
 	aliases {
-		pulse = &pulse_gpio;
-        dir = &dir_gpio;
 		pwmir = &ir_pwm_led;
 	};
 
@@ -26,6 +20,10 @@
 			pwms = <&pwm5 4 4 PWM_POLARITY_NORMAL>;
 			label = "IR LED - A0";
 		};
+	};
+
+	chosen {
+		rail,pwmir = &ir_pwm_led;
 	};
 };
 

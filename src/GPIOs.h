@@ -22,13 +22,13 @@ class GPIO {
   bool cur_value = false;
 
 public:
-  GPIO(const char *label, int _pin, int flags);
+  GPIO(const struct gpio_dt_spec *spec, gpio_flags_t extra_flags);
   void set(bool value);
 };
 
 class LED : public GPIO {
 public:
-  LED(const char *label, int _pin, int flags) : GPIO(label, _pin, flags) {
+  LED(const struct gpio_dt_spec *spec) : GPIO(spec, GPIO_OUTPUT_ACTIVE) {
     set(true);
     k_msleep(100);
     set(false);

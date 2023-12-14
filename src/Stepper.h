@@ -15,27 +15,28 @@
 #include "GPIOs.h"
 
 #define LED0_NODE DT_ALIAS(led0)
-#define LED0_LABEL DT_GPIO_LABEL(LED0_NODE, gpios)
-#define LED0_PIN DT_GPIO_PIN(LED0_NODE, gpios)
-#define LED0_FLAGS DT_GPIO_FLAGS(LED0_NODE, gpios)
+static const struct gpio_dt_spec led0_spec = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 #define LED1_NODE DT_ALIAS(led1)
-#define LED1_LABEL DT_GPIO_LABEL(LED1_NODE, gpios)
-#define LED1_PIN DT_GPIO_PIN(LED1_NODE, gpios)
-#define LED1_FLAGS DT_GPIO_FLAGS(LED1_NODE, gpios)
+static const struct gpio_dt_spec led1_spec = GPIO_DT_SPEC_GET(LED1_NODE, gpios);
 
-#define PULSE_NODE DT_ALIAS(pulse)
-#define PULSE_LABEL DT_GPIO_LABEL(PULSE_NODE, gpios)
-#define PULSE_PIN DT_GPIO_PIN(PULSE_NODE, gpios)
-#define PULSE_FLAGS DT_GPIO_FLAGS(PULSE_NODE, gpios)
-#define DIR_NODE DT_ALIAS(dir)
-#define DIR_LABEL DT_GPIO_LABEL(DIR_NODE, gpios)
-#define DIR_PIN DT_GPIO_PIN(DIR_NODE, gpios)
-#define DIR_FLAGS DT_GPIO_FLAGS(DIR_NODE, gpios)
+#if !DT_NODE_EXISTS(DT_NODELABEL(stepper))
+#error "Overlay for stepper node not properly defined."
+#endif
 
-class PULSE : public GPIO {
+static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
+static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
+
+// #define PULSE_NODE DT_CHOSEN(stepper_pulse)
+// static const struct gpio_dt_spec pulse_spec = GPIO_DT_SPEC_GET(PULSE_NODE, gpios);
+// #define DIR_NODE DT_CHOSEN(stepper_dir)
+// static const struct gpio_dt_spec dir_spec = GPIO_DT_SPEC_GET(DIR_NODE, gpios);
+
+class PULSE : public GPIO
+{
 public:
-  PULSE(const char *label, int _pin, int flags) : GPIO(label, _pin, flags){};
-  void pulse() {
+  PULSE(const struct gpio_dt_spec *spec) : GPIO(spec, GPIO_OUTPUT_ACTIVE){};
+  void pulse()
+  {
     LOG_MODULE_DECLARE(stepper);
     set(true);
     k_usleep(8); // puse width no less then 7.5us
@@ -48,16 +49,17 @@ public:
 #define DIR_RIGHT 1
 #define DIR_LEFT -1
 
-class Stepper {
+class Stepper
+{
   struct k_sem *stepper_sem;
   int direction = DIR_RIGHT;
   int step_jump = 1;
   int position = 0;
 
-  LED led0 = LED(LED0_LABEL, LED0_PIN, LED0_FLAGS);
-  LED led1 = LED(LED1_LABEL, LED1_PIN, LED1_FLAGS);
-  PULSE pulse = PULSE(PULSE_LABEL, PULSE_PIN, PULSE_FLAGS);
-  GPIO dir = GPIO(DIR_LABEL, DIR_PIN, DIR_FLAGS);
+  LED led0 = LED(&led0_spec);
+  LED led1 = LED(&led1_spec);
+  PULSE pulse = PULSE(&stepper_pulse);
+  GPIO dir = GPIO(&stepper_dir, GPIO_OUTPUT_ACTIVE);
 
   void set_direction_towards(int target);
 
