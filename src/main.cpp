@@ -17,6 +17,7 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/crc.h>
 #include <zephyr/sys/printk.h>
+#include <zephyr/zbus/zbus.h>
 
 #include <zephyr/console/console.h>
 
@@ -54,6 +55,45 @@ void start_stepper()
   stepper.start();
   k_timer_start(&stepper_timer, K_USEC(20), K_USEC(20));
 }
+
+// ############################################################################
+// initialize ZBus for Stepper
+
+struct stepper_msg
+{
+  int diff;
+};
+
+ZBUS_CHAN_DEFINE(stepper_diff_chan,  /* Name */
+                 struct stepper_msg, /* Message type */
+
+                 NULL,                            /* Validator */
+                 NULL,                            /* User data */
+                 ZBUS_OBSERVERS(sample_diff_lis), /* observers */
+                 ZBUS_MSG_INIT(.diff = 0)         /* Initial value */
+);
+
+// ZBUS_SUBSCRIBER_DEFINE(sample_start_sub, 4);
+
+static void sample_diff_listener_cb(const struct zbus_channel *chan)
+{
+  const struct stepper_msg *data = (const struct stepper_msg *)zbus_chan_const_msg(chan);
+  LOG_INF("diff = %d", data->diff);
+  stepper.go_relative(data->diff);
+}
+
+ZBUS_LISTENER_DEFINE(sample_diff_lis, sample_diff_listener_cb);
+
+ZBUS_CHAN_DEFINE(stepper_status_chan,               /* Name */
+                 struct stepper_with_target_status, /* Message type */
+
+                 NULL,                            /* Validator */
+                 NULL,                            /* User data */
+                 ZBUS_OBSERVERS(sample_diff_lis), /* observers */
+                 ZBUS_MSG_INIT(.stepper_status = {.direction = 0, .step_jump = 0, .position = 0},
+                               .is_moving = false,
+                               .target_position = 0) /* Initial value */
+);
 
 // ############################################################################
 // initialize IrSony

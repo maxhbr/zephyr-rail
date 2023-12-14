@@ -19,6 +19,13 @@
 
 #include "Stepper.h"
 
+struct stepper_with_target_status
+{
+  struct stepper_status stepper_status;
+  bool is_moving;
+  int target_position;
+};
+
 class StepperWithTarget : private Stepper {
   bool is_moving = false;
   int target_position = 0;
@@ -41,6 +48,14 @@ public:
   bool step_towards_target();
 
   bool is_in_target_position();
+
+  struct stepper_with_target_status get_status() {
+    return {
+        .stepper_status = Stepper::get_status(),
+        .is_moving = is_moving,
+        .target_position = target_position,
+    };
+  }
 };
 
 #endif // STEPPERWITHTARGET_H_

@@ -13,19 +13,21 @@
 		//pulses_per_rev = <50000>;
 	};
 
-	//    lvgl_button_input {
-		//        compatible = "zephyr,lvgl-button-input";
-		//        //input = <&gpio_keys>;
-		//        input-codes = <INPUT_KEY_B>;
-		//        coordinates = <160 120>;
-	//    };
+/*
+	lvgl_button_input {
+		compatible = "zephyr,lvgl-button-input";
+		//input = <&gpio_keys>;
+		input-codes = <INPUT_KEY_B>;
+		coordinates = <160 120>;
+	};
 
-	//    lvgl_keypad_input {
-		//        compatible = "zephyr,lvgl-keypad-input";
-		//        //input = <&gpio_keys>;
-		//        input-codes = <INPUT_KEY_LEFT INPUT_KEY_RIGHT INPUT_KEY_ENTER>;
-		//        lvgl-codes = <LV_KEY_LEFT LV_KEY_RIGHT LV_KEY_ENTER>;
-	//    };
+	lvgl_keypad_input {
+		compatible = "zephyr,lvgl-keypad-input";
+		//input = <&gpio_keys>;
+		input-codes = <INPUT_KEY_LEFT INPUT_KEY_RIGHT INPUT_KEY_ENTER>;
+		lvgl-codes = <LV_KEY_LEFT LV_KEY_RIGHT LV_KEY_ENTER>;
+	};
+ */
 
 	// pwmleds {
 		//     compatible = "pwm-leds";

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <zephyr/zephyr.h>
 #include <zephyr/types.h>
+#include <zephyr/zbus/zbus.h>
 
 #include <zephyr/logging/log.h>
 
@@ -17,9 +18,6 @@
 #if !DT_NODE_EXISTS(DT_NODELABEL(stepper))
 #error "Overlay for stepper node not properly defined."
 #endif
-
-static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
-static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
 
 class PULSE : public GPIO
 {
@@ -38,6 +36,16 @@ public:
 #define STEPS_PER_REV 12800
 #define DIR_RIGHT 1
 #define DIR_LEFT -1
+
+static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
+static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
+
+struct stepper_status
+{
+  int direction;
+  int step_jump;
+  int position;
+};
 
 class Stepper
 {
@@ -60,6 +68,14 @@ public:
   void pause();
   bool step_towards(int target);
   int get_position();
+
+  struct stepper_status get_status() {
+    return {
+      .direction = direction,
+      .step_jump = step_jump,
+      .position = position
+    };
+  };
 };
 
 #endif // __STEPPER_H_
