@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
 
 #include <zephyr/arch/cpu.h>
@@ -26,7 +26,8 @@ struct stepper_with_target_status
   int target_position;
 };
 
-class StepperWithTarget : private Stepper {
+class StepperWithTarget : private Stepper
+{
   bool is_moving = false;
   int target_position = 0;
 
@@ -49,7 +50,8 @@ public:
 
   bool is_in_target_position();
 
-  struct stepper_with_target_status get_status() {
+  struct stepper_with_target_status get_status()
+  {
     return {
         .stepper_status = Stepper::get_status(),
         .is_moving = is_moving,

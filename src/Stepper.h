@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
 #include <zephyr/zbus/zbus.h>
 
@@ -69,12 +69,12 @@ public:
   bool step_towards(int target);
   int get_position();
 
-  struct stepper_status get_status() {
+  struct stepper_status get_status()
+  {
     return {
-      .direction = direction,
-      .step_jump = step_jump,
-      .position = position
-    };
+        .direction = direction,
+        .step_jump = step_jump,
+        .position = position};
   };
 };
 

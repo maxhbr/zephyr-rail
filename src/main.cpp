@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
 #include <zephyr/types.h>
 
 #include <zephyr/device.h>
@@ -30,6 +29,7 @@ LOG_MODULE_REGISTER(rail);
 #include "StepperWithTarget.h"
 #include "Controller.h"
 #include "Model.h"
+#include "Display.h"
 
 #define SW0_NODE DT_ALIAS(sw0)
 
@@ -58,19 +58,23 @@ void start_stepper()
 
 // ############################################################################
 // initialize ZBus for Stepper
+#define MOVE_RELATIVE 0
+#define MOVE_ABSOLUTE 1
 
 struct stepper_msg
 {
   int diff;
+  int mode;
 };
 
+// diff -> stepper
 ZBUS_CHAN_DEFINE(stepper_diff_chan,  /* Name */
                  struct stepper_msg, /* Message type */
 
-                 NULL,                            /* Validator */
-                 NULL,                            /* User data */
-                 ZBUS_OBSERVERS(sample_diff_lis), /* observers */
-                 ZBUS_MSG_INIT(.diff = 0)         /* Initial value */
+                 NULL,                                           /* Validator */
+                 NULL,                                           /* User data */
+                 ZBUS_OBSERVERS(sample_diff_lis),                /* observers */
+                 ZBUS_MSG_INIT(.diff = 0, .mode = MOVE_RELATIVE) /* Initial value */
 );
 
 // ZBUS_SUBSCRIBER_DEFINE(sample_start_sub, 4);
@@ -84,6 +88,7 @@ static void sample_diff_listener_cb(const struct zbus_channel *chan)
 
 ZBUS_LISTENER_DEFINE(sample_diff_lis, sample_diff_listener_cb);
 
+// status -> ...
 ZBUS_CHAN_DEFINE(stepper_status_chan,               /* Name */
                  struct stepper_with_target_status, /* Message type */
 
@@ -94,6 +99,10 @@ ZBUS_CHAN_DEFINE(stepper_status_chan,               /* Name */
                                .is_moving = false,
                                .target_position = 0) /* Initial value */
 );
+
+// ############################################################################
+// initialize Display
+Display display(&stepper_status_chan);
 
 // ############################################################################
 // initialize IrSony
@@ -125,15 +134,47 @@ IrSony irsony;
 // }
 
 // ############################################################################
+// initialize Display
+
+// Display get_display()
+// {
+//   const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
+//   __ASSERT(display_dev != NULL, "display device not found.");
+//   if (!device_is_ready(display_dev))
+//   {
+//     LOG_ERR("Device not ready");
+//     // return 1;
+//   }
+//   Display display(display_dev);
+//   return display;
+// }
+
+// ############################################################################
 // Main
 
 int main(void)
 {
 
+  // const struct device *display_dev;
+  // lv_obj_t *hello_world_label;
+
+  // display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
+  // if (!device_is_ready(display_dev))
+  // {
+  //   LOG_ERR("Device not ready, aborting test");
+  //   return 0;
+  // }
+  // hello_world_label = lv_label_create(lv_scr_act());
+  // lv_label_set_text(hello_world_label, "Hello world!");
+  // lv_obj_align(hello_world_label, LV_ALIGN_CENTER, 0, 0);
+
+  // lv_task_handler();
+  // display_blanking_off(display_dev);
+  // lv_task_handler();
+
   LOG_INF("stepper = %p", &stepper);
 
   // init_button();
-
   Model model(&stepper);
   model.set_upper_bound(12800);
   model.set_step_number(300);
@@ -147,7 +188,8 @@ int main(void)
   start_stepper();
   while (true)
   {
-    // lv_task_handler();
+    display.update_status();
+    lv_task_handler();
     controller.work();
     k_sleep(K_MSEC(100));
   }

@@ -1,7 +1,6 @@
 #ifndef IRSONY_H_
 #define IRSONY_H_
 
-
 #include <zephyr/device.h>
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/init.h>
@@ -9,13 +8,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
 
 #include <zephyr/logging/log.h>
 
 #include "GPIOs.h"
-
 
 // #define PWM_IR_NODE DT_ALIAS(pwmir)
 // #define PWM_IR_CTLR DT_PWMS_CTLR(PWM_IR_NODE)

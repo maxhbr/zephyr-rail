@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
 
 #include <zephyr/drivers/display.h>
@@ -18,10 +18,12 @@
 #include "IrSony.h"
 #include "Model.h"
 
-class Controller {
+class Controller
+{
   Model *model;
   IrSony *irsony;
   struct k_sem *work_in_progress_sem;
+
 public:
   Controller(Model *_model, IrSony *_irsony);
   void work();
