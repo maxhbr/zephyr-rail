@@ -28,15 +28,13 @@ void Display::init_header(lv_obj_t *parent)
   lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
 }
 
-#if 0
 void Display::init_tabview(lv_obj_t *parent)
 {
-  tabview = lv_tabview_create(parent, NULL);
-  lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 15);
-  lv_obj_add_style(tabview, 0, &style_normal);
-  lv_obj_align(tabview, NULL, LV_ALIGN_BOTTOM_MID, 0, 0);
+  tabview = lv_tabview_create(parent, LV_DIR_TOP, 40);
+  lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 40);
+  // lv_obj_add_style(tabview, 0, &style_normal);
+  // lv_obj_align(tabview, NULL, LV_ALIGN_BOTTOM_MID, 0, 0);
 }
-#endif
 
 Display::Display(const struct zbus_channel *_status_chan) : status_chan{_status_chan}
 {
@@ -47,36 +45,50 @@ Display::Display(const struct zbus_channel *_status_chan) : status_chan{_status_
   }
   LOG_INF("initialize display...");
   init_styles();
-  // init_tabview(lv_scr_act());
-  init_header(lv_scr_act());
+  init_tabview(lv_scr_act());
+  // init_header(lv_scr_act());
 
-  status_label = lv_label_create(lv_scr_act());
-  lv_label_set_text(status_label, "Hello world!");
+  lv_obj_t *status_tab = make_tab("status");
+
+  status_label = lv_label_create(status_tab);
+  lv_label_set_text(status_label, "$status");
   lv_obj_align(status_label, LV_ALIGN_CENTER, 0, 0);
 
+  lv_obj_t *move_tab = make_tab("move");
+  lv_obj_t *stack_tab = make_tab("stack");
+  lv_obj_t *config_tab = make_tab("cfg");
+
+  lv_indev_set_group(lvgl_input_get_indev(lvgl_keypad), lv_group_get_default());
+
+  lv_task_handler();
   display_blanking_off(display_dev);
+  lv_task_handler();
 
   LOG_INF("...initialize display done");
 }
 
 void Display::update_status()
 {
-  char buf[100];
+  char buf[1000];
+  const struct model_status *status = (const struct model_status *)zbus_chan_const_msg(status_chan);
+  const stepper_with_target_status *stepper_with_target_status = &status->stepper_with_target_status;
+  const stepper_status *stepper_status = &stepper_with_target_status->stepper_status;
 
-  const struct stepper_with_target_status *status = (const struct stepper_with_target_status *)zbus_chan_const_msg(status_chan);
-  snprintf(buf, sizeof(buf), "pos: %d, target: %d, is_moving: %d", status->stepper_status.position, status->target_position, status->is_moving);
+  snprintf(buf, sizeof(buf), "%d >>> %d >>> %d\ntarget: %d\nis_moving: %d",
+           status->lower_bound, stepper_status->position, status->upper_bound,
+           stepper_with_target_status->target_position,
+           stepper_with_target_status->is_moving);
   lv_label_set_text(status_label, buf);
-
-  lv_task_handler();
 }
 
 #if 0
 lv_obj_t *Display::get_header() { return header; }
+#endif
 
-lv_obj_t *Display::make_tab(const char *title) {
+lv_obj_t *Display::make_tab(const char *title)
+{
   return lv_tabview_add_tab(tabview, title);
 }
-#endif
 
 lv_obj_t *Display::add_container(lv_obj_t *parent, int width, int height)
 {

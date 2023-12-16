@@ -89,24 +89,21 @@ static void sample_diff_listener_cb(const struct zbus_channel *chan)
 ZBUS_LISTENER_DEFINE(sample_diff_lis, sample_diff_listener_cb);
 
 // status -> ...
-ZBUS_CHAN_DEFINE(stepper_status_chan,               /* Name */
-                 struct stepper_with_target_status, /* Message type */
+ZBUS_CHAN_DEFINE(model_status_chan,   /* Name */
+                 struct model_status, /* Message type */
 
-                 NULL,                            /* Validator */
-                 NULL,                            /* User data */
-                 ZBUS_OBSERVERS(sample_diff_lis), /* observers */
-                 ZBUS_MSG_INIT(.stepper_status = {.direction = 0, .step_jump = 0, .position = 0},
-                               .is_moving = false,
-                               .target_position = 0) /* Initial value */
+                 NULL,                 /* Validator */
+                 NULL,                 /* User data */
+                 ZBUS_OBSERVERS_EMPTY, /* observers */
+                 ZBUS_MSG_INIT(.stepper_with_target_status = {.stepper_status = {.direction = 0, .step_jump = 0, .position = 0},
+                                                              .is_moving = false,
+                                                              .target_position = 0},
+                               .upper_bound = 0,
+                               .lower_bound = 0,
+                               .step_number = 0,
+                               .cur_step_index = 0,
+                               .stack_in_progress = false) /* Initial value */
 );
-
-// ############################################################################
-// initialize Display
-Display display(&stepper_status_chan);
-
-// ############################################################################
-// initialize IrSony
-IrSony irsony;
 
 // // ############################################################################
 // // initialize Button
@@ -155,22 +152,13 @@ IrSony irsony;
 int main(void)
 {
 
-  // const struct device *display_dev;
-  // lv_obj_t *hello_world_label;
+  // ############################################################################
+  // initialize Display
+  Display display(&model_status_chan);
 
-  // display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
-  // if (!device_is_ready(display_dev))
-  // {
-  //   LOG_ERR("Device not ready, aborting test");
-  //   return 0;
-  // }
-  // hello_world_label = lv_label_create(lv_scr_act());
-  // lv_label_set_text(hello_world_label, "Hello world!");
-  // lv_obj_align(hello_world_label, LV_ALIGN_CENTER, 0, 0);
-
-  // lv_task_handler();
-  // display_blanking_off(display_dev);
-  // lv_task_handler();
+  // ############################################################################
+  // initialize IrSony
+  IrSony irsony;
 
   LOG_INF("stepper = %p", &stepper);
 

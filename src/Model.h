@@ -14,7 +14,20 @@
 
 #include "StepperWithTarget.h"
 
-class Model {
+struct model_status
+{
+  struct stepper_with_target_status stepper_with_target_status;
+  int upper_bound;
+  int lower_bound;
+
+  int step_number;
+  int cur_step_index;
+
+  bool stack_in_progress;
+};
+
+class Model
+{
   StepperWithTarget *stepper;
   int upper_bound = 12800;
   int lower_bound = 0;
@@ -40,10 +53,14 @@ public:
 
   void set_step_number(int _step_number);
   int get_step_number() { return step_number; };
-  int get_step_jump_size() {
-    if (step_number > 1) {
+  int get_step_jump_size()
+  {
+    if (step_number > 1)
+    {
       return stepps[1] - stepps[0];
-    } else {
+    }
+    else
+    {
       return 0;
     }
   };
@@ -55,6 +72,18 @@ public:
 
   int get_cur_position();
   bool is_in_target_position();
+
+  struct model_status get_status()
+  {
+    return {
+        .stepper_with_target_status = stepper->get_status(),
+        .upper_bound = upper_bound,
+        .lower_bound = lower_bound,
+        .step_number = step_number,
+        .cur_step_index = cur_step_index,
+        .stack_in_progress = stack_in_progress,
+    };
+  }
 };
 
 #endif // __MODEL_H_
