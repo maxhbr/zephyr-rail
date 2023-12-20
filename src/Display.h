@@ -18,12 +18,13 @@
 class Display
 {
   const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
-  const struct device *lvgl_keypad = DEVICE_DT_GET(DT_COMPAT_GET_ANY_STATUS_OKAY(zephyr_lvgl_keypad_input));
+  // const struct device *lvgl_keypad = DEVICE_DT_GET(DT_COMPAT_GET_ANY_STATUS_OKAY(zephyr_lvgl_keypad_input));
 
   const struct zbus_channel *status_chan;
 
   void init_styles();
   lv_obj_t *status_label;
+  lv_obj_t *debug_label;
   lv_obj_t *header;
   lv_obj_t *tabview;
   void init_header(lv_obj_t *parent);
@@ -52,6 +53,7 @@ public:
   void set_header_visible(bool is_visible);
 
   void update_status();
+  void set_debug_text(const char *text);
 };
 
 #endif // __DISPLAY_H_

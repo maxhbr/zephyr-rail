@@ -54,11 +54,15 @@ Display::Display(const struct zbus_channel *_status_chan) : status_chan{_status_
   lv_label_set_text(status_label, "$status");
   lv_obj_align(status_label, LV_ALIGN_CENTER, 0, 0);
 
+  debug_label = lv_label_create(status_tab);
+  lv_label_set_text(debug_label, "$debug");
+  lv_obj_align(debug_label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+
   lv_obj_t *move_tab = make_tab("move");
   lv_obj_t *stack_tab = make_tab("stack");
   lv_obj_t *config_tab = make_tab("cfg");
 
-  lv_indev_set_group(lvgl_input_get_indev(lvgl_keypad), lv_group_get_default());
+  // lv_indev_set_group(lvgl_input_get_indev(lvgl_keypad), lv_group_get_default());
 
   lv_task_handler();
   display_blanking_off(display_dev);
@@ -71,14 +75,22 @@ void Display::update_status()
 {
   char buf[1000];
   const struct model_status *status = (const struct model_status *)zbus_chan_const_msg(status_chan);
-  const stepper_with_target_status *stepper_with_target_status = &status->stepper_with_target_status;
-  const stepper_status *stepper_status = &stepper_with_target_status->stepper_status;
+  if (status != NULL)
+  {
+    const struct stepper_with_target_status *stepper_with_target_status = &status->stepper_with_target_status;
+    const struct stepper_status *stepper_status = &stepper_with_target_status->stepper_status;
 
-  snprintf(buf, sizeof(buf), "%d >>> %d >>> %d\ntarget: %d\nis_moving: %d",
-           status->lower_bound, stepper_status->position, status->upper_bound,
-           stepper_with_target_status->target_position,
-           stepper_with_target_status->is_moving);
-  lv_label_set_text(status_label, buf);
+    snprintf(buf, sizeof(buf), "%d >>> %d >>> %d\ntarget: %d\nis_moving: %d",
+             status->lower_bound, stepper_status->position, status->upper_bound,
+             stepper_with_target_status->target_position,
+             stepper_with_target_status->is_moving);
+    lv_label_set_text(status_label, buf);
+  }
+}
+
+void Display::set_debug_text(const char *text)
+{
+  lv_label_set_text(debug_label, text);
 }
 
 #if 0

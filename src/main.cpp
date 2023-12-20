@@ -17,6 +17,8 @@
 #include <zephyr/sys/crc.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/zbus/zbus.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/input/input.h>
 
 #include <zephyr/console/console.h>
 
@@ -83,7 +85,17 @@ static void sample_diff_listener_cb(const struct zbus_channel *chan)
 {
   const struct stepper_msg *data = (const struct stepper_msg *)zbus_chan_const_msg(chan);
   LOG_INF("diff = %d", data->diff);
-  stepper.go_relative(data->diff);
+  switch (data->mode)
+  {
+  case MOVE_ABSOLUTE:
+    stepper.set_target_position(data->diff);
+    break;
+  case MOVE_RELATIVE:
+    stepper.go_relative(data->diff);
+    break;
+  default:
+    LOG_INF("Unrecognized mode %u", data->mode);
+  }
 }
 
 ZBUS_LISTENER_DEFINE(sample_diff_lis, sample_diff_listener_cb);
@@ -105,77 +117,104 @@ ZBUS_CHAN_DEFINE(model_status_chan,   /* Name */
                                .stack_in_progress = false) /* Initial value */
 );
 
-// // ############################################################################
-// // initialize Button
-// #define SW0_GPIO_LABEL DT_GPIO_LABEL(SW0_NODE, gpios)
-// #define SW0_GPIO_PIN DT_GPIO_PIN(SW0_NODE, gpios)
-// #define SW0_GPIO_FLAGS (GPIO_INPUT | DT_GPIO_FLAGS(SW0_NODE, gpios))
-// static struct gpio_callback button_cb_data;
-// void button_pressed(const struct device *dev, struct gpio_callback *cb,
-// uint32_t pins)
-// {
-// ARG_UNUSED(dev);
-// ARG_UNUSED(cb);
-// ARG_UNUSED(pins);
-
-// printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
-// }
-// void init_button()
-// {
-// const struct device *button;
-// button = device_get_binding(SW0_GPIO_LABEL);
-// gpio_pin_configure(button, SW0_GPIO_PIN, SW0_GPIO_FLAGS);
-// gpio_pin_interrupt_configure(button, SW0_GPIO_PIN, GPIO_INT_EDGE_TO_ACTIVE);
-// gpio_init_callback(&button_cb_data, button_pressed, BIT(SW0_GPIO_PIN));
-// gpio_add_callback(button, &button_cb_data);
-// }
-
 // ############################################################################
 // initialize Display
 
-// Display get_display()
-// {
-//   const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
-//   __ASSERT(display_dev != NULL, "display device not found.");
-//   if (!device_is_ready(display_dev))
-//   {
-//     LOG_ERR("Device not ready");
-//     // return 1;
-//   }
-//   Display display(display_dev);
-//   return display;
-// }
+Display *display_ptr;
+
+// ############################################################################
+// initialize Button
+
+static void input_cb(struct input_event *evt)
+{
+
+  char buf[1000];
+  snprintf(buf, sizeof(buf), "type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
+  display_ptr->set_debug_text(buf);
+
+  if (evt->type != INPUT_EV_KEY)
+  {
+    return;
+  }
+  if (evt->value == 0)
+  {
+    return;
+  }
+  int err;
+  struct stepper_msg msg;
+
+  switch (evt->code)
+  {
+  case INPUT_KEY_2:
+    msg = {-1000, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_1:
+    msg = {0, MOVE_ABSOLUTE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_0:
+    msg = {1000, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_ENTER:
+    msg = {0, MOVE_ABSOLUTE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_DOWN:
+    msg = {102, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_UP:
+    msg = {103, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_LEFT:
+    msg = {104, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_RIGHT:
+    msg = {105, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  default:
+    LOG_INF("Unrecognized input code %u value %d",
+            evt->code, evt->value);
+    return;
+  }
+  if (err == -ENOMSG)
+  {
+    LOG_INF("Pub an invalid value to a channel with validator successfully.");
+  }
+}
+
+INPUT_CALLBACK_DEFINE(NULL, input_cb);
 
 // ############################################################################
 // Main
 
 int main(void)
 {
-
-  // ############################################################################
-  // initialize Display
   Display display(&model_status_chan);
-
-  // ############################################################################
-  // initialize IrSony
+  display_ptr = &display;
   IrSony irsony;
+  Model model(&model_status_chan, &stepper);
+  Controller controller(&model, &irsony);
 
   LOG_INF("stepper = %p", &stepper);
 
-  // init_button();
-  Model model(&stepper);
   model.set_upper_bound(12800);
   model.set_step_number(300);
   LOG_INF("model = %p", &model);
   model.log_state();
 
-  Controller controller(&model, &irsony);
   controller.prepare_stack();
   LOG_INF("controller = %p", &controller);
 
   start_stepper();
   while (true)
   {
+    model.pub_status();
     display.update_status();
     lv_task_handler();
     controller.work();

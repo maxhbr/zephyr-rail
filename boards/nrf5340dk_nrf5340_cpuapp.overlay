@@ -1,0 +1,25 @@
+/*
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/ {
+    stepper: stepper {
+        compatible = "maxhbr,stepper";
+        gpios = <&gpio1 8 0>, /* D6 */
+        <&gpio1 7 0>; /* D5 */
+        // pitch = <2>;
+        // pulses_per_rev = <50000>;
+    };
+
+    pwmleds {
+        compatible = "pwm-leds";
+        ir_pwm_led: ir_pwm_led {
+            pwms = <&sw_pwm 0 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
+            label = "IR LED";
+        };
+    };
+
+    chosen {
+        rail,pwmir = &ir_pwm_led;
+    };
+};

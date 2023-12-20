@@ -5,7 +5,7 @@
 # set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
 
 
-set(BOARD wio_terminal)
+# set(BOARD wio_terminal)
 # set(BOARD nucleo_f767zi)
 # set(SHIELD adafruit_2_8_tft_touch_v2)
 

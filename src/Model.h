@@ -9,6 +9,7 @@
 #include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/types.h>
+#include <zephyr/zbus/zbus.h>
 
 #include <optional>
 
@@ -28,6 +29,7 @@ struct model_status
 
 class Model
 {
+  const struct zbus_channel *status_chan;
   StepperWithTarget *stepper;
   int upper_bound = 12800;
   int lower_bound = 0;
@@ -38,7 +40,7 @@ class Model
   bool stack_in_progress = false;
 
 public:
-  Model(StepperWithTarget *_stepper);
+  Model(const struct zbus_channel *_status_chan, StepperWithTarget *_stepper);
 
   void log_state();
 
@@ -84,6 +86,7 @@ public:
         .stack_in_progress = stack_in_progress,
     };
   }
+  void pub_status();
 };
 
 #endif // __MODEL_H_
