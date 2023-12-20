@@ -8,11 +8,16 @@
 *** TODO _west.yml_ 
 *** TODO _.github/workflows/build.yaml_
 *** TODO _.devcontainer/Dockerfile_
-** TODO change BOARD in _CMakeLists.txt_
+** TODO change BOARD in _.dev_
 ** TODO if necessary change _/dev/bus/usb_ mount to _/dev_
 #+END_COMMENT
 
 ** Usage
 #+BEGIN_SRC bash
-$ west build -p always -t flash .
+$ west build -p always -t flash -b nucleo_wb55rg .
+#+END_SRC
+or build a sample
+#+BEGIN_SRC bash
+$ west build -p always -t flash -b nucleo_wb55rg zephyr/samples/philosophers/
+$ minicom -D /dev/ttyACM0
 #+END_SRC
