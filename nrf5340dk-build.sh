@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
+mkdir -p builds
 west build \
-    -d build-nrf5340dk \
+    -d builds/nrf5340dk \
     -b nrf5340dk_nrf5340_cpuapp \
     . \
     -t flash\

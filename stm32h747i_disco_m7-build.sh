@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
+mkdir -p builds
 west build \
-    -d build-stm32h747i_disco_m7 \
+    -d builds/stm32h747i_disco_m7 \
     -b stm32h747i_disco_m7 \
     . \
     -t flash\
