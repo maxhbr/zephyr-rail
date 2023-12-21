@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 # see https://www.st.com/en/development-tools/stm32cubeprog.html for terms of use and download location
 
 vMajor=2
-vMinor=14
+vMinor=15
 vPatch=0
 
 vZip="v${vMajor}-${vMinor}-${vPatch}"
