@@ -17,13 +17,14 @@
 
 class GPIO
 {
+  const struct gpio_dt_spec *spec;
   const struct device *dev;
   int pin = -1;
   int ret = -1;
   bool cur_value = false;
 
 public:
-  GPIO(const struct gpio_dt_spec *spec, gpio_flags_t extra_flags);
+  GPIO(const struct gpio_dt_spec *_spec, gpio_flags_t extra_flags);
   void set(bool value);
 };
 

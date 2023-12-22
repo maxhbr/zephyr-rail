@@ -35,15 +35,22 @@ LOG_MODULE_REGISTER(rail);
 
 #define SW0_NODE DT_ALIAS(sw0)
 
+StepperWithTarget *stepper_ptr;
+Controller *controller_ptr;
+Display *display_ptr;
+Model *model_ptr;
+
 // ############################################################################
 // initialize Stepper
-
-StepperWithTarget stepper;
 
 void stepper_work_handler(struct k_work *work)
 {
   ARG_UNUSED(work);
-  stepper.step_towards_target();
+  if (stepper_ptr == NULL)
+  {
+    return;
+  }
+  stepper_ptr->step_towards_target();
 }
 K_WORK_DEFINE(stepper_work, stepper_work_handler);
 void stepper_expiry_function(struct k_timer *timer_id)
@@ -54,59 +61,41 @@ void stepper_expiry_function(struct k_timer *timer_id)
 K_TIMER_DEFINE(stepper_timer, stepper_expiry_function, NULL);
 void start_stepper()
 {
-  stepper.start();
+  if (stepper_ptr == NULL)
+  {
+    return;
+  }
+  stepper_ptr->start();
   k_timer_start(&stepper_timer, K_USEC(20), K_USEC(20));
 }
 
 // ############################################################################
 // initialize ZBus for Stepper
-#define MOVE_RELATIVE 0
-#define MOVE_ABSOLUTE 1
+ZBUS_CHAN_DEFINE(controller_msg_chan,   /* Name */
+                 struct controller_msg, /* Message type */
+                 NULL,
+                 NULL,
+                 ZBUS_OBSERVERS(controller_action_listener),
+                 ZBUS_MSG_INIT(.action = NOOP_CONTROLLER_ACTION, .value = 0));
 
-struct stepper_msg
+static void controller_action_listener_cb(const struct zbus_channel *chan)
 {
-  int diff;
-  int mode;
-};
-
-// diff -> stepper
-ZBUS_CHAN_DEFINE(stepper_diff_chan,  /* Name */
-                 struct stepper_msg, /* Message type */
-
-                 NULL,                                           /* Validator */
-                 NULL,                                           /* User data */
-                 ZBUS_OBSERVERS(sample_diff_lis),                /* observers */
-                 ZBUS_MSG_INIT(.diff = 0, .mode = MOVE_RELATIVE) /* Initial value */
-);
-
-// ZBUS_SUBSCRIBER_DEFINE(sample_start_sub, 4);
-
-static void sample_diff_listener_cb(const struct zbus_channel *chan)
-{
-  const struct stepper_msg *data = (const struct stepper_msg *)zbus_chan_const_msg(chan);
-  LOG_INF("diff = %d", data->diff);
-  switch (data->mode)
+  if (controller_ptr == NULL)
   {
-  case MOVE_ABSOLUTE:
-    stepper.set_target_position(data->diff);
-    break;
-  case MOVE_RELATIVE:
-    stepper.go_relative(data->diff);
-    break;
-  default:
-    LOG_INF("Unrecognized mode %u", data->mode);
+    return;
   }
+  const struct controller_msg *msg = (const struct controller_msg *)zbus_chan_const_msg(chan);
+  controller_ptr->handle_controller_msg(msg);
 }
 
-ZBUS_LISTENER_DEFINE(sample_diff_lis, sample_diff_listener_cb);
+ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
 
-// status -> ...
+// ############################################################################
 ZBUS_CHAN_DEFINE(model_status_chan,   /* Name */
                  struct model_status, /* Message type */
-
-                 NULL,                 /* Validator */
-                 NULL,                 /* User data */
-                 ZBUS_OBSERVERS_EMPTY, /* observers */
+                 NULL,
+                 NULL,
+                 ZBUS_OBSERVERS_EMPTY,
                  ZBUS_MSG_INIT(.stepper_with_target_status = {.stepper_status = {.direction = 0, .step_jump = 0, .position = 0},
                                                               .is_moving = false,
                                                               .target_position = 0},
@@ -114,23 +103,18 @@ ZBUS_CHAN_DEFINE(model_status_chan,   /* Name */
                                .lower_bound = 0,
                                .step_number = 0,
                                .cur_step_index = 0,
-                               .stack_in_progress = false) /* Initial value */
-);
-
-// ############################################################################
-// initialize Display
-
-Display *display_ptr;
+                               .stack_in_progress = false));
 
 // ############################################################################
 // initialize Button
 
+#if 0
 static void input_cb(struct input_event *evt)
 {
 
   char buf[1000];
   snprintf(buf, sizeof(buf), "type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
-  display_ptr->set_debug_text(buf);
+  // display_ptr->set_debug_text(buf);
 
   if (evt->type != INPUT_EV_KEY)
   {
@@ -189,36 +173,40 @@ static void input_cb(struct input_event *evt)
 }
 
 INPUT_CALLBACK_DEFINE(NULL, input_cb);
+#endif
 
 // ############################################################################
 // Main
 
 int main(void)
 {
+  LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
+  StepperWithTarget stepper;
+  stepper_ptr = &stepper;
   Display display(&model_status_chan);
   display_ptr = &display;
   IrSony irsony;
-  Model model(&model_status_chan, &stepper);
+  Model model(&model_status_chan, stepper_ptr);
+  model_ptr = &model;
   Controller controller(&model, &irsony);
+  controller_ptr = &controller;
 
-  LOG_INF("stepper = %p", &stepper);
-
-  model.set_upper_bound(12800);
+  LOG_INF("Initialize model");
+  model.set_upper_bound(25600);
   model.set_step_number(300);
-  LOG_INF("model = %p", &model);
+  controller.prepare_stack();
   model.log_state();
 
-  controller.prepare_stack();
-  LOG_INF("controller = %p", &controller);
-
+  LOG_INF("Start main loop");
+  k_sleep(K_MSEC(100));
   start_stepper();
   while (true)
   {
+    k_sleep(K_MSEC(100));
     model.pub_status();
     display.update_status();
-    lv_task_handler();
+    display.run_task_handler();
     controller.work();
-    k_sleep(K_MSEC(100));
   }
 
   return 0;

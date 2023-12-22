@@ -10,10 +10,13 @@
 #include <lvgl.h>
 #include <lvgl_input_device.h>
 #include <map>
+// #include <sys/mutex.h>
 
 #include "Model.h"
 #include "StepperWithTarget.h"
 #include "Stepper.h"
+
+static struct k_mutex lvgl_mutex;
 
 class Display
 {
@@ -24,7 +27,6 @@ class Display
 
   void init_styles();
   lv_obj_t *status_label;
-  lv_obj_t *debug_label;
   lv_obj_t *header;
   lv_obj_t *tabview;
   void init_header(lv_obj_t *parent);
@@ -38,10 +40,6 @@ class Display
 public:
   Display(const struct zbus_channel *_status_chan);
 
-  lv_style_t style_normal;
-  lv_style_t style_button;
-  lv_style_t style_box;
-
   // lv_obj_t *get_header();
   lv_obj_t *make_tab(const char *title);
   lv_obj_t *add_container(lv_obj_t *parent, int width, int heigth);
@@ -52,8 +50,8 @@ public:
   // lv_obj_t *add_roller(lv_obj_t *parent, const char *options);
   void set_header_visible(bool is_visible);
 
+  void run_task_handler();
   void update_status();
-  void set_debug_text(const char *text);
 };
 
 #endif // __DISPLAY_H_

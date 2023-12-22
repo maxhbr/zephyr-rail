@@ -18,6 +18,17 @@
 #include "IrSony.h"
 #include "Model.h"
 
+
+#define NOOP_CONTROLLER_ACTION 0
+#define GO_CONTROLLER_ACTION 1
+#define GO_TO_CONTROLLER_ACTION 2
+
+struct controller_msg
+{
+  int action;
+  int value;
+};
+
 class Controller
 {
   Model *model;
@@ -35,6 +46,8 @@ public:
   void set_new_upper_bound();
   void set_new_lower_bound();
   void set_step_number(int step_number);
+
+  void handle_controller_msg(const struct controller_msg *msg);
 
   void synchronize_and_sleep(k_timeout_t timeout);
 

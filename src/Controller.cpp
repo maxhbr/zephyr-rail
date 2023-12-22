@@ -55,6 +55,24 @@ void Controller::set_step_number(int step_number)
   prepare_stack();
 }
 
+void Controller::handle_controller_msg(const struct controller_msg *msg)
+{
+  switch (msg->action)
+  {
+  case NOOP_CONTROLLER_ACTION:
+    break;
+  case GO_CONTROLLER_ACTION:
+    go(msg->value);
+    break;
+  case GO_TO_CONTROLLER_ACTION:
+    go_to(msg->value);
+    break;
+  default:
+    LOG_ERR("unknown action: %i", msg->action);
+    break;
+  }
+}
+
 void Controller::synchronize_and_sleep(k_timeout_t timeout)
 {
   k_sleep(K_MSEC(10));

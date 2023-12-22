@@ -2,25 +2,6 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(display);
 
-void Display::init_styles()
-{
-  lv_style_init(&style_normal);
-  lv_style_set_text_font(&style_normal, font_normal);
-
-  lv_style_init(&style_button);
-#if 0
-  lv_style_set_bg_color(&style_button, LV_STATE_DEFAULT, LV_COLOR_GRAY);
-  lv_style_set_bg_color(&style_button, LV_STATE_PRESSED, LV_COLOR_RED);
-  lv_style_set_radius(&style_button, LV_STATE_DEFAULT, 5);
-  lv_style_set_bg_opa(&style_button, LV_STATE_DEFAULT, LV_OPA_COVER);
-#endif
-
-  lv_style_init(&style_box);
-#if 0
-  lv_style_set_bg_color(&style_box, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-  lv_style_set_bg_opa(&style_box, LV_STATE_DEFAULT, LV_OPA_COVER);
-#endif
-}
 
 void Display::init_header(lv_obj_t *parent)
 {
@@ -32,19 +13,17 @@ void Display::init_tabview(lv_obj_t *parent)
 {
   tabview = lv_tabview_create(parent, LV_DIR_TOP, 40);
   lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 40);
-  // lv_obj_add_style(tabview, 0, &style_normal);
-  // lv_obj_align(tabview, NULL, LV_ALIGN_BOTTOM_MID, 0, 0);
 }
 
 Display::Display(const struct zbus_channel *_status_chan) : status_chan{_status_chan}
 {
+  k_mutex_init(&lvgl_mutex);
   if (!device_is_ready(display_dev))
   {
     LOG_ERR("Device not ready, aborting");
     return;
   }
   LOG_INF("initialize display...");
-  init_styles();
   init_tabview(lv_scr_act());
   // init_header(lv_scr_act());
 
@@ -53,10 +32,6 @@ Display::Display(const struct zbus_channel *_status_chan) : status_chan{_status_
   status_label = lv_label_create(status_tab);
   lv_label_set_text(status_label, "$status");
   lv_obj_align(status_label, LV_ALIGN_CENTER, 0, 0);
-
-  debug_label = lv_label_create(status_tab);
-  lv_label_set_text(debug_label, "$debug");
-  lv_obj_align(debug_label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
   lv_obj_t *move_tab = make_tab("move");
   lv_obj_t *stack_tab = make_tab("stack");
@@ -67,12 +42,19 @@ Display::Display(const struct zbus_channel *_status_chan) : status_chan{_status_
   lv_task_handler();
   display_blanking_off(display_dev);
   lv_task_handler();
-
   LOG_INF("...initialize display done");
+}
+
+void Display::run_task_handler()
+{
+  k_mutex_lock(&lvgl_mutex, K_FOREVER);
+  lv_task_handler();
+  k_mutex_unlock(&lvgl_mutex);
 }
 
 void Display::update_status()
 {
+  k_mutex_lock(&lvgl_mutex, K_FOREVER);
   char buf[1000];
   const struct model_status *status = (const struct model_status *)zbus_chan_const_msg(status_chan);
   if (status != NULL)
@@ -86,11 +68,7 @@ void Display::update_status()
              stepper_with_target_status->is_moving);
     lv_label_set_text(status_label, buf);
   }
-}
-
-void Display::set_debug_text(const char *text)
-{
-  lv_label_set_text(debug_label, text);
+  k_mutex_unlock(&lvgl_mutex);
 }
 
 #if 0

@@ -27,9 +27,9 @@ public:
   {
     LOG_MODULE_DECLARE(stepper);
     set(true);
-    k_usleep(8); // puse width no less then 7.5us
+    k_usleep(2); // puse width no less then 7.5us
     set(false);
-    k_usleep(8); // puse width no less then 7.5us
+    k_usleep(2); // puse width no less then 7.5us
   };
 };
 
