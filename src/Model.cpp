@@ -2,9 +2,8 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(model);
 
-Model::Model(const struct zbus_channel *_status_chan, StepperWithTarget *_stepper) : status_chan{_status_chan}
+Model::Model(StepperWithTarget *_stepper) : stepper{_stepper}
 {
-  stepper = _stepper;
   stepps = (int *)malloc(sizeof(int) * 1000);
 }
 
@@ -55,12 +54,4 @@ int Model::get_cur_position() { return stepper->get_position(); }
 
 bool Model::is_in_target_position() {
   return get_cur_position() == get_target_position();
-}
-
-void Model::pub_status() {
-  struct model_status status = get_status();
-	int err = zbus_chan_pub(status_chan, &status, K_MSEC(200));
-	if (err == -ENOMSG) {
-		LOG_INF("Pub an invalid value to a channel with validator successfully.");
-	}
 }

@@ -32,13 +32,14 @@ LOG_MODULE_REGISTER(rail);
 #include "Controller.h"
 #include "Model.h"
 #include "Display.h"
+#include "View.h"
 
 #define SW0_NODE DT_ALIAS(sw0)
 
 StepperWithTarget *stepper_ptr;
 Controller *controller_ptr;
-Display *display_ptr;
 Model *model_ptr;
+View *view_ptr;
 
 // ############################################################################
 // initialize Stepper
@@ -89,21 +90,6 @@ static void controller_action_listener_cb(const struct zbus_channel *chan)
 }
 
 ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
-
-// ############################################################################
-ZBUS_CHAN_DEFINE(model_status_chan,   /* Name */
-                 struct model_status, /* Message type */
-                 NULL,
-                 NULL,
-                 ZBUS_OBSERVERS_EMPTY,
-                 ZBUS_MSG_INIT(.stepper_with_target_status = {.stepper_status = {.direction = 0, .step_jump = 0, .position = 0},
-                                                              .is_moving = false,
-                                                              .target_position = 0},
-                               .upper_bound = 0,
-                               .lower_bound = 0,
-                               .step_number = 0,
-                               .cur_step_index = 0,
-                               .stack_in_progress = false));
 
 // ############################################################################
 // initialize Button
@@ -183,13 +169,14 @@ int main(void)
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper;
   stepper_ptr = &stepper;
-  Display display(&model_status_chan);
-  display_ptr = &display;
+  // Display display(&model_status_chan);
+  // display_ptr = &display;
   IrSony irsony;
-  Model model(&model_status_chan, stepper_ptr);
+  Model model(stepper_ptr);
   model_ptr = &model;
   Controller controller(&model, &irsony);
   controller_ptr = &controller;
+  View view(&model, &controller);
 
   LOG_INF("Initialize model");
   model.set_upper_bound(25600);
@@ -203,9 +190,7 @@ int main(void)
   while (true)
   {
     k_sleep(K_MSEC(100));
-    model.pub_status();
-    display.update_status();
-    display.run_task_handler();
+    view.update();
     controller.work();
   }
 

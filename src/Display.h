@@ -23,10 +23,7 @@ class Display
   const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
   // const struct device *lvgl_keypad = DEVICE_DT_GET(DT_COMPAT_GET_ANY_STATUS_OKAY(zephyr_lvgl_keypad_input));
 
-  const struct zbus_channel *status_chan;
-
   void init_styles();
-  lv_obj_t *status_label;
   lv_obj_t *header;
   lv_obj_t *tabview;
   void init_header(lv_obj_t *parent);
@@ -38,20 +35,20 @@ class Display
   const lv_font_t *font_small = &lv_font_montserrat_14;    // _12;
 
 public:
-  Display(const struct zbus_channel *_status_chan);
+  Display();
 
   // lv_obj_t *get_header();
   lv_obj_t *make_tab(const char *title);
   lv_obj_t *add_container(lv_obj_t *parent, int width, int heigth);
-  // lv_obj_t *add_label(lv_obj_t *parent);
-  // lv_obj_t *add_panel(lv_obj_t *parent);
-  // lv_obj_t *add_button(lv_obj_t *parent, const char *label_text, int width,
-  //                      int heigth);
-  // lv_obj_t *add_roller(lv_obj_t *parent, const char *options);
+  lv_obj_t *add_label(lv_obj_t *parent);
+  lv_obj_t *add_panel(lv_obj_t *parent);
+  lv_obj_t *add_button(lv_obj_t *parent, const char *label_text, int width,
+                       int heigth);
+  lv_obj_t *add_roller(lv_obj_t *parent, const char *options);
   void set_header_visible(bool is_visible);
 
   void run_task_handler();
-  void update_status();
+  void update_status(const struct model_status status);
 };
 
 #endif // __DISPLAY_H_

@@ -8,6 +8,7 @@
         "log_backend_net.h": "c",
         "kernel.h": "c",
         "log_output.h": "c",
-        "log_msg.h": "c"
+        "log_msg.h": "c",
+        "sstream": "cpp"
     }
 }

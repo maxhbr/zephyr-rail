@@ -50,7 +50,7 @@ public:
 
   bool is_in_target_position();
 
-  struct stepper_with_target_status get_status()
+  const struct stepper_with_target_status get_status()
   {
     return {
         .stepper_status = Stepper::get_status(),

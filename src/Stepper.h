@@ -69,7 +69,7 @@ public:
   bool step_towards(int target);
   int get_position();
 
-  struct stepper_status get_status()
+  const struct stepper_status get_status()
   {
     return {
         .direction = direction,

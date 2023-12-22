@@ -29,7 +29,6 @@ struct model_status
 
 class Model
 {
-  const struct zbus_channel *status_chan;
   StepperWithTarget *stepper;
   int upper_bound = 12800;
   int lower_bound = 0;
@@ -40,7 +39,7 @@ class Model
   bool stack_in_progress = false;
 
 public:
-  Model(const struct zbus_channel *_status_chan, StepperWithTarget *_stepper);
+  Model(StepperWithTarget *_stepper);
 
   void log_state();
 
@@ -75,7 +74,7 @@ public:
   int get_cur_position();
   bool is_in_target_position();
 
-  struct model_status get_status()
+  const struct model_status get_status()
   {
     return {
         .stepper_with_target_status = stepper->get_status(),
