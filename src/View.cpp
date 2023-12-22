@@ -17,55 +17,55 @@ void View::fill_move_panel(lv_obj_t *parent)
     lv_obj_align(step_size_roller, LV_ALIGN_TOP_MID, 0, 0);
 #endif
 
-  lv_obj_t *left_btn = Display::add_button(parent, "<<", 100, 60);
-  lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
-//   lv_obj_add_evnet_cb(left_btn, [](lv_obj_t *btn, lv_event_t event) {
-//     //static_view_pointer->event_cb(ACTION_GO_LOWER, btn, event);
-//   });
-  lv_obj_t *right_btn = Display::add_button(parent, ">>", 100, 60);
-  lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
-//   lv_obj_add_event_cb(right_btn, [](lv_obj_t *btn, lv_event_t event) {
-//     //static_view_pointer->event_cb(ACTION_GO_UPPER, btn, event);
-//   });
+    lv_obj_t *left_btn = Display::add_button(parent, "<<", 100, 60);
+    lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
+    //   lv_obj_add_evnet_cb(left_btn, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_GO_LOWER, btn, event);
+    //   });
+    lv_obj_t *right_btn = Display::add_button(parent, ">>", 100, 60);
+    lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
+    //   lv_obj_add_event_cb(right_btn, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_GO_UPPER, btn, event);
+    //   });
 
-  lv_obj_t *set_lower = Display::add_button(parent, "Set lower", 100, 30);
-  lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
-//   lv_obj_add_event_cb(set_lower, [](lv_obj_t *btn, lv_event_t event) {
-//     //static_view_pointer->event_cb(ACTION_SET_LOWER, btn, event);
-//   });
-  lv_obj_t *set_upper = Display::add_button(parent, "Set upper", 100, 30);
-  lv_obj_align(set_upper, LV_ALIGN_TOP_RIGHT, -10, 75);
-//   lv_obj_add_event_cb(set_upper, [](lv_obj_t *btn, lv_event_t event) {
-//     //static_view_pointer->event_cb(ACTION_SET_UPPER, btn, event);
-//   });
+    lv_obj_t *set_lower = Display::add_button(parent, "Set lower", 100, 30);
+    lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
+    //   lv_obj_add_event_cb(set_lower, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_SET_LOWER, btn, event);
+    //   });
+    lv_obj_t *set_upper = Display::add_button(parent, "Set upper", 100, 30);
+    lv_obj_align(set_upper, LV_ALIGN_TOP_RIGHT, -10, 75);
+    //   lv_obj_add_event_cb(set_upper, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_SET_UPPER, btn, event);
+    //   });
 
-  lv_obj_t *go_to_lower = Display::add_button(parent, NULL, 100, 30);
-  lower_label = Display::add_label(go_to_lower);
-  lv_label_set_text(lower_label, "Go to lower");
-  lv_obj_align(go_to_lower, LV_ALIGN_TOP_LEFT, 10, 110);
-//   lv_obj_add_event_cb(go_to_lower, [](lv_obj_t *btn, lv_event_t event) {
-//     //static_view_pointer->event_cb(ACTION_GO_TO_LOWER, btn, event);
-//   });
+    lv_obj_t *go_to_lower = Display::add_button(parent, NULL, 100, 30);
+    lower_label = Display::add_label(go_to_lower);
+    lv_label_set_text(lower_label, "Go to lower");
+    lv_obj_align(go_to_lower, LV_ALIGN_TOP_LEFT, 10, 110);
+    //   lv_obj_add_event_cb(go_to_lower, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_GO_TO_LOWER, btn, event);
+    //   });
 
-  lv_obj_t *go_to_upper = Display::add_button(parent, NULL, 100, 30);
-  upper_label = Display::add_label(go_to_upper);
-  lv_label_set_text(upper_label, "Go to upper");
-  lv_obj_align(go_to_upper, LV_ALIGN_TOP_RIGHT, -10, 110);
-//   lv_obj_add_event_cb(go_to_upper, [](lv_obj_t *btn, lv_event_t event) {
-//     //static_view_pointer->event_cb(ACTION_GO_TO_UPPER, btn, event);
-//   });
+    lv_obj_t *go_to_upper = Display::add_button(parent, NULL, 100, 30);
+    upper_label = Display::add_label(go_to_upper);
+    lv_label_set_text(upper_label, "Go to upper");
+    lv_obj_align(go_to_upper, LV_ALIGN_TOP_RIGHT, -10, 110);
+    //   lv_obj_add_event_cb(go_to_upper, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_GO_TO_UPPER, btn, event);
+    //   });
 
-  // lv_obj_t *slider = lv_slider_create(parent, NULL);
-  // lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
-  // lv_slider_set_range(slider, 0, 100);
-  // lv_slider_set_value(slider, 50, 0);
-  // // lv_obj_set_width(slider, LV_PCT(95))
+    // lv_obj_t *slider = lv_slider_create(parent, NULL);
+    // lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+    // lv_slider_set_range(slider, 0, 100);
+    // lv_slider_set_value(slider, 50, 0);
+    // // lv_obj_set_width(slider, LV_PCT(95))
 }
 
 void View::fill_stack_panel(lv_obj_t *parent)
 {
 #if 0
-  step_number_roller = display->add_roller(parent, "10\n"
+  step_number_roller = Display::add_roller(parent, "10\n"
                                                    "20\n"
                                                    "30\n"
                                                    "50\n"
@@ -79,24 +79,22 @@ void View::fill_stack_panel(lv_obj_t *parent)
   lv_obj_set_event_cb(step_number_roller, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_SET_STEP_NUMBER, btn, event);
   });
-
-  lv_obj_t *plan_container =
-      display->add_container(parent, LV_HOR_RES / 2, 100);
-  lv_obj_align(plan_container, LV_ALIGN_TOP_RIGHT, 0, 0);
-  plan_label = display->add_label(plan_container);
-
-  lv_obj_t *start_button = display->add_button(parent, "start", 70, 70);
-  lv_obj_align(start_button, LV_ALIGN_BOTTOM_RIGHT, -70, -20);
-  lv_obj_set_event_cb(start_button, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_START_STACK, btn, event);
-  });
-
-  lv_obj_t *stop_button = display->add_button(parent, "stop", 50, 50);
-  lv_obj_align(stop_button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
-  lv_obj_set_event_cb(stop_button, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_STOP_STACK, btn, event);
-  });
 #endif
+
+    lv_obj_t *plan_container =
+        Display::add_container(parent, LV_HOR_RES / 2, 100);
+    lv_obj_align(plan_container, LV_ALIGN_TOP_RIGHT, 0, 0);
+    plan_label = Display::add_label(plan_container);
+
+    lv_obj_t *start_button = Display::add_button(parent, "start", 70, 70);
+    lv_obj_align(start_button, LV_ALIGN_BOTTOM_RIGHT, -70, -20);
+    lv_obj_set_event_cb(start_button, [](lv_obj_t *btn, lv_event_t event)
+                        { static_view_pointer->event_cb(ACTION_START_STACK, btn, event); });
+
+    lv_obj_t *stop_button = Display::add_button(parent, "stop", 50, 50);
+    lv_obj_align(stop_button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
+    lv_obj_set_event_cb(stop_button, [](lv_obj_t *btn, lv_event_t event)
+                        { static_view_pointer->event_cb(ACTION_STOP_STACK, btn, event); });
 }
 
 void View::fill_config_panel(lv_obj_t *parent)
