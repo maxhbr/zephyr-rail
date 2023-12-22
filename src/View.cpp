@@ -88,13 +88,13 @@ void View::fill_stack_panel(lv_obj_t *parent)
 
     lv_obj_t *start_button = Display::add_button(parent, "start", 70, 70);
     lv_obj_align(start_button, LV_ALIGN_BOTTOM_RIGHT, -70, -20);
-    lv_obj_set_event_cb(start_button, [](lv_obj_t *btn, lv_event_t event)
-                        { static_view_pointer->event_cb(ACTION_START_STACK, btn, event); });
+    // lv_obj_set_event_cb(start_button, [](lv_obj_t *btn, lv_event_t event)
+    //                     { static_view_pointer->event_cb(ACTION_START_STACK, btn, event); });
 
     lv_obj_t *stop_button = Display::add_button(parent, "stop", 50, 50);
     lv_obj_align(stop_button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
-    lv_obj_set_event_cb(stop_button, [](lv_obj_t *btn, lv_event_t event)
-                        { static_view_pointer->event_cb(ACTION_STOP_STACK, btn, event); });
+    // lv_obj_set_event_cb(stop_button, [](lv_obj_t *btn, lv_event_t event)
+    //                     { static_view_pointer->event_cb(ACTION_STOP_STACK, btn, event); });
 }
 
 void View::fill_config_panel(lv_obj_t *parent)
