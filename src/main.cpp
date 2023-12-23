@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
 #include <zephyr/types.h>
 
 #include <zephyr/device.h>
@@ -17,112 +16,182 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/crc.h>
 #include <zephyr/sys/printk.h>
+#include <zephyr/zbus/zbus.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/input/input.h>
 
 #include <zephyr/console/console.h>
 
 #include <lvgl.h>
 
-#include <zephyr/drivers/display.h>
-
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(rail);
 
-#include "Display.h"
 #include "IrSony.h"
 #include "StepperWithTarget.h"
+#include "Controller.h"
+#include "Model.h"
+#include "Display.h"
 #include "View.h"
 
 #define SW0_NODE DT_ALIAS(sw0)
 
+StepperWithTarget *stepper_ptr;
+Controller *controller_ptr;
+Model *model_ptr;
+View *view_ptr;
+
 // ############################################################################
 // initialize Stepper
 
-StepperWithTarget stepper;
-
-void stepper_work_handler(struct k_work *work) {
+void stepper_work_handler(struct k_work *work)
+{
   ARG_UNUSED(work);
-  stepper.step_towards_target();
+  if (stepper_ptr == NULL)
+  {
+    return;
+  }
+  stepper_ptr->step_towards_target();
 }
 K_WORK_DEFINE(stepper_work, stepper_work_handler);
-void stepper_expiry_function(struct k_timer *timer_id) {
+void stepper_expiry_function(struct k_timer *timer_id)
+{
   ARG_UNUSED(timer_id);
   k_work_submit(&stepper_work);
 }
 K_TIMER_DEFINE(stepper_timer, stepper_expiry_function, NULL);
-void start_stepper() {
-  stepper.start();
+void start_stepper()
+{
+  if (stepper_ptr == NULL)
+  {
+    return;
+  }
+  stepper_ptr->start();
   k_timer_start(&stepper_timer, K_USEC(20), K_USEC(20));
 }
 
 // ############################################################################
-// initialize IrSony
-IrSony irsony;
+// initialize ZBus for Stepper
+ZBUS_CHAN_DEFINE(controller_msg_chan,   /* Name */
+                 struct controller_msg, /* Message type */
+                 NULL,
+                 NULL,
+                 ZBUS_OBSERVERS(controller_action_listener),
+                 ZBUS_MSG_INIT(.action = NOOP_CONTROLLER_ACTION, .value = 0));
+
+static void controller_action_listener_cb(const struct zbus_channel *chan)
+{
+  if (controller_ptr == NULL)
+  {
+    return;
+  }
+  const struct controller_msg *msg = (const struct controller_msg *)zbus_chan_const_msg(chan);
+  controller_ptr->handle_controller_msg(msg);
+}
+
+ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
 
 // ############################################################################
 // initialize Button
-#define SW0_GPIO_LABEL DT_GPIO_LABEL(SW0_NODE, gpios)
-#define SW0_GPIO_PIN DT_GPIO_PIN(SW0_NODE, gpios)
-#define SW0_GPIO_FLAGS (GPIO_INPUT | DT_GPIO_FLAGS(SW0_NODE, gpios))
-static struct gpio_callback button_cb_data;
-void button_pressed(const struct device *dev, struct gpio_callback *cb,
-                    uint32_t pins) {
-  ARG_UNUSED(dev);
-  ARG_UNUSED(cb);
-  ARG_UNUSED(pins);
 
-  printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
-}
-void init_button() {
-  const struct device *button;
-  button = device_get_binding(SW0_GPIO_LABEL);
-  gpio_pin_configure(button, SW0_GPIO_PIN, SW0_GPIO_FLAGS);
-  gpio_pin_interrupt_configure(button, SW0_GPIO_PIN, GPIO_INT_EDGE_TO_ACTIVE);
-  gpio_init_callback(&button_cb_data, button_pressed, BIT(SW0_GPIO_PIN));
-  gpio_add_callback(button, &button_cb_data);
+#if 0
+static void input_cb(struct input_event *evt)
+{
+
+  char buf[1000];
+  snprintf(buf, sizeof(buf), "type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
+  // display_ptr->set_debug_text(buf);
+
+  if (evt->type != INPUT_EV_KEY)
+  {
+    return;
+  }
+  if (evt->value == 0)
+  {
+    return;
+  }
+  int err;
+  struct stepper_msg msg;
+
+  switch (evt->code)
+  {
+  case INPUT_KEY_2:
+    msg = {-1000, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_1:
+    msg = {0, MOVE_ABSOLUTE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_0:
+    msg = {1000, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_ENTER:
+    msg = {0, MOVE_ABSOLUTE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_DOWN:
+    msg = {102, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_UP:
+    msg = {103, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_LEFT:
+    msg = {104, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  case INPUT_KEY_RIGHT:
+    msg = {105, MOVE_RELATIVE};
+    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    break;
+  default:
+    LOG_INF("Unrecognized input code %u value %d",
+            evt->code, evt->value);
+    return;
+  }
+  if (err == -ENOMSG)
+  {
+    LOG_INF("Pub an invalid value to a channel with validator successfully.");
+  }
 }
 
-// ############################################################################
-// ...
-
-Display get_display() {
-  const struct device *display_dev =
-      device_get_binding(CONFIG_LVGL_DISPLAY_DEV_NAME);
-  __ASSERT(display_dev != NULL, "display device not found.");
-  Display display(display_dev);
-  return display;
-}
+INPUT_CALLBACK_DEFINE(NULL, input_cb);
+#endif
 
 // ############################################################################
 // Main
 
-int main(void) {
+int main(void)
+{
+  LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
+  StepperWithTarget stepper;
+  stepper_ptr = &stepper;
+  // Display display(&model_status_chan);
+  // display_ptr = &display;
+  IrSony irsony;
+  Model model(stepper_ptr);
+  model_ptr = &model;
+  Controller controller(&model, &irsony);
+  controller_ptr = &controller;
+  View view(&model, &controller);
 
-
-  LOG_INF("stepper = %p", &stepper);
-
-  init_button();
-
-  Display display = get_display();
-
-  Model model(&stepper);
-  model.set_upper_bound(12800);
+  LOG_INF("Initialize model");
+  model.set_upper_bound(25600);
   model.set_step_number(300);
-  LOG_INF("model = %p", &model);
+  controller.prepare_stack();
   model.log_state();
 
-  Controller controller(&model, &irsony);
-  controller.prepare_stack();
-  LOG_INF("controller = %p", &controller);
-
-  View view(&model, &controller, &display);
-  LOG_INF("view = %p", &view);
-
+  LOG_INF("Start main loop");
+  k_sleep(K_MSEC(100));
   start_stepper();
-  while (true) {
-    view.update();
-    lv_task_handler();
-    controller.work();
+  while (true)
+  {
     k_sleep(K_MSEC(100));
+    view.update();
+    controller.work();
   }
 
   return 0;

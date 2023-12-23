@@ -2,196 +2,78 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(view);
 
-#define ACTION_GO_LOWER '<'
-#define ACTION_GO_UPPER '>'
-#define ACTION_SET_LOWER 'l'
-#define ACTION_GO_TO_LOWER 'L'
-#define ACTION_SET_UPPER 'u'
-#define ACTION_GO_TO_UPPER 'U'
-#define ACTION_SET_STEP_NUMBER '#'
-#define ACTION_START_STACK 's'
-#define ACTION_STOP_STACK 'S'
-
 static View *static_view_pointer = NULL;
 
-View::View(Model *_model, Controller *_controller, Display *_display)
-    : model{_model}, controller(_controller), display{_display} {
-  LOG_MODULE_DECLARE(view);
-  static_view_pointer = this;
+void View::fill_move_panel(lv_obj_t *parent)
+{
+    /*
+    step_size_roller = Display::add_roller(parent, "12800\n"
+                                                   "6400\n"
+                                                   "1280\n"
+                                                   "640\n"
+                                                   "128\n"
+                                                   "64\n"
+                                                   "12\n"
+                                                   "6\n"
+                                                   "1");
+    lv_obj_align(step_size_roller, LV_ALIGN_TOP_MID, 0, 0);
+    */
 
-  pos_label = display->add_label(display->get_header());
-  lv_obj_set_style_text_align(pos_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_t *left_btn = Display::add_button(parent, "<<", 100, 60);
+    lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
+    lv_obj_add_event_cb(
+        left_btn, [](lv_event_t *event)
+        { 
+            const struct controller_msg msg = {GO_CONTROLLER_ACTION, -12800};
+            static_view_pointer->controller->handle_controller_msg(&msg); },
+        LV_EVENT_PRESSED, NULL);
+    lv_obj_t *right_btn = Display::add_button(parent, ">>", 100, 60);
+    lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
+    lv_obj_add_event_cb(
+        right_btn, [](lv_event_t *event)
+        { 
+            const struct controller_msg msg = {GO_CONTROLLER_ACTION, +12800};
+            static_view_pointer->controller->handle_controller_msg(&msg); },
+        LV_EVENT_PRESSED, NULL);
 
-  lv_obj_t *move_tab = display->make_tab("move");
-  fill_move_panel(move_tab);
-  lv_obj_t *stack_tab = display->make_tab("stack");
-  fill_stack_panel(stack_tab);
+    lv_obj_t *set_lower = Display::add_button(parent, "Set lower", 100, 30);
+    lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
+    //   lv_obj_add_event_cb(set_lower, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_SET_LOWER, btn, event);
+    //   });
+    lv_obj_t *set_upper = Display::add_button(parent, "Set upper", 100, 30);
+    lv_obj_align(set_upper, LV_ALIGN_TOP_RIGHT, -10, 75);
+    //   lv_obj_add_event_cb(set_upper, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_SET_UPPER, btn, event);
+    //   });
 
-  // lv_task_t *task_render = lv_task_create(
-  //     [](lv_task_t *task) {
-  //       View *view = static_cast<View *>(task->user_data);
-  //       view->update();
-  //     },
-  //     100, LV_TASK_PRIO_LOW, this);
-};
+    lv_obj_t *go_to_lower = Display::add_button(parent, NULL, 100, 30);
+    lower_label = Display::add_label(go_to_lower);
+    lv_label_set_text(lower_label, "Go to lower");
+    lv_obj_align(go_to_lower, LV_ALIGN_TOP_LEFT, 10, 110);
+    //   lv_obj_add_event_cb(go_to_lower, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_GO_TO_LOWER, btn, event);
+    //   });
 
-int View::read_step_size_roller() {
-  char str[7] = {0};
-  lv_roller_get_selected_str(step_size_roller, str, sizeof(str));
-  return atoi(str);
+    lv_obj_t *go_to_upper = Display::add_button(parent, NULL, 100, 30);
+    upper_label = Display::add_label(go_to_upper);
+    lv_label_set_text(upper_label, "Go to upper");
+    lv_obj_align(go_to_upper, LV_ALIGN_TOP_RIGHT, -10, 110);
+    //   lv_obj_add_event_cb(go_to_upper, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_GO_TO_UPPER, btn, event);
+    //   });
+
+    // lv_obj_t *slider = lv_slider_create(parent, NULL);
+    // lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+    // lv_slider_set_range(slider, 0, 100);
+    // lv_slider_set_value(slider, 50, 0);
+    // // lv_obj_set_width(slider, LV_PCT(95))
 }
 
-void View::event_cb(char action_type, lv_obj_t *obj, lv_event_t event) {
-  LOG_MODULE_DECLARE(view);
-  char str[12] = {0};
-
-  if (!(event == LV_EVENT_PRESSED ||
-        event == LV_EVENT_LONG_PRESSED ||
-        event == LV_EVENT_LONG_PRESSED_REPEAT ||
-        event == LV_EVENT_VALUE_CHANGED)) {
-    return;
-  }
-
-  const char *btn_text = lv_list_get_btn_text(obj);
-  LOG_DBG("event_cb: txt=%s, action_type=%c", btn_text, action_type);
-
-  switch (action_type) {
-  case ACTION_SET_STEP_NUMBER: {
-    if (!(event == LV_EVENT_VALUE_CHANGED)) {
-      return;
-    }
-
-    char roller_str[12] = {0};
-    lv_roller_get_selected_str(obj, roller_str, sizeof(roller_str));
-    int step_number = atoi(roller_str);
-    if (step_number < 10) {
-      step_number = 10;
-    }
-
-    LOG_INF("set_step_number: %d", step_number);
-    controller->set_step_number(step_number);
-    break;
-  }
-  case ACTION_START_STACK: {
-    if (!(event == LV_EVENT_PRESSED)) {
-      return;
-    }
-    controller->start_stack();
-    break;
-  }
-  case ACTION_STOP_STACK: {
-    if (!(event == LV_EVENT_LONG_PRESSED)) {
-      return;
-    }
-    controller->stop_stack();
-    break;
-  }
-  case ACTION_GO_LOWER: {
-    int dist = -read_step_size_roller();
-    LOG_INF("go: %d", dist);
-    controller->go(dist);
-    break;
-  }
-  case ACTION_GO_UPPER: {
-    int dist = read_step_size_roller();
-    LOG_INF("go: %d", dist);
-    controller->go(dist);
-    break;
-  }
-  case ACTION_SET_LOWER: {
-    if (!(event == LV_EVENT_PRESSED)) {
-      return;
-    }
-    controller->set_new_lower_bound();
-    break;
-  }
-  case ACTION_GO_TO_LOWER: {
-    if (!(event == LV_EVENT_LONG_PRESSED)) {
-      return;
-    }
-    controller->go_to_lower_bound();
-    break;
-  }
-  case ACTION_SET_UPPER: {
-    if (!(event == LV_EVENT_PRESSED)) {
-      return;
-    }
-    controller->set_new_upper_bound();
-    break;
-  }
-  case ACTION_GO_TO_UPPER: {
-    if (!(event == LV_EVENT_LONG_PRESSED)) {
-      return;
-    }
-    controller->go_to_upper_bound();
-    break;
-  }
-  default: {
-    LOG_ERR("does not understand action=%c", action_type);
-    break;
-  }
-  }
-}
-
-void View::fill_move_panel(lv_obj_t *parent) {
-  step_size_roller = display->add_roller(parent, "12800\n"
-                                                 "6400\n"
-                                                 "1280\n"
-                                                 "640\n"
-                                                 "128\n"
-                                                 "64\n"
-                                                 "12\n"
-                                                 "6\n"
-                                                 "1");
-  lv_obj_align(step_size_roller, NULL, LV_ALIGN_TOP_MID, 0, 0);
-
-  lv_obj_t *left_btn = display->add_button(parent, "<<", 100, 60);
-  lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
-  lv_obj_set_event_cb(left_btn, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_GO_LOWER, btn, event);
-  });
-  lv_obj_t *right_btn = display->add_button(parent, ">>", 100, 60);
-  lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
-  lv_obj_set_event_cb(right_btn, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_GO_UPPER, btn, event);
-  });
-
-  lv_obj_t *set_lower = display->add_button(parent, "Set lower", 100, 30);
-  lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
-  lv_obj_set_event_cb(set_lower, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_SET_LOWER, btn, event);
-  });
-  lv_obj_t *set_upper = display->add_button(parent, "Set upper", 100, 30);
-  lv_obj_align(set_upper, LV_ALIGN_TOP_RIGHT, -10, 75);
-  lv_obj_set_event_cb(set_upper, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_SET_UPPER, btn, event);
-  });
-
-  lv_obj_t *go_to_lower = display->add_button(parent, NULL, 100, 30);
-  lower_label = display->add_label(go_to_lower);
-  lv_label_set_text(lower_label, "Go to lower");
-  lv_obj_align(go_to_lower, LV_ALIGN_TOP_LEFT, 10, 110);
-  lv_obj_set_event_cb(go_to_lower, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_GO_TO_LOWER, btn, event);
-  });
-
-  lv_obj_t *go_to_upper = display->add_button(parent, NULL, 100, 30);
-  upper_label = display->add_label(go_to_upper);
-  lv_label_set_text(upper_label, "Go to upper");
-  lv_obj_align(go_to_upper, LV_ALIGN_TOP_RIGHT, -10, 110);
-  lv_obj_set_event_cb(go_to_upper, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_GO_TO_UPPER, btn, event);
-  });
-
-  // lv_obj_t *slider = lv_slider_create(parent, NULL);
-  // lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
-  // lv_slider_set_range(slider, 0, 100);
-  // lv_slider_set_value(slider, 50, 0);
-  // // lv_obj_set_width(slider, LV_PCT(95))
-}
-
-void View::fill_stack_panel(lv_obj_t *parent) {
-  step_number_roller = display->add_roller(parent, "10\n"
+void View::fill_stack_panel(lv_obj_t *parent)
+{
+#if 0
+  step_number_roller = Display::add_roller(parent, "10\n"
                                                    "20\n"
                                                    "30\n"
                                                    "50\n"
@@ -205,72 +87,79 @@ void View::fill_stack_panel(lv_obj_t *parent) {
   lv_obj_set_event_cb(step_number_roller, [](lv_obj_t *btn, lv_event_t event) {
     static_view_pointer->event_cb(ACTION_SET_STEP_NUMBER, btn, event);
   });
+#endif
 
-  lv_obj_t *plan_container =
-      display->add_container(parent, LV_HOR_RES / 2, 100);
-  lv_obj_align(plan_container, LV_ALIGN_TOP_RIGHT, 0, 0);
-  plan_label = display->add_label(plan_container);
+    lv_obj_t *plan_container =
+        Display::add_container(parent, LV_HOR_RES / 2, 100);
+    lv_obj_align(plan_container, LV_ALIGN_TOP_RIGHT, 0, 0);
+    plan_label = Display::add_label(plan_container);
 
-  lv_obj_t *start_button = display->add_button(parent, "start", 70, 70);
-  lv_obj_align(start_button, LV_ALIGN_BOTTOM_RIGHT, -70, -20);
-  lv_obj_set_event_cb(start_button, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_START_STACK, btn, event);
-  });
+    lv_obj_t *start_button = Display::add_button(parent, "start", 70, 70);
+    lv_obj_align(start_button, LV_ALIGN_BOTTOM_RIGHT, -70, -20);
+    // lv_obj_set_event_cb(start_button, [](lv_obj_t *btn, lv_event_t event)
+    //                     { static_view_pointer->event_cb(ACTION_START_STACK, btn, event); });
 
-  lv_obj_t *stop_button = display->add_button(parent, "stop", 50, 50);
-  lv_obj_align(stop_button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
-  lv_obj_set_event_cb(stop_button, [](lv_obj_t *btn, lv_event_t event) {
-    static_view_pointer->event_cb(ACTION_STOP_STACK, btn, event);
-  });
+    lv_obj_t *stop_button = Display::add_button(parent, "stop", 50, 50);
+    lv_obj_align(stop_button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
+    // lv_obj_set_event_cb(stop_button, [](lv_obj_t *btn, lv_event_t event)
+    //                     { static_view_pointer->event_cb(ACTION_STOP_STACK, btn, event); });
 }
 
-void View::update() {
-  char str[40] = {0};
-  LOG_MODULE_DECLARE(view);
+void View::fill_config_panel(lv_obj_t *parent)
+{
+    lv_obj_t *config_container = Display::add_container(parent, LV_HOR_RES / 2, 100);
+    lv_obj_align(config_container, LV_ALIGN_TOP_RIGHT, 0, 0);
+    // config_label = Display::add_label(config_container);
+}
+void View::fill_status_panel(lv_obj_t *parent)
+{
+    status_label = lv_label_create(status_tab);
+    lv_label_set_text(status_label, "$status");
+    lv_obj_align(status_label, LV_ALIGN_CENTER, 0, 0);
+}
 
-  int cur_position = model->get_cur_position();
-  int target_position = model->get_target_position();
-  bool is_in_target_position = cur_position == target_position;
-  if (pos_label != NULL) {
-    if (is_in_target_position && !model->is_stack_in_progress()) {
-      display->set_header_visible(false);
-    } else {
-      display->set_header_visible(true);
-      if (is_in_target_position) {
-        sprintf(str, "@%d", cur_position);
-      } else {
-        if (cur_position < target_position) {
-          sprintf(str, "%d > %d", cur_position, target_position);
-        } else {
-          sprintf(str, "%d < %d", target_position, cur_position);
+View::View(Model *_model, Controller *_controller) : Display(), model{_model}, controller{_controller}
+{
+    static_view_pointer = this;
+
+    move_tab = make_tab("move");
+    fill_move_panel(move_tab);
+    stack_tab = make_tab("stack");
+    fill_stack_panel(stack_tab);
+    config_tab = make_tab("cfg");
+    fill_config_panel(config_tab);
+    status_tab = make_tab("status");
+    fill_status_panel(status_tab);
+}
+
+void View::update_status_label(const struct model_status status)
+{
+    char buf[1000];
+    const struct stepper_with_target_status *stepper_with_target_status = &status.stepper_with_target_status;
+    const struct stepper_status *stepper_status = &stepper_with_target_status->stepper_status;
+
+    if (stepper_with_target_status->is_moving)
+    {
+        if (stepper_with_target_status->target_position > stepper_status->position)
+        {
+            snprintf(buf, sizeof(buf), "%d (-> %d)\n%d >>> %d", stepper_status->position, stepper_with_target_status->target_position, status.lower_bound, status.upper_bound);
         }
-      }
-      if (model->is_stack_in_progress()) {
-        char str2[45] = {0};
-        strcpy(str2, str);
-        sprintf(str, "%s | %d of %d", str2, model->get_cur_step_index(),
-                model->get_step_number());
-      }
-      lv_label_set_text(pos_label, str);
+        else
+        {
+            snprintf(buf, sizeof(buf), "(%d <-) %d\n%d >>> %d", stepper_status->position, stepper_with_target_status->target_position, status.lower_bound, status.upper_bound);
+        }
     }
-  } else {
-    LOG_WRN("cur_label not yet initialized");
-    return;
-  }
+    else
+    {
+        snprintf(buf, sizeof(buf), "@%d\n%d >>> %d", stepper_status->position, status.lower_bound, status.upper_bound);
+    }
+    lv_label_set_text(status_label, buf);
+}
 
-  if (plan_label != NULL && model->get_step_number() > 0) {
-    sprintf(str, "#=%d\nds=%d", model->get_step_number(),
-            model->get_step_jump_size());
-    lv_label_set_text(plan_label, str);
-  }
-
-  // TODO: is that inefficient?
-  if (lower_label != NULL) {
-    sprintf(str, "%d <-", model->get_lower_bound());
-    lv_label_set_text(lower_label, str);
-  }
-  if (upper_label != NULL) {
-    sprintf(str, "-> %d", model->get_upper_bound());
-    lv_label_set_text(upper_label, str);
-  }
+void View::update()
+{
+    // k_mutex_lock(&lvgl_mutex, K_FOREVER);
+    update_status_label(model->get_status());
+    Display::run_task_handler();
+    // k_mutex_unlock(&lvgl_mutex);
 }

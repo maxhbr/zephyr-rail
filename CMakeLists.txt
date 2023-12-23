@@ -5,8 +5,9 @@
 # set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
 
 
-set(BOARD nucleo_f767zi) # nucleo_h745zi_q_m7)
-set(SHIELD adafruit_2_8_tft_touch_v2)
+# set(BOARD wio_terminal)
+# set(BOARD nucleo_f767zi)
+# set(SHIELD adafruit_2_8_tft_touch_v2)
 
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)

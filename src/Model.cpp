@@ -2,8 +2,8 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(model);
 
-Model::Model(StepperWithTarget *_stepper) {
-  stepper = _stepper;
+Model::Model(StepperWithTarget *_stepper) : stepper{_stepper}
+{
   stepps = (int *)malloc(sizeof(int) * 1000);
 }
 

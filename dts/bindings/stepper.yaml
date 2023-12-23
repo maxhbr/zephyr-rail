@@ -1,0 +1,21 @@
+# Copyright (c) 2023 Libre Solar Technologies GmbH
+# SPDX-License-Identifier: Apache-2.0
+
+description: the stepper, powering the rail
+
+compatible: "maxhbr,stepper"
+
+properties:
+  gpios:
+    type: phandle-array
+    required: true
+    description: |
+      The GPIO connected to pulse and dir
+#  pitch:
+#    type: int
+#    required: true
+#    description: pitch in mm
+#  pulses_per_rev:
+#    type: int
+#    required: true
+#    description: pulses per revolution

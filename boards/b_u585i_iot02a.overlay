@@ -1,0 +1,25 @@
+/*
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/ {
+    stepper: stepper {
+        compatible = "maxhbr,stepper";
+        gpios = <&gpiog 7 GPIO_ACTIVE_HIGH>, /* Pmod 8 */
+                <&gpioe 4 GPIO_ACTIVE_HIGH>; /* Pmod 7 */
+        // pitch = <2>;
+        // pulses_per_rev = <50000>;
+    };
+
+    //    pwmleds {
+        //        compatible = "pwm-leds";
+        //        ir_pwm_led: ir_pwm_led {
+            //            pwms = <&pwm8 4 4 PWM_POLARITY_NORMAL>;
+            //            label = "IR LED - D3";
+        //        };
+    //    };
+
+    //    chosen {
+        //        rail,pwmir = &ir_pwm_led;
+    //    };
+};

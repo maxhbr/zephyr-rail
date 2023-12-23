@@ -1,18 +1,22 @@
-* A template for Zephyr projects with devcontainer support
+* A macro stacking rail
 
-#+BEGIN_COMMENT
-** TODO change project name in:
-*** TODO _CMakeLists.txt_ in project
-*** TODO _west.yml_ in manifest.self.path
-** TODO change Zephyr versions in
-*** TODO _west.yml_ 
-*** TODO _.github/workflows/build.yaml_
-*** TODO _.devcontainer/Dockerfile_
-** TODO change BOARD in _CMakeLists.txt_
-** TODO if necessary change _/dev/bus/usb_ mount to _/dev_
-#+END_COMMENT
+** Mechanics
+- Rail: [[HiWin KK5002P][https://www.hiwin.de/de/Produkte/Pr%C3%A4zisionsachsen-%26-Pr%C3%A4zisions-Systeme/Pr%C3%A4zisionsachsen-KK-KF/KK/KK5002P150A1F0/p/10.00011]]
+- Stepper Motor: [[iCL Series NEMA 17 Integrated Closed Loop Stepper Motor][https://www.omc-stepperonline.com/icl-series-nema-17-integrated-closed-loop-stepper-motor-0-6nm-84-96oz-in-20-36vdc-w-14-bit-encoder-icl42-06]]
+- Arca Swiss Clamp round, diameter 60mm: [[link to mjkzz][https://www.mjkzz.de/collections/camera-plates/products/mjkzz-round-quick-release-system?variant=29216681427059]]
+- Camera Plate 200mm: [[LEOFOTO Quick Release Plate PL-200 ][https://www.amazon.de/dp/B081DBJ4B8]]
 
-** Usage
-#+BEGIN_SRC bash
-$ west build -p always -t flash .
-#+END_SRC
+Some adapters and parts are 3D rintent. See [[./3d-print.scad]].
+
+** Electronics
+*** Optocopplers to drive the stepper motor
+*** IR LED driver
+The Camera is controlled via IR. The IR LED is driven by a transistor.
+
+** Controller
+MCU:
+- [[STM32H747I-DISCO][https://www.st.com/en/evaluation-tools/stm32h747i-disco.html]]
+- [[B-U585I-IOT02A][https://www.st.com/en/evaluation-tools/b-u585i-iot02a.html]] with Adafruit 2.4" TFT
+- ~~[[WIO Terminal][https://www.seeedstudio.com/Wio-Terminal-p-4509.html]]~~ only the first three gpio-keys work and [[PWM is not clear][https://github.com/zephyrproject-rtos/zephyr/issues/66547]]
+
+The firmware is written with zephyr. The code is in [[./src]] and the project root is [[./]].

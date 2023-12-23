@@ -20,31 +20,33 @@
 #include "Model.h"
 #include "Stepper.h"
 
-class View {
+class View : public Display
+{
 private:
   Model *model;
   Controller *controller;
 
-  // Devices
-  Display *display;
+  lv_obj_t *move_tab;
+  lv_obj_t *stack_tab;
+  lv_obj_t *config_tab;
+  lv_obj_t *status_tab;
 
-  // labels
+  void fill_move_panel(lv_obj_t *parent);
   lv_obj_t *pos_label = NULL;
   lv_obj_t *lower_label = NULL;
   lv_obj_t *upper_label = NULL;
-  lv_obj_t *plan_label = NULL;
-
   lv_obj_t *step_size_roller = NULL;
-  int read_step_size_roller();
-  lv_obj_t *step_number_roller = NULL;
-
-  // init functions
-  void fill_move_panel(lv_obj_t *parent);
   void fill_stack_panel(lv_obj_t *parent);
+  lv_obj_t *plan_label = NULL;
+  lv_obj_t *step_number_roller = NULL;
+  void fill_config_panel(lv_obj_t *parent);
+  void fill_status_panel(lv_obj_t *parent);
+  lv_obj_t *status_label;
+
+  void update_status_label(const struct model_status status);
 
 public:
-  View(Model *_model, Controller *_controller, Display *_display);
-  void event_cb(char action_type, lv_obj_t *obj, lv_event_t event);
+  View(Model *_model, Controller *_controller);
 
   void update();
 };

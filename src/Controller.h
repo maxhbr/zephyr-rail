@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/types.h>
 
 #include <zephyr/drivers/display.h>
@@ -18,10 +18,23 @@
 #include "IrSony.h"
 #include "Model.h"
 
-class Controller {
+
+#define NOOP_CONTROLLER_ACTION 0
+#define GO_CONTROLLER_ACTION 1
+#define GO_TO_CONTROLLER_ACTION 2
+
+struct controller_msg
+{
+  int action;
+  int value;
+};
+
+class Controller
+{
   Model *model;
   IrSony *irsony;
   struct k_sem *work_in_progress_sem;
+
 public:
   Controller(Model *_model, IrSony *_irsony);
   void work();
@@ -33,6 +46,8 @@ public:
   void set_new_upper_bound();
   void set_new_lower_bound();
   void set_step_number(int step_number);
+
+  void handle_controller_msg(const struct controller_msg *msg);
 
   void synchronize_and_sleep(k_timeout_t timeout);
 
