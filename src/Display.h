@@ -24,9 +24,7 @@ class Display
   // const struct device *lvgl_keypad = DEVICE_DT_GET(DT_COMPAT_GET_ANY_STATUS_OKAY(zephyr_lvgl_keypad_input));
 
   void init_styles();
-  lv_obj_t *header;
   lv_obj_t *tabview;
-  void init_header(lv_obj_t *parent);
   void init_tabview(lv_obj_t *parent);
 
   const lv_font_t *font_title = &lv_font_montserrat_14;    // _28;
@@ -37,7 +35,6 @@ class Display
 public:
   Display();
 
-  // lv_obj_t *get_header();
   lv_obj_t *make_tab(const char *title);
   lv_obj_t *add_container(lv_obj_t *parent, int width, int heigth);
   lv_obj_t *add_label(lv_obj_t *parent);
@@ -48,7 +45,6 @@ public:
   void set_header_visible(bool is_visible);
 
   void run_task_handler();
-  void update_status(const struct model_status status);
 };
 
 #endif // __DISPLAY_H_

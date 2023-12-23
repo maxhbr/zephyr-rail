@@ -2,9 +2,11 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(view);
 
+static View *static_view_pointer = NULL;
+
 void View::fill_move_panel(lv_obj_t *parent)
 {
-#if 0
+    /*
     step_size_roller = Display::add_roller(parent, "12800\n"
                                                    "6400\n"
                                                    "1280\n"
@@ -15,18 +17,24 @@ void View::fill_move_panel(lv_obj_t *parent)
                                                    "6\n"
                                                    "1");
     lv_obj_align(step_size_roller, LV_ALIGN_TOP_MID, 0, 0);
-#endif
+    */
 
     lv_obj_t *left_btn = Display::add_button(parent, "<<", 100, 60);
     lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
-    //   lv_obj_add_evnet_cb(left_btn, [](lv_obj_t *btn, lv_event_t event) {
-    //     //static_view_pointer->event_cb(ACTION_GO_LOWER, btn, event);
-    //   });
+    lv_obj_add_event_cb(
+        left_btn, [](lv_event_t *event)
+        { 
+            const struct controller_msg msg = {GO_CONTROLLER_ACTION, -12800};
+            static_view_pointer->controller->handle_controller_msg(&msg); },
+        LV_EVENT_PRESSED, NULL);
     lv_obj_t *right_btn = Display::add_button(parent, ">>", 100, 60);
     lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
-    //   lv_obj_add_event_cb(right_btn, [](lv_obj_t *btn, lv_event_t event) {
-    //     //static_view_pointer->event_cb(ACTION_GO_UPPER, btn, event);
-    //   });
+    lv_obj_add_event_cb(
+        right_btn, [](lv_event_t *event)
+        { 
+            const struct controller_msg msg = {GO_CONTROLLER_ACTION, +12800};
+            static_view_pointer->controller->handle_controller_msg(&msg); },
+        LV_EVENT_PRESSED, NULL);
 
     lv_obj_t *set_lower = Display::add_button(parent, "Set lower", 100, 30);
     lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
@@ -112,6 +120,8 @@ void View::fill_status_panel(lv_obj_t *parent)
 
 View::View(Model *_model, Controller *_controller) : Display(), model{_model}, controller{_controller}
 {
+    static_view_pointer = this;
+
     move_tab = make_tab("move");
     fill_move_panel(move_tab);
     stack_tab = make_tab("stack");
@@ -128,10 +138,21 @@ void View::update_status_label(const struct model_status status)
     const struct stepper_with_target_status *stepper_with_target_status = &status.stepper_with_target_status;
     const struct stepper_status *stepper_status = &stepper_with_target_status->stepper_status;
 
-    snprintf(buf, sizeof(buf), "%d >>> %d >>> %d\ntarget: %d\nis_moving: %d",
-             status.lower_bound, stepper_status->position, status.upper_bound,
-             stepper_with_target_status->target_position,
-             stepper_with_target_status->is_moving);
+    if (stepper_with_target_status->is_moving)
+    {
+        if (stepper_with_target_status->target_position > stepper_status->position)
+        {
+            snprintf(buf, sizeof(buf), "%d (-> %d)\n%d >>> %d", stepper_status->position, stepper_with_target_status->target_position, status.lower_bound, status.upper_bound);
+        }
+        else
+        {
+            snprintf(buf, sizeof(buf), "(%d <-) %d\n%d >>> %d", stepper_status->position, stepper_with_target_status->target_position, status.lower_bound, status.upper_bound);
+        }
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "@%d\n%d >>> %d", stepper_status->position, status.lower_bound, status.upper_bound);
+    }
     lv_label_set_text(status_label, buf);
 }
 

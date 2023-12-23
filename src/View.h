@@ -37,6 +37,8 @@ private:
   lv_obj_t *upper_label = NULL;
   lv_obj_t *step_size_roller = NULL;
   void fill_stack_panel(lv_obj_t *parent);
+  lv_obj_t *plan_label = NULL;
+  lv_obj_t *step_number_roller = NULL;
   void fill_config_panel(lv_obj_t *parent);
   void fill_status_panel(lv_obj_t *parent);
   lv_obj_t *status_label;

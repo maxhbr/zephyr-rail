@@ -2,16 +2,12 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(display);
 
-void Display::init_header(lv_obj_t *parent)
-{
-  header = add_container(parent, LV_HOR_RES, 25);
-  lv_obj_align(header, LV_ALIGN_TOP_MID, 0, 0);
-}
-
 void Display::init_tabview(lv_obj_t *parent)
 {
-  tabview = lv_tabview_create(parent, LV_DIR_TOP, 40);
-  lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 40);
+  // tabview = lv_tabview_create(parent, LV_DIR_TOP, 40);
+  // lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 40);
+  tabview = lv_tabview_create(parent, LV_DIR_LEFT, 80);
+  //lv_obj_set_size(tabview, LV_HOR_RES - 80, LV_VER_RES);
 }
 
 Display::Display()
@@ -35,10 +31,6 @@ void Display::run_task_handler()
 {
   lv_task_handler();
 }
-
-#if 0
-lv_obj_t *Display::get_header() { return header; }
-#endif
 
 lv_obj_t *Display::make_tab(const char *title)
 {
@@ -73,21 +65,14 @@ lv_obj_t *Display::add_button(lv_obj_t *parent, const char *label_text,
   lv_obj_t *btn = lv_btn_create(parent);
   lv_obj_set_height(btn, height);
   lv_obj_set_width(btn, width);
-  // lv_obj_add_style(btn, 0, &style_button);
   if (label_text != NULL)
   {
     lv_obj_t *label = lv_label_create(btn);
     lv_label_set_text(label, label_text);
-    // lv_obj_add_style(label, 0, &style_normal);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
   }
   return btn;
 }
-
-#if 0
-void Display::set_header_visible(bool is_visible) {
-  lv_obj_set_hidden(header, !is_visible);
-}
-#endif
 
 lv_obj_t *Display::add_roller(lv_obj_t *parent, const char *options)
 {
