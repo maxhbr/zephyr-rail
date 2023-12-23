@@ -3,6 +3,10 @@ mode="develop"; // [ "print", "develop", "assembly", "carrigeToClampV2", "motorA
 $fn=100;
 
 
+mcuW=88;
+mcuH=127;
+holeW=77.84;
+holeH=116.84;
 
 
 module mirror_horizontally() {
@@ -487,6 +491,42 @@ module ledMount() {
   }
 }
 
+module mcu_outer(caseH) {
+  hull()
+    mirror_both_directions()
+    translate([mcuW/2-2,mcuH/2-2,0])
+    cylinder(r=2,h=caseH);
+}
+module mcu_inner(caseH) {
+  hull()
+    mirror_both_directions()
+    translate([mcuW/2-2-1,mcuH/2-2-1,0])
+    cylinder(r=1.5,h=caseH);
+}
+
+module mcu_at_each_hole() {
+  mirror_both_directions()
+    translate([holeW/2,holeH/2,0])
+    children();
+}
+
+module mcu_top() {
+  caseH=15;
+  render()
+  difference() {
+    mcu_outer(caseH);
+    difference() {
+      mcu_inner(caseH-1.5);
+      mcu_at_each_hole() hull() {
+        cylinder(d1=6,d2=8,h=5);
+        translate([0,0,5])cylinder(d=8,h=20);
+        translate([5,5,0]) cylinder(d=7,h=20);
+      }
+    }
+    mcu_at_each_hole() m3screw(h=20,dh=4, addD=0);
+  }
+}
+
 module assembly_view() {
 
   translate([0,88+25,26]) carrigeToClampV2();
@@ -560,6 +600,7 @@ if (mode == "assembly") {
 
   assembly_view();
   translate([300,0,0]) print_view();
+  translate([0,-200,0]) mcu_top();
 
   if ($preview) {
     translate([-200,0,0])
