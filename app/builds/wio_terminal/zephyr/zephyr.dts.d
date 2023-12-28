@@ -1,0 +1,19 @@
+empty_file.o: \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/misc/empty_file.c \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/wio_terminal/wio_terminal.dts \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/dts/arm/atmel/samd5xx19.dtsi \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/dts/common/mem.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/dts/arm/atmel/samd5x.dtsi \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/dts/arm/armv7-m.dtsi \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/dts/common/skeleton.dtsi \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/adc/adc.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/gpio/gpio.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/i2c/i2c.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/pwm/pwm.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/wio_terminal/wio_terminal-pinctrl.dtsi \
+ /home/mhuber/MINE/REPOS/zephyr-rail/modules/hal/atmel/include/dt-bindings/pinctrl/samd51p-pinctrl.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/modules/hal/atmel/include/dt-bindings/pinctrl/atmel_sam_pinctrl.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/wio_terminal/grove_connectors.dtsi \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/wio_terminal/raspberrypi_40pins_connector.dtsi \
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/display/ili9xxx.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/boards/wio_terminal.overlay
