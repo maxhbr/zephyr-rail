@@ -14,7 +14,6 @@
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
 		zephyr,display = &ili9340;
-		zephyr,keyboard-scan = &kscan_input;
 	};
 	aliases {
 		watchdog0 = &iwdg;
@@ -172,7 +171,7 @@
 				#gpio-cells = < 0x2 >;
 				reg = < 0x42021800 0x400 >;
 				clocks = < &rcc 0x8c 0x40 >;
-				phandle = < 0x32 >;
+				phandle = < 0x33 >;
 			};
 			gpioh: gpio@42021c00 {
 				compatible = "st,stm32-gpio";
@@ -477,12 +476,10 @@
 			status = "okay";
 			pinctrl-0 = < &i2c1_scl_pb8 &i2c1_sda_pb9 >;
 			pinctrl-names = "default";
-			ft5336@38 {
+			ft5336_adafruit_2_8_tft_touch_v2: ft5336@38 {
 				compatible = "focaltech,ft5336";
 				reg = < 0x38 >;
-				kscan_input: kscan-input {
-					compatible = "zephyr,kscan-input";
-				};
+				phandle = < 0x32 >;
 			};
 		};
 		i2c2: i2c@40005800 {
@@ -540,7 +537,7 @@
 			#address-cells = < 0x1 >;
 			#size-cells = < 0x0 >;
 			reg = < 0x40009400 0x400 >;
-			clocks = < &rcc 0xa0 0x200 >;
+			clocks = < &rcc 0xa0 0x20 >;
 			interrupts = < 0x44 0x0 >;
 			interrupt-names = "global";
 			st,static-prescaler;
@@ -812,6 +809,22 @@
 			health-test-config = < 0x9aae >;
 			status = "okay";
 		};
+		sdmmc1: sdmmc@420c8000 {
+			compatible = "st,stm32-sdmmc";
+			reg = < 0x420c8000 0x400 >;
+			clocks = < &rcc 0x8c 0x8000000 >, < &rcc 0xe 0x2ee4 >;
+			resets = < &rctl 0xc9b >;
+			interrupts = < 0x4e 0x0 >;
+			status = "disabled";
+		};
+		sdmmc2: sdmmc@420c8c00 {
+			compatible = "st,stm32-sdmmc";
+			reg = < 0x420c8c00 0x400 >;
+			clocks = < &rcc 0x8c 0x10000000 >, < &rcc 0xe 0x2ee4 >;
+			resets = < &rctl 0xc9c >;
+			interrupts = < 0x4f 0x0 >;
+			status = "disabled";
+		};
 		dac1: dac@46021800 {
 			compatible = "st,stm32-dac";
 			reg = < 0x46021800 0x400 >;
@@ -828,13 +841,13 @@
 			interrupts = < 0x25 0x0 >;
 			status = "okay";
 			#io-channel-cells = < 0x1 >;
-			temp-channel = < 0x13 >;
-			vref-channel = < 0x0 >;
-			vbat-channel = < 0x12 >;
 			resolutions = < 0x70620c 0x61620c 0x52620c 0x43620c >;
 			sampling-times = < 0x5 0x6 0xc 0x14 0x24 0x44 0x187 0x32e >;
+			st,adc-clock-source = < 0x2 >;
+			st,adc-sequencer = < 0x1 >;
 			pinctrl-0 = < &adc1_in15_pb0 >;
 			pinctrl-names = "default";
+			st,adc-prescaler = < 0x4 >;
 			phandle = < 0x29 >;
 		};
 		adc4: adc@46021000 {
@@ -844,17 +857,17 @@
 			interrupts = < 0x71 0x0 >;
 			status = "okay";
 			#io-channel-cells = < 0x1 >;
-			temp-channel = < 0xd >;
-			vref-channel = < 0x0 >;
-			vbat-channel = < 0xe >;
 			resolutions = < 0x60620c 0x51620c 0x42620c 0x33620c >;
 			sampling-times = < 0x2 0x4 0x8 0xd 0x14 0x28 0x50 0x32f >;
 			num-sampling-time-common-channels = < 0x2 >;
+			st,adc-clock-source = < 0x2 >;
+			st,adc-sequencer = < 0x0 >;
 			pinctrl-0 = < &adc4_in19_pb1 >;
 			pinctrl-names = "default";
+			st,adc-prescaler = < 0x4 >;
 			phandle = < 0x2a >;
 		};
-		can1: can@4000a400 {
+		fdcan1: can@4000a400 {
 			compatible = "st,stm32-fdcan";
 			reg = < 0x4000a400 0x400 >, < 0x4000ac00 0x350 >;
 			reg-names = "m_can", "message_ram";
@@ -862,9 +875,7 @@
 			interrupt-names = "LINE_0", "LINE_1";
 			clocks = < &rcc 0xa0 0x200 >;
 			bosch,mram-cfg = < 0x0 0x1c 0x8 0x3 0x3 0x0 0x3 0x3 >;
-			sjw = < 0x1 >;
 			sample-point = < 0x36b >;
-			sjw-data = < 0x1 >;
 			sample-point-data = < 0x36b >;
 			status = "disabled";
 		};
@@ -927,6 +938,29 @@
 				compatible = "arm,armv8m-mpu";
 				reg = < 0xe000ed90 0x40 >;
 				arm,num-mpu-regions = < 0x8 >;
+			};
+		};
+		power-states {
+			stop0: state0 {
+				compatible = "zephyr,power-state";
+				power-state-name = "suspend-to-idle";
+				substate-id = < 0x1 >;
+				min-residency-us = < 0x64 >;
+				phandle = < 0x25 >;
+			};
+			stop1: state1 {
+				compatible = "zephyr,power-state";
+				power-state-name = "suspend-to-idle";
+				substate-id = < 0x2 >;
+				min-residency-us = < 0x1f4 >;
+				phandle = < 0x26 >;
+			};
+			stop2: state2 {
+				compatible = "zephyr,power-state";
+				power-state-name = "suspend-to-idle";
+				substate-id = < 0x3 >;
+				min-residency-us = < 0x384 >;
+				phandle = < 0x27 >;
 			};
 		};
 	};
@@ -1001,29 +1035,6 @@
 			status = "disabled";
 		};
 	};
-	power-states {
-		stop0: state0 {
-			compatible = "zephyr,power-state";
-			power-state-name = "suspend-to-idle";
-			substate-id = < 0x1 >;
-			min-residency-us = < 0x64 >;
-			phandle = < 0x25 >;
-		};
-		stop1: state1 {
-			compatible = "zephyr,power-state";
-			power-state-name = "suspend-to-idle";
-			substate-id = < 0x2 >;
-			min-residency-us = < 0x1f4 >;
-			phandle = < 0x26 >;
-		};
-		stop2: state2 {
-			compatible = "zephyr,power-state";
-			power-state-name = "suspend-to-idle";
-			substate-id = < 0x3 >;
-			min-residency-us = < 0x384 >;
-			phandle = < 0x27 >;
-		};
-	};
 	die_temp: dietemp {
 		compatible = "st,stm32-temp-cal";
 		ts-cal1-addr = < 0xbfa0710 >;
@@ -1090,7 +1101,15 @@
 		user_button: button {
 			label = "User";
 			gpios = < &gpioc 0xd 0x11 >;
+			zephyr,code = < 0xb >;
 		};
+	};
+	lvgl_pointer {
+		compatible = "zephyr,lvgl-pointer-input";
+		input = < &ft5336_adafruit_2_8_tft_touch_v2 >;
+		swap-xy;
+		invert-x;
+		invert-y;
 	};
 	stepper: stepper {
 		compatible = "maxhbr,stepper";

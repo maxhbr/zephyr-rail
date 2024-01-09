@@ -1,18 +1,42 @@
+menu "acpica (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/acpica)"
+osource "$(ZEPHYR_ACPICA_KCONFIG)"
+config ZEPHYR_ACPICA_MODULE
+	bool
+	default y
+endmenu
 menu "canopennode (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/canopennode)"
 osource "$(ZEPHYR_CANOPENNODE_KCONFIG)"
 config ZEPHYR_CANOPENNODE_MODULE
 	bool
 	default y
 endmenu
-menu "chre (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/chre)"
-osource "/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/chre/platform/zephyr/Kconfig"
-config ZEPHYR_CHRE_MODULE
+menu "cmsis (/home/mhuber/MINE/REPOS/zephyr-rail/modules/hal/cmsis)"
+osource "$(ZEPHYR_CMSIS_KCONFIG)"
+config ZEPHYR_CMSIS_MODULE
+	bool
+	default y
+endmenu
+menu "cmsis-dsp (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/cmsis-dsp)"
+osource "$(ZEPHYR_CMSIS_DSP_KCONFIG)"
+config ZEPHYR_CMSIS_DSP_MODULE
+	bool
+	default y
+endmenu
+menu "cmsis-nn (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/cmsis-nn)"
+osource "$(ZEPHYR_CMSIS_NN_KCONFIG)"
+config ZEPHYR_CMSIS_NN_MODULE
 	bool
 	default y
 endmenu
 menu "fatfs (/home/mhuber/MINE/REPOS/zephyr-rail/modules/fs/fatfs)"
 osource "$(ZEPHYR_FATFS_KCONFIG)"
 config ZEPHYR_FATFS_MODULE
+	bool
+	default y
+endmenu
+menu "hal_ambiq (/home/mhuber/MINE/REPOS/zephyr-rail/modules/hal/ambiq)"
+osource "$(ZEPHYR_HAL_AMBIQ_KCONFIG)"
+config ZEPHYR_HAL_AMBIQ_MODULE
 	bool
 	default y
 endmenu
@@ -90,14 +114,8 @@ config ZEPHYR_LORAMAC_NODE_MODULE
 	default y
 endmenu
 menu "lvgl (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/gui/lvgl)"
-osource "/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/gui/lvgl/zephyr/Kconfig"
+osource "/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/gui/lvgl/Kconfig"
 config ZEPHYR_LVGL_MODULE
-	bool
-	default y
-endmenu
-menu "lz4 (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/lz4)"
-osource "$(ZEPHYR_LZ4_KCONFIG)"
-config ZEPHYR_LZ4_MODULE
 	bool
 	default y
 endmenu
@@ -107,15 +125,15 @@ config ZEPHYR_MBEDTLS_MODULE
 	bool
 	default y
 endmenu
-menu "nanopb (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/nanopb)"
-osource "$(ZEPHYR_NANOPB_KCONFIG)"
-config ZEPHYR_NANOPB_MODULE
-	bool
-	default y
-endmenu
 menu "openthread (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/openthread)"
 osource "$(ZEPHYR_OPENTHREAD_KCONFIG)"
 config ZEPHYR_OPENTHREAD_MODULE
+	bool
+	default y
+endmenu
+menu "percepio (/home/mhuber/MINE/REPOS/zephyr-rail/modules/debug/percepio)"
+osource "/home/mhuber/MINE/REPOS/zephyr-rail/modules/debug/percepio/zephyr/Kconfig"
+config ZEPHYR_PERCEPIO_MODULE
 	bool
 	default y
 endmenu
@@ -128,24 +146,6 @@ endmenu
 menu "segger (/home/mhuber/MINE/REPOS/zephyr-rail/modules/debug/segger)"
 osource "$(ZEPHYR_SEGGER_KCONFIG)"
 config ZEPHYR_SEGGER_MODULE
-	bool
-	default y
-endmenu
-menu "sof (/home/mhuber/MINE/REPOS/zephyr-rail/modules/audio/sof)"
-osource "/home/mhuber/MINE/REPOS/zephyr-rail/modules/audio/sof/zephyr/Kconfig"
-config ZEPHYR_SOF_MODULE
-	bool
-	default y
-endmenu
-menu "tflite-micro (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/tflite-micro)"
-osource "$(ZEPHYR_TFLITE_MICRO_KCONFIG)"
-config ZEPHYR_TFLITE_MICRO_MODULE
-	bool
-	default y
-endmenu
-menu "TraceRecorder (/home/mhuber/MINE/REPOS/zephyr-rail/modules/debug/TraceRecorder)"
-osource "/home/mhuber/MINE/REPOS/zephyr-rail/modules/debug/TraceRecorder/kernelports/Zephyr/Kconfig"
-config ZEPHYR_TRACERECORDER_MODULE
 	bool
 	default y
 endmenu
@@ -170,18 +170,6 @@ endmenu
 menu "zcbor (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/zcbor)"
 osource "$(ZEPHYR_ZCBOR_KCONFIG)"
 config ZEPHYR_ZCBOR_MODULE
-	bool
-	default y
-endmenu
-menu "zscilib (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/zscilib)"
-osource "/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/zscilib/Kconfig.zscilib"
-config ZEPHYR_ZSCILIB_MODULE
-	bool
-	default y
-endmenu
-menu "thrift (/home/mhuber/MINE/REPOS/zephyr-rail/modules/lib/thrift)"
-osource "$(ZEPHYR_THRIFT_KCONFIG)"
-config ZEPHYR_THRIFT_MODULE
 	bool
 	default y
 endmenu

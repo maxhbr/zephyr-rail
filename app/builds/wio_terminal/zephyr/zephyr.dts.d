@@ -16,4 +16,5 @@ empty_file.o: \
  /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/wio_terminal/grove_connectors.dtsi \
  /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/wio_terminal/raspberrypi_40pins_connector.dtsi \
  /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/display/ili9xxx.h \
- /home/mhuber/MINE/REPOS/zephyr-rail/boards/wio_terminal.overlay
+ /home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/input/input-event-codes.h \
+ /home/mhuber/MINE/REPOS/zephyr-rail/app/boards/wio_terminal.overlay

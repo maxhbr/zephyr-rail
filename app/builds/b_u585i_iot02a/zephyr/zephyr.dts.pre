@@ -121,11 +121,33 @@
    reg = <0>;
    #address-cells = <1>;
    #size-cells = <1>;
+   cpu-power-states = <&stop0 &stop1 &stop2>;
 
    mpu: mpu@e000ed90 {
     compatible = "arm,armv8m-mpu";
     reg = <0xe000ed90 0x40>;
     arm,num-mpu-regions = <8>;
+   };
+  };
+
+  power-states {
+   stop0: state0 {
+    compatible = "zephyr,power-state";
+    power-state-name = "suspend-to-idle";
+    substate-id = <1>;
+    min-residency-us = <100>;
+   };
+   stop1: state1 {
+    compatible = "zephyr,power-state";
+    power-state-name = "suspend-to-idle";
+    substate-id = <2>;
+    min-residency-us = <500>;
+   };
+   stop2: state2 {
+    compatible = "zephyr,power-state";
+    power-state-name = "suspend-to-idle";
+    substate-id = <3>;
+    min-residency-us = <900>;
    };
   };
  };
@@ -200,27 +222,6 @@
    #clock-cells = <0>;
    compatible = "st,stm32u5-pll-clock";
    status = "disabled";
-  };
- };
-
- power-states {
-  stop0: state0 {
-   compatible = "zephyr,power-state";
-   power-state-name = "suspend-to-idle";
-   substate-id = <1>;
-   min-residency-us = <100>;
-  };
-  stop1: state1 {
-   compatible = "zephyr,power-state";
-   power-state-name = "suspend-to-idle";
-   substate-id = <2>;
-   min-residency-us = <500>;
-  };
-  stop2: state2 {
-   compatible = "zephyr,power-state";
-   power-state-name = "suspend-to-idle";
-   substate-id = <3>;
-   min-residency-us = <900>;
   };
  };
 
@@ -527,7 +528,7 @@
    #address-cells = <1>;
    #size-cells = <0>;
    reg = <0x40009400 0x400>;
-   clocks = <&rcc 0x0A0 0x00000200>;
+   clocks = <&rcc 0x0A0 0x00000020>;
    interrupts = <68 0>;
    interrupt-names = "global";
    st,static-prescaler;
@@ -811,6 +812,26 @@
    health-test-config = <0x9aae>;
    status = "disabled";
   };
+# 740 "/home/mhuber/MINE/REPOS/zephyr-rail/zephyr/dts/arm/st/u5/stm32u5.dtsi" 3 4
+  sdmmc1: sdmmc@420c8000 {
+   compatible = "st,stm32-sdmmc";
+   reg = <0x420c8000 0x400>;
+   clocks = <&rcc 0x08C 0x08000000>,
+     <&rcc 0x00E ((((0xE4) & 0xFFU) << 0U) | (((14) & 0x1FU) << 8U) | (((1) & 0x7U) << 13U) | (((0) & 0x7U) << 16U))>;
+   resets = <&rctl (((0x64) << 5U) | (27U))>;
+   interrupts = <78 0>;
+   status = "disabled";
+  };
+
+  sdmmc2: sdmmc@420c8c00 {
+   compatible = "st,stm32-sdmmc";
+   reg = <0x420c8c00 0x400>;
+   clocks = <&rcc 0x08C 0x10000000>,
+     <&rcc 0x00E ((((0xE4) & 0xFFU) << 0U) | (((14) & 0x1FU) << 8U) | (((1) & 0x7U) << 13U) | (((0) & 0x7U) << 16U))>;
+   resets = <&rctl (((0x64) << 5U) | (28U))>;
+   interrupts = <79 0>;
+   status = "disabled";
+  };
 
   dac1: dac@46021800 {
    compatible = "st,stm32-dac";
@@ -827,14 +848,13 @@
    interrupts = <37 0>;
    status = "disabled";
    #io-channel-cells = <1>;
-   temp-channel = <19>;
-   vref-channel = <0>;
-   vbat-channel = <18>;
    resolutions = <((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x00) & ((1 << (3)) - 1)) << 16U) | (((14) & ((1 << (13)) - 1)) << 19U))
            ((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x01) & ((1 << (3)) - 1)) << 16U) | (((12) & ((1 << (13)) - 1)) << 19U))
            ((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x02) & ((1 << (3)) - 1)) << 16U) | (((10) & ((1 << (13)) - 1)) << 19U))
            ((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x03) & ((1 << (3)) - 1)) << 16U) | (((8) & ((1 << (13)) - 1)) << 19U))>;
    sampling-times = <5 6 12 20 36 68 391 814>;
+   st,adc-clock-source = <2>;
+   st,adc-sequencer = <1>;
   };
 
   adc4: adc@46021000 {
@@ -844,18 +864,17 @@
    interrupts = <113 0>;
    status = "disabled";
    #io-channel-cells = <1>;
-   temp-channel = <13>;
-   vref-channel = <0>;
-   vbat-channel = <14>;
    resolutions = <((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x00) & ((1 << (3)) - 1)) << 16U) | (((12) & ((1 << (13)) - 1)) << 19U))
            ((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x01) & ((1 << (3)) - 1)) << 16U) | (((10) & ((1 << (13)) - 1)) << 19U))
            ((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x02) & ((1 << (3)) - 1)) << 16U) | (((8) & ((1 << (13)) - 1)) << 19U))
            ((((0x0C) & ((1 << (8)) - 1)) << 0U) | (((2) & ((1 << (5)) - 1)) << 8U) | (((((1 << (2)) - 1)) & ((1 << (3)) - 1)) << 13U) | (((0x03) & ((1 << (3)) - 1)) << 16U) | (((6) & ((1 << (13)) - 1)) << 19U))>;
    sampling-times = <2 4 8 13 20 40 80 815>;
    num-sampling-time-common-channels = <2>;
+   st,adc-clock-source = <2>;
+   st,adc-sequencer = <0>;
   };
 
-  can1: can@4000a400 {
+  fdcan1: can@4000a400 {
    compatible = "st,stm32-fdcan";
    reg = <0x4000a400 0x400>, <0x4000ac00 0x350>;
    reg-names = "m_can", "message_ram";
@@ -863,9 +882,7 @@
    interrupt-names = "LINE_0", "LINE_1";
    clocks = <&rcc 0x0A0 0x00000200>;
    bosch,mram-cfg = <0x0 28 8 3 3 0 3 3>;
-   sjw = <1>;
    sample-point = <875>;
-   sjw-data = <1>;
    sample-point-data = <875>;
    status = "disabled";
   };
@@ -4022,6 +4039,8 @@ arduino_spi: &spi1 {};
 arduino_i2c: &i2c1 {};
 arduino_serial: &usart3 {};
 # 10 "/home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/b_u585i_iot02a/b_u585i_iot02a-common.dtsi" 2
+# 1 "/home/mhuber/MINE/REPOS/zephyr-rail/zephyr/include/zephyr/dt-bindings/input/input-event-codes.h" 1 3 4
+# 11 "/home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/arm/b_u585i_iot02a/b_u585i_iot02a-common.dtsi" 2
 
 / {
  leds {
@@ -4041,6 +4060,7 @@ arduino_serial: &usart3 {};
   user_button: button {
    label = "User";
    gpios = <&gpioc 13 ((1 << 0) | (1 << 4))>;
+   zephyr,code = <11>;
   };
  };
 
@@ -4084,10 +4104,6 @@ arduino_serial: &usart3 {};
  apb1-prescaler = <1>;
  apb2-prescaler = <1>;
  apb3-prescaler = <1>;
-};
-
-&cpu0 {
- cpu-power-states = <&stop0 &stop1 &stop2>;
 };
 
 &lptim1 {
@@ -4206,12 +4222,16 @@ zephyr_udc0: &usbotg_fs {
 &adc1 {
  pinctrl-0 = <&adc1_in15_pb0>;
  pinctrl-names = "default";
+ st,adc-clock-source = <2>;
+ st,adc-prescaler = <4>;
  status = "okay";
 };
 
 &adc4 {
  pinctrl-0 = <&adc4_in19_pb1>;
  pinctrl-names = "default";
+ st,adc-clock-source = <2>;
+ st,adc-prescaler = <4>;
  status = "okay";
 };
 
@@ -4316,7 +4336,14 @@ zephyr_udc0: &usbotg_fs {
 / {
  chosen {
   zephyr,display = &ili9340;
-  zephyr,keyboard-scan = &kscan_input;
+ };
+
+ lvgl_pointer {
+  compatible = "zephyr,lvgl-pointer-input";
+  input = <&ft5336_adafruit_2_8_tft_touch_v2>;
+  swap-xy;
+  invert-x;
+  invert-y;
  };
 };
 
@@ -4356,20 +4383,16 @@ zephyr_udc0: &usbotg_fs {
 };
 
 &arduino_i2c {
- ft5336@38 {
+ ft5336_adafruit_2_8_tft_touch_v2: ft5336@38 {
   compatible = "focaltech,ft5336";
   reg = <0x38>;
 
 
-
-  kscan_input: kscan-input {
-   compatible = "zephyr,kscan-input";
-  };
  };
 };
 # 8 "/home/mhuber/MINE/REPOS/zephyr-rail/zephyr/boards/shields/adafruit_2_8_tft_touch_v2/adafruit_2_8_tft_touch_v2.overlay" 2
 # 0 "<command-line>" 2
-# 1 "/home/mhuber/MINE/REPOS/zephyr-rail/boards/b_u585i_iot02a.overlay" 1
+# 1 "/home/mhuber/MINE/REPOS/zephyr-rail/app/boards/b_u585i_iot02a.overlay" 1
 
 
 
@@ -4382,7 +4405,7 @@ zephyr_udc0: &usbotg_fs {
 
 
     };
-# 25 "/home/mhuber/MINE/REPOS/zephyr-rail/boards/b_u585i_iot02a.overlay"
+# 25 "/home/mhuber/MINE/REPOS/zephyr-rail/app/boards/b_u585i_iot02a.overlay"
 };
 # 0 "<command-line>" 2
 # 1 "/home/mhuber/MINE/REPOS/zephyr-rail/zephyr/misc/empty_file.c"
