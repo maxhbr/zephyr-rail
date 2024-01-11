@@ -3,6 +3,6 @@
 /modules/
 /tools/
 /zephyr/
-/build/
-/builds/
+build/
+builds/
 _*
