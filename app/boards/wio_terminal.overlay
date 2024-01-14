@@ -13,20 +13,6 @@
 		//pulses_per_rev = <50000>;
 	};
 
-	// lvgl_button_input {
-		// compatible = "zephyr,lvgl-button-input";
-		// //input = <&gpio_keys>;
-		// input-codes = <INPUT_KEY_B>;
-		// coordinates = <160 120>;
-	// };
-
-	// lvgl_keypad_input {
-		// compatible = "zephyr,lvgl-keypad-input";
-		// //input = <&gpio_keys>;
-		// input-codes = <INPUT_KEY_LEFT INPUT_KEY_RIGHT INPUT_KEY_ENTER>;
-		// lvgl-codes = <LV_KEY_LEFT LV_KEY_RIGHT LV_KEY_ENTER>;
-	// };
-
 	pwmleds {
 		compatible = "pwm-leds";
 		ir_pwm_led: ir_pwm_led {
@@ -39,49 +25,49 @@
 		rail,pwmir = &ir_pwm_led;
 	};
 
-	gpio_keys {
-		compatible = "gpio-keys";
-		joy_sel: joystick_selection {
-			label = "joystick selection";
-			gpios = <&portd 10 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_ENTER>;
-		};
-		joy_down: joystick_down {
-			label = "joystick down";
-			gpios = <&portd 8 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_DOWN>;
-		};
-		joy_up: joystick_up {
-			label = "joystick up";
-			gpios = <&portd 20 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_UP>;
-		};
-		joy_left: joystick_left {
-			label = "joystick left";
-			gpios = <&portd 12 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_LEFT>;
-		};
-		joy_right: joystick_right {
-			label = "joystick right";
-			gpios = <&portd 9 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_RIGHT>;
-		};
-		user_button_0: button_0 {
-			label = "User Button 0";
-			gpios = <&portc 26 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_0>;
-		};
-		user_button_1: button_1 {
-			label = "User Button 1";
-			gpios = <&portc 27 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_1>;
-		};
-		user_button_2: button_2 {
-			label = "User Button 2";
-			gpios = <&portc 28 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_2>;
-		};
-	};
+	// gpio_keys {
+		//     compatible = "gpio-keys";
+		//     joy_sel: joystick_selection {
+			//         label = "joystick selection";
+			//         gpios = <&portd 10 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_ENTER>;
+		//     };
+		//     joy_down: joystick_down {
+			//         label = "joystick down";
+			//         gpios = <&portd 8 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_DOWN>;
+		//     };
+		//     joy_up: joystick_up {
+			//         label = "joystick up";
+			//         gpios = <&portd 20 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_UP>;
+		//     };
+		//     joy_left: joystick_left {
+			//         label = "joystick left";
+			//         gpios = <&portd 12 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_LEFT>;
+		//     };
+		//     joy_right: joystick_right {
+			//         label = "joystick right";
+			//         gpios = <&portd 9 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_RIGHT>;
+		//     };
+		//     user_button_0: button_0 {
+			//         label = "User Button 0";
+			//         gpios = <&portc 26 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_0>;
+		//     };
+		//     user_button_1: button_1 {
+			//         label = "User Button 1";
+			//         gpios = <&portc 27 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_1>;
+		//     };
+		//     user_button_2: button_2 {
+			//         label = "User Button 2";
+			//         gpios = <&portc 28 GPIO_ACTIVE_LOW>;
+			//         zephyr,code = <INPUT_KEY_2>;
+		//     };
+	// };
 
 };
 &tcc0 {
