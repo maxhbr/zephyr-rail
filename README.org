@@ -6,7 +6,7 @@
 - Arca Swiss Clamp round, diameter 60mm: [[https://www.mjkzz.de/collections/camera-plates/products/mjkzz-round-quick-release-system?variant=29216681427059][link to mjkzz]]
 - Camera Plate 200mm: [[https://www.amazon.de/dp/B081DBJ4B8][LEOFOTO Quick Release Plate PL-200 ]]
 
-Some adapters and parts are 3D rintent. See [[./3d-print.scad]].
+Some adapters and parts are 3D printent. See [[./3d-print.scad]].
 
 ** Electronics
 *** Optocopplers to drive the stepper motor
