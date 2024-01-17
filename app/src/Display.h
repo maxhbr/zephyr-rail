@@ -26,7 +26,6 @@ static struct k_mutex lvgl_mutex;
 class Display
 {
   const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
-  // const struct device *lvgl_keypad = DEVICE_DT_GET(DT_COMPAT_GET_ANY_STATUS_OKAY(zephyr_lvgl_keypad_input));
 
   void init_styles();
   lv_obj_t *tabview;
@@ -34,6 +33,7 @@ class Display
   lv_obj_t *status_label;
   lv_obj_t *status_label_left;
   lv_obj_t *status_label_right;
+  void init_status_labels(lv_obj_t *parent);
 
   const lv_font_t *font_title = &lv_font_montserrat_14;    // _28;
   const lv_font_t *font_subtitle = &lv_font_montserrat_14; // _24;

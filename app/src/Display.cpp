@@ -12,6 +12,19 @@ void Display::init_tabview(lv_obj_t *parent)
   lv_obj_align(tabview, LV_ALIGN_BOTTOM_MID, 0, 0);
 }
 
+void Display::init_status_labels(lv_obj_t *parent)
+{
+  status_label = lv_label_create(parent);
+  lv_label_set_text(status_label, "$status");
+  lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 0);
+  status_label_left = lv_label_create(parent);
+  lv_label_set_text(status_label_left, "$left");
+  lv_obj_align(status_label_left, LV_ALIGN_TOP_LEFT, 0, 0);
+  status_label_right = lv_label_create(parent);
+  lv_label_set_text(status_label_right, "$right");
+  lv_obj_align(status_label_right, LV_ALIGN_TOP_RIGHT, 0, 0);
+}
+
 Display::Display()
 {
   k_mutex_init(&lvgl_mutex);
@@ -28,18 +41,8 @@ Display::Display()
 	lv_indev_set_group(lvgl_input_get_indev(lvgl_keypad), lv_group);
 #endif
 
-  // lv_obj_t * tabview_obj = lv_obj_create(lv_scr_act());
   init_tabview(lv_scr_act());
-  
-  status_label = lv_label_create(lv_scr_act());
-  lv_label_set_text(status_label, "$status");
-  lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 0);
-  status_label_left = lv_label_create(lv_scr_act());
-  lv_label_set_text(status_label_left, "$left");
-  lv_obj_align(status_label_left, LV_ALIGN_TOP_LEFT, 0, 0);
-  status_label_right = lv_label_create(lv_scr_act());
-  lv_label_set_text(status_label_right, "$right");
-  lv_obj_align(status_label_right, LV_ALIGN_TOP_RIGHT, 0, 0);
+  init_status_labels(lv_scr_act());
 
   lv_task_handler();
   display_blanking_off(display_dev);
