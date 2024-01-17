@@ -43,3 +43,7 @@ bool Stepper::step_towards(int target) {
 }
 
 int Stepper::get_position() { return position; }
+
+double Stepper::get_position_in_mm(int position){
+  return (double)position * (double)pitch_per_rev / (double)pulses_per_rev;
+}

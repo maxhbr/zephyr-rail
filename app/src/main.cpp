@@ -94,13 +94,11 @@ ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
 // ############################################################################
 // initialize Button
 
-#if 0
 static void input_cb(struct input_event *evt)
 {
 
   char buf[1000];
-  snprintf(buf, sizeof(buf), "type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
-  // display_ptr->set_debug_text(buf);
+  LOG_DBG("type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
 
   if (evt->type != INPUT_EV_KEY)
   {
@@ -111,42 +109,42 @@ static void input_cb(struct input_event *evt)
     return;
   }
   int err;
-  struct stepper_msg msg;
+  struct controller_msg msg;
 
   switch (evt->code)
   {
   case INPUT_KEY_2:
-    msg = {-1000, MOVE_RELATIVE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    msg = {GO_CONTROLLER_ACTION,-1000};
+    err = zbus_chan_pub(&controller_msg_chan, &msg, K_MSEC(200));
     break;
   case INPUT_KEY_1:
-    msg = {0, MOVE_ABSOLUTE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    msg = { GO_TO_CONTROLLER_ACTION, 0};
+    err = zbus_chan_pub(&controller_msg_chan, &msg, K_MSEC(200));
     break;
   case INPUT_KEY_0:
-    msg = {1000, MOVE_RELATIVE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
+    msg = {GO_CONTROLLER_ACTION, 1000};
+    err = zbus_chan_pub(&controller_msg_chan, &msg, K_MSEC(200));
     break;
-  case INPUT_KEY_ENTER:
-    msg = {0, MOVE_ABSOLUTE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
-    break;
-  case INPUT_KEY_DOWN:
-    msg = {102, MOVE_RELATIVE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
-    break;
-  case INPUT_KEY_UP:
-    msg = {103, MOVE_RELATIVE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
-    break;
-  case INPUT_KEY_LEFT:
-    msg = {104, MOVE_RELATIVE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
-    break;
-  case INPUT_KEY_RIGHT:
-    msg = {105, MOVE_RELATIVE};
-    err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200));
-    break;
+  /* case INPUT_KEY_ENTER: */
+  /*   msg = {0, MOVE_ABSOLUTE}; */
+  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
+  /*   break; */
+  /* case INPUT_KEY_DOWN: */
+  /*   msg = {102, MOVE_RELATIVE}; */
+  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
+  /*   break; */
+  /* case INPUT_KEY_UP: */
+  /*   msg = {103, MOVE_RELATIVE}; */
+  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
+  /*   break; */
+  /* case INPUT_KEY_LEFT: */
+  /*   msg = {104, MOVE_RELATIVE}; */
+  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
+  /*   break; */
+  /* case INPUT_KEY_RIGHT: */
+  /*   msg = {105, MOVE_RELATIVE}; */
+  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
+  /*   break; */
   default:
     LOG_INF("Unrecognized input code %u value %d",
             evt->code, evt->value);
@@ -159,7 +157,6 @@ static void input_cb(struct input_event *evt)
 }
 
 INPUT_CALLBACK_DEFINE(NULL, input_cb);
-#endif
 
 // ############################################################################
 // Main
@@ -169,8 +166,6 @@ int main(void)
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper;
   stepper_ptr = &stepper;
-  // Display display(&model_status_chan);
-  // display_ptr = &display;
   IrSony irsony;
   Model model(stepper_ptr);
   model_ptr = &model;

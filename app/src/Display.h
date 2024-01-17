@@ -16,6 +16,11 @@
 #include "StepperWithTarget.h"
 #include "Stepper.h"
 
+#ifdef CONFIG_LV_Z_KEYPAD_INPUT
+static const struct device *lvgl_keypad =
+	DEVICE_DT_GET(DT_COMPAT_GET_ANY_STATUS_OKAY(zephyr_lvgl_keypad_input));
+#endif /* CONFIG_LV_Z_KEYPAD_INPUT */
+
 static struct k_mutex lvgl_mutex;
 
 class Display
@@ -26,6 +31,9 @@ class Display
   void init_styles();
   lv_obj_t *tabview;
   void init_tabview(lv_obj_t *parent);
+  lv_obj_t *status_label;
+  lv_obj_t *status_label_left;
+  lv_obj_t *status_label_right;
 
   const lv_font_t *font_title = &lv_font_montserrat_14;    // _28;
   const lv_font_t *font_subtitle = &lv_font_montserrat_14; // _24;
@@ -43,6 +51,9 @@ public:
                        int heigth);
   lv_obj_t *add_roller(lv_obj_t *parent, const char *options);
   void set_header_visible(bool is_visible);
+  void set_status(const char *status);
+  void set_status_left(const char *status_left);
+  void set_status_right(const char *status_right);
 
   void run_task_handler();
 };

@@ -4,14 +4,14 @@ LOG_MODULE_REGISTER(model);
 
 Model::Model(StepperWithTarget *_stepper) : stepper{_stepper}
 {
-  stepps = (int *)malloc(sizeof(int) * 1000);
+  stepps_of_stack = (int *)malloc(sizeof(int) * 1000);
 }
 
 void Model::log_state() {
   stepper->log_state();
   LOG_INF("bounds=(%i, %i)", lower_bound, upper_bound);
-  LOG_INF("step_number=%i, cur_step_index=%i, stack_in_progress=%d",
-          step_number, cur_step_index, stack_in_progress);
+  LOG_INF("length_of_stack=%i, index_in_stack=%i, stack_in_progress=%d",
+          length_of_stack, index_in_stack, stack_in_progress);
 };
 
 void Model::go(int dist) {
@@ -31,21 +31,21 @@ void Model::set_lower_bound(int _lower_bound) { lower_bound = _lower_bound; }
 int Model::get_lower_bound() { return lower_bound; }
 
 void Model::set_step_number(int _step_number) {
-  step_number = _step_number;
-  cur_step_index = 0;
+  length_of_stack = _step_number;
+  index_in_stack = 0;
 }
-void Model::set_step_position(int index, int pos) { stepps[index] = pos; }
+void Model::set_step_position(int index, int pos) { stepps_of_stack[index] = pos; }
 std::optional<int> Model::get_next_step_and_increment() {
-  if (cur_step_index >= step_number) {
+  if (index_in_stack >= length_of_stack) {
     stack_in_progress = false;
     return {};
   }
-  return stepps[cur_step_index++];
+  return stepps_of_stack[index_in_stack++];
 }
 void Model::set_stack_in_progress(bool _stack_in_progress) {
   stack_in_progress = _stack_in_progress;
   if (!stack_in_progress) {
-    cur_step_index = 0;
+    index_in_stack = 0;
   }
 }
 bool Model::is_stack_in_progress() { return stack_in_progress; }

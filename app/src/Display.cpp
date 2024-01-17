@@ -8,6 +8,8 @@ void Display::init_tabview(lv_obj_t *parent)
   // lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 40);
   tabview = lv_tabview_create(parent, LV_DIR_LEFT, 80);
   //lv_obj_set_size(tabview, LV_HOR_RES - 80, LV_VER_RES);
+  lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 18);
+  lv_obj_align(tabview, LV_ALIGN_BOTTOM_MID, 0, 0);
 }
 
 Display::Display()
@@ -19,7 +21,25 @@ Display::Display()
     return;
   }
   LOG_INF("initialize display...");
+
+  lv_group_t * lv_group = lv_group_create();
+  lv_group_set_default(lv_group);
+#ifdef CONFIG_LV_Z_KEYPAD_INPUT
+	lv_indev_set_group(lvgl_input_get_indev(lvgl_keypad), lv_group);
+#endif
+
+  // lv_obj_t * tabview_obj = lv_obj_create(lv_scr_act());
   init_tabview(lv_scr_act());
+  
+  status_label = lv_label_create(lv_scr_act());
+  lv_label_set_text(status_label, "$status");
+  lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 0);
+  status_label_left = lv_label_create(lv_scr_act());
+  lv_label_set_text(status_label_left, "$left");
+  lv_obj_align(status_label_left, LV_ALIGN_TOP_LEFT, 0, 0);
+  status_label_right = lv_label_create(lv_scr_act());
+  lv_label_set_text(status_label_right, "$right");
+  lv_obj_align(status_label_right, LV_ALIGN_TOP_RIGHT, 0, 0);
 
   lv_task_handler();
   display_blanking_off(display_dev);
@@ -81,4 +101,19 @@ lv_obj_t *Display::add_roller(lv_obj_t *parent, const char *options)
 
   lv_roller_set_visible_row_count(roller, 4);
   return roller;
+}
+
+void Display::set_status(const char *status)
+{
+  lv_label_set_text(status_label, status);
+}
+
+void Display::set_status_left(const char *status_left)
+{
+  lv_label_set_text(status_label_left, status_left);
+}
+
+void Display::set_status_right(const char *status_right)
+{
+  lv_label_set_text(status_label_right, status_right);
 }

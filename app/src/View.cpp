@@ -111,12 +111,6 @@ void View::fill_config_panel(lv_obj_t *parent)
     lv_obj_align(config_container, LV_ALIGN_TOP_RIGHT, 0, 0);
     // config_label = Display::add_label(config_container);
 }
-void View::fill_status_panel(lv_obj_t *parent)
-{
-    status_label = lv_label_create(status_tab);
-    lv_label_set_text(status_label, "$status");
-    lv_obj_align(status_label, LV_ALIGN_CENTER, 0, 0);
-}
 
 View::View(Model *_model, Controller *_controller) : Display(), model{_model}, controller{_controller}
 {
@@ -128,8 +122,6 @@ View::View(Model *_model, Controller *_controller) : Display(), model{_model}, c
     fill_stack_panel(stack_tab);
     config_tab = make_tab("cfg");
     fill_config_panel(config_tab);
-    status_tab = make_tab("status");
-    fill_status_panel(status_tab);
 }
 
 void View::update_status_label(const struct model_status status)
@@ -142,18 +134,36 @@ void View::update_status_label(const struct model_status status)
     {
         if (stepper_with_target_status->target_position > stepper_status->position)
         {
-            snprintf(buf, sizeof(buf), "%d (-> %d)\n%d >>> %d", stepper_status->position, stepper_with_target_status->target_position, status.lower_bound, status.upper_bound);
+            snprintf(buf, sizeof(buf), "%d (-> %d)", stepper_status->position, stepper_with_target_status->target_position);
         }
         else
         {
-            snprintf(buf, sizeof(buf), "(%d <-) %d\n%d >>> %d", stepper_status->position, stepper_with_target_status->target_position, status.lower_bound, status.upper_bound);
+            snprintf(buf, sizeof(buf), "(%d <-) %d", stepper_with_target_status->target_position, stepper_status->position);
         }
     }
     else
     {
-        snprintf(buf, sizeof(buf), "@%d\n%d >>> %d", stepper_status->position, status.lower_bound, status.upper_bound);
+        snprintf(buf, sizeof(buf), "@%d", stepper_status->position);
     }
-    lv_label_set_text(status_label, buf);
+    Display::set_status(buf);
+
+    if (stepper_status->position > status.lower_bound) {
+      snprintf(buf, sizeof(buf), "%d <<", status.lower_bound);
+    } else if (stepper_status->position == status.lower_bound) {
+      snprintf(buf, sizeof(buf), "%d ==", status.lower_bound);
+    } else {
+      snprintf(buf, sizeof(buf), "%d >>", status.lower_bound);
+    }
+    Display::set_status_left(buf);
+
+    if (stepper_status->position < status.upper_bound) {
+      snprintf(buf, sizeof(buf), "<< %d", status.upper_bound);
+    } else if (stepper_status->position == status.upper_bound) {
+      snprintf(buf, sizeof(buf), "%d ==", status.upper_bound);
+    } else {
+      snprintf(buf, sizeof(buf), ">> %d", status.upper_bound);
+    }
+    Display::set_status_right(buf);
 }
 
 void View::update()

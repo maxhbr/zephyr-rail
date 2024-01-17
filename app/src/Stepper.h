@@ -54,6 +54,9 @@ class Stepper
   int step_jump = 1;
   int position = 0;
 
+  int pitch_per_rev = 2; 
+	int pulses_per_rev = 50000;
+
   PULSE pulse = PULSE(&stepper_pulse);
   GPIO dir = GPIO(&stepper_dir, GPIO_OUTPUT_ACTIVE);
 
@@ -68,6 +71,8 @@ public:
   void pause();
   bool step_towards(int target);
   int get_position();
+
+  double get_position_in_mm(int position);
 
   const struct stepper_status get_status()
   {
