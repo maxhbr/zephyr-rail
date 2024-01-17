@@ -124,44 +124,66 @@ View::View(Model *_model, Controller *_controller) : Display(), model{_model}, c
     fill_config_panel(config_tab);
 }
 
+int View::position_as_nm(const int pitch_per_rev, const int pulses_per_rev, const int position) {
+  return (position * pitch_per_rev * 1000) / pulses_per_rev;
+
+}
+
+/* static float compute_position_in_mm(const struct stepper_status *status, int position){ */
+/*   return (float)position; // * (float)status->pitch_per_rev / (float)status->pulses_per_rev; */
+/* } */
+
+/* static char *render_position_in_mm(const struct stepper_status *status, int position) { */
+/*   char buf[1000]; */
+/*   snprintf(buf, sizeof(buf), "%lf mm", render_position_in_mm(status, position)); */
+/*   return buf; */
+/* } */
+
 void View::update_status_label(const struct model_status status)
 {
     char buf[1000];
     const struct stepper_with_target_status *stepper_with_target_status = &status.stepper_with_target_status;
     const struct stepper_status *stepper_status = &stepper_with_target_status->stepper_status;
+    const int pitch_per_rev = stepper_status->pitch_per_rev;
+    const int pulses_per_rev = stepper_status->pulses_per_rev;
+
+    const int position_nm = position_as_nm(pitch_per_rev, pulses_per_rev, stepper_status->position);
 
     if (stepper_with_target_status->is_moving)
     {
+      const int target_position_nm = position_as_nm(pitch_per_rev, pulses_per_rev, stepper_with_target_status->target_position);
         if (stepper_with_target_status->target_position > stepper_status->position)
         {
-            snprintf(buf, sizeof(buf), "%d (-> %d)", stepper_status->position, stepper_with_target_status->target_position);
+            snprintf(buf, sizeof(buf), "%d (-> %d)", position_nm, target_position_nm);
         }
         else
         {
-            snprintf(buf, sizeof(buf), "(%d <-) %d", stepper_with_target_status->target_position, stepper_status->position);
+            snprintf(buf, sizeof(buf), "(%d <-) %d", target_position_nm, position_nm);
         }
     }
     else
     {
-        snprintf(buf, sizeof(buf), "@%d", stepper_status->position);
+        snprintf(buf, sizeof(buf), "@%d", position_nm);
     }
     Display::set_status(buf);
 
+    const int lower_bound_nm = position_as_nm(pitch_per_rev, pulses_per_rev, status.lower_bound);
     if (stepper_status->position > status.lower_bound) {
-      snprintf(buf, sizeof(buf), "%d <<", status.lower_bound);
+      snprintf(buf, sizeof(buf), "%d <<", lower_bound_nm);
     } else if (stepper_status->position == status.lower_bound) {
-      snprintf(buf, sizeof(buf), "%d ==", status.lower_bound);
+      snprintf(buf, sizeof(buf), "%d ==", lower_bound_nm);
     } else {
-      snprintf(buf, sizeof(buf), "%d >>", status.lower_bound);
+      snprintf(buf, sizeof(buf), "%d >>", lower_bound_nm);
     }
     Display::set_status_left(buf);
 
+    const int upper_bound_nm = position_as_nm(pitch_per_rev, pulses_per_rev, status.upper_bound);
     if (stepper_status->position < status.upper_bound) {
-      snprintf(buf, sizeof(buf), "<< %d", status.upper_bound);
+      snprintf(buf, sizeof(buf), "<< %d", upper_bound_nm);
     } else if (stepper_status->position == status.upper_bound) {
-      snprintf(buf, sizeof(buf), "%d ==", status.upper_bound);
+      snprintf(buf, sizeof(buf), "%d ==", upper_bound_nm);
     } else {
-      snprintf(buf, sizeof(buf), ">> %d", status.upper_bound);
+      snprintf(buf, sizeof(buf), ">> %d", upper_bound_nm);
     }
     Display::set_status_right(buf);
 }

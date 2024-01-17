@@ -13,7 +13,7 @@
 #include <zephyr/drivers/display.h>
 #include <lvgl.h>
 
-#include <map>
+/* #include <map> */
 
 #include "Controller.h"
 #include "Display.h"
@@ -44,6 +44,8 @@ private:
   lv_obj_t *status_label;
 
   void update_status_label(const struct model_status status);
+
+  int position_as_nm(const int pitch_per_rev, const int pulses_per_rev, const int position);
 
 public:
   View(Model *_model, Controller *_controller);

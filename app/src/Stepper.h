@@ -45,6 +45,8 @@ struct stepper_status
   int direction;
   int step_jump;
   int position;
+  int pitch_per_rev; 
+	int pulses_per_rev;
 };
 
 class Stepper
@@ -72,14 +74,14 @@ public:
   bool step_towards(int target);
   int get_position();
 
-  double get_position_in_mm(int position);
-
   const struct stepper_status get_status()
   {
     return {
         .direction = direction,
         .step_jump = step_jump,
-        .position = position};
+        .position = position,
+        .pitch_per_rev = pitch_per_rev,
+        .pulses_per_rev = pulses_per_rev};
   };
 };
 
