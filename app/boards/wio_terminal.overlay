@@ -13,11 +13,11 @@
 		//pulses_per_rev = <50000>;
 	};
 
-  lvgl_keypad_input {
-          compatible = "zephyr,lvgl-keypad-input";
-          input-codes = <INPUT_KEY_LEFT INPUT_KEY_RIGHT INPUT_KEY_ENTER>;
-          lvgl-codes = <LV_KEY_LEFT LV_KEY_RIGHT LV_KEY_ENTER>;
-  };
+//  lvgl_keypad_input {
+//          compatible = "zephyr,lvgl-keypad-input";
+//          input-codes = <INPUT_KEY_LEFT INPUT_KEY_RIGHT INPUT_KEY_ENTER>;
+//          lvgl-codes = <LV_KEY_LEFT LV_KEY_RIGHT LV_KEY_ENTER>;
+//  };
 
 //  lvgl_up_down_input {
 //          compatible = "zephyr,lvgl-keypad-input";

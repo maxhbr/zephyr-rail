@@ -2,21 +2,11 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(display);
 
-void Display::init_tabview(lv_obj_t *parent)
-{
-  // tabview = lv_tabview_create(parent, LV_DIR_TOP, 40);
-  // lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 40);
-  tabview = lv_tabview_create(parent, LV_DIR_LEFT, 80);
-  //lv_obj_set_size(tabview, LV_HOR_RES - 80, LV_VER_RES);
-  lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 18);
-  lv_obj_align(tabview, LV_ALIGN_BOTTOM_MID, 0, 0);
-}
-
 void Display::init_status_labels(lv_obj_t *parent)
 {
   status_label = lv_label_create(parent);
   lv_label_set_text(status_label, "$status");
-  lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 0);
+  lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 10);
   status_label_left = lv_label_create(parent);
   lv_label_set_text(status_label_left, "$left");
   lv_obj_align(status_label_left, LV_ALIGN_TOP_LEFT, 0, 0);
@@ -41,7 +31,6 @@ Display::Display()
 	lv_indev_set_group(lvgl_input_get_indev(lvgl_keypad), lv_group);
 #endif
 
-  init_tabview(lv_scr_act());
   init_status_labels(lv_scr_act());
 
   lv_task_handler();
@@ -52,12 +41,9 @@ Display::Display()
 
 void Display::run_task_handler()
 {
+  k_mutex_lock(&lvgl_mutex, K_FOREVER);
   lv_task_handler();
-}
-
-lv_obj_t *Display::make_tab(const char *title)
-{
-  return lv_tabview_add_tab(tabview, title);
+  k_mutex_unlock(&lvgl_mutex);
 }
 
 lv_obj_t *Display::add_container(lv_obj_t *parent, int width, int height)

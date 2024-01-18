@@ -16,10 +16,10 @@ void Controller::work()
     LOG_WRN("work, but semaphore is not availablel");
     return;
   }
-  if (model->is_stack_in_progress() && model->is_in_target_position())
-  {
-    do_next_stack_step();
-  }
+  /* if (model->is_stack_in_progress() && model->is_in_target_position()) */
+  /* { */
+  /*   do_next_stack_step(); */
+  /* } */
   k_sem_give(work_in_progress_sem);
 }
 
@@ -40,19 +40,19 @@ void Controller::go_to_lower_bound()
 void Controller::set_new_upper_bound()
 {
   model->set_upper_bound(model->get_target_position());
-  prepare_stack();
+  /* prepare_stack(); */
 }
 
 void Controller::set_new_lower_bound()
 {
   model->set_lower_bound(model->get_target_position());
-  prepare_stack();
+  /* prepare_stack(); */
 }
 
 void Controller::set_step_number(int step_number)
 {
-  model->set_step_number(step_number);
-  prepare_stack();
+  /* model->set_step_number(step_number); */
+  /* prepare_stack(); */
 }
 
 void Controller::handle_controller_msg(const struct controller_msg *msg)
@@ -66,6 +66,12 @@ void Controller::handle_controller_msg(const struct controller_msg *msg)
     break;
   case GO_TO_CONTROLLER_ACTION:
     go_to(msg->value);
+    break;
+  case SET_NEW_LOWER_BOUND_ACTION:
+    set_new_lower_bound();
+    break;
+  case SET_NEW_UPPER_BOUND_ACTION:
+    set_new_upper_bound();
     break;
   default:
     LOG_ERR("unknown action: %i", msg->action);
@@ -82,99 +88,99 @@ void Controller::synchronize_and_sleep(k_timeout_t timeout)
 
 void Controller::prepare_stack()
 {
-  if (model->is_stack_in_progress())
-  {
-    LOG_WRN("tried to prepare while stack was in progress");
-    return;
-  }
+  /* if (model->is_stack_in_progress()) */
+  /* { */
+  /*   LOG_WRN("tried to prepare while stack was in progress"); */
+  /*   return; */
+  /* } */
 
-  int cur_position = model->get_cur_position();
-  int upper_bound = model->get_upper_bound();
-  int lower_bound = model->get_lower_bound();
+  /* int cur_position = model->get_cur_position(); */
+  /* int upper_bound = model->get_upper_bound(); */
+  /* int lower_bound = model->get_lower_bound(); */
 
-  int start, stop;
-  if (abs(lower_bound - cur_position) < abs(upper_bound - cur_position))
-  {
-    start = lower_bound;
-    stop = upper_bound;
-  }
-  else
-  {
-    start = upper_bound;
-    stop = lower_bound;
-  }
+  /* int start, stop; */
+  /* if (abs(lower_bound - cur_position) < abs(upper_bound - cur_position)) */
+  /* { */
+  /*   start = lower_bound; */
+  /*   stop = upper_bound; */
+  /* } */
+  /* else */
+  /* { */
+  /*   start = upper_bound; */
+  /*   stop = lower_bound; */
+  /* } */
 
-  int step_number = model->get_step_number();
-  LOG_INF("prepare_stack: %d -> %d, #=%d", start, stop, step_number);
+  /* int step_number = model->get_step_number(); */
+  /* LOG_INF("prepare_stack: %d -> %d, #=%d", start, stop, step_number); */
 
-  int distance = stop - start;
-  int stack_step_jump = distance / step_number;
-  if (stack_step_jump == 0)
-  {
-    LOG_WRN("step_jump of 0");
-    return;
-  }
-  int i;
-  for (i = 0; i < (step_number - 1); i++)
-  {
-    model->set_step_position(i, start + i * stack_step_jump);
-  }
-  model->set_step_position(step_number - 1, stop);
+  /* int distance = stop - start; */
+  /* int stack_step_jump = distance / step_number; */
+  /* if (stack_step_jump == 0) */
+  /* { */
+  /*   LOG_WRN("step_jump of 0"); */
+  /*   return; */
+  /* } */
+  /* int i; */
+  /* for (i = 0; i < (step_number - 1); i++) */
+  /* { */
+  /*   model->set_step_position(i, start + i * stack_step_jump); */
+  /* } */
+  /* model->set_step_position(step_number - 1, stop); */
 }
 
 void Controller::start_stack()
 {
-  if (model->is_stack_in_progress())
-  {
-    LOG_WRN("start_stack, stack already running");
-  }
-  else
-  {
-    LOG_INF("start_stack");
-    std::optional<int> start_position = model->get_next_step_and_increment();
-    if (!start_position.has_value())
-    {
-      LOG_ERR("stacking start failed");
-      return;
-    }
-    go_to(start_position.value());
-    model->set_stack_in_progress(true);
-  }
+  /* if (model->is_stack_in_progress()) */
+  /* { */
+  /*   LOG_WRN("start_stack, stack already running"); */
+  /* } */
+  /* else */
+  /* { */
+  /*   LOG_INF("start_stack"); */
+  /*   /1* std::optional<int> start_position = model->get_next_step_and_increment(); *1/ */
+  /*   /1* if (!start_position.has_value()) *1/ */
+  /*   /1* { *1/ */
+  /*   /1*   LOG_ERR("stacking start failed"); *1/ */
+  /*   /1*   return; *1/ */
+  /*   /1* } *1/ */
+  /*   /1* go_to(start_position.value()); *1/ */
+  /*   /1* model->set_stack_in_progress(true); *1/ */
+  /* } */
 }
 
 void Controller::stop_stack()
 {
   LOG_INF("stop_stack");
-  model->set_stack_in_progress(false);
+  /* model->set_stack_in_progress(false); */
 }
 
 void Controller::do_next_stack_step()
 {
-  if (!model->is_stack_in_progress())
-  {
-    LOG_ERR("stacking, but not in progress");
-    return;
-  }
+  /* if (!model->is_stack_in_progress()) */
+  /* { */
+  /*   LOG_ERR("stacking, but not in progress"); */
+  /*   return; */
+  /* } */
 
-  if (!model->is_in_target_position())
-  {
-    LOG_WRN("stacking, but not yet in target position");
-    return;
-  }
+  /* if (!model->is_in_target_position()) */
+  /* { */
+  /*   LOG_WRN("stacking, but not yet in target position"); */
+  /*   return; */
+  /* } */
 
-  LOG_INF("stacking, waiting");
-  k_sleep(K_MSEC(2000));
-  LOG_INF("stacking, take pickture");
-  irsony->shoot();
-  k_sleep(K_MSEC(500));
+  /* LOG_INF("stacking, waiting"); */
+  /* k_sleep(K_MSEC(2000)); */
+  /* LOG_INF("stacking, take pickture"); */
+  /* irsony->shoot(); */
+  /* k_sleep(K_MSEC(500)); */
 
-  std::optional<int> next_position = model->get_next_step_and_increment();
-  if (!next_position.has_value())
-  {
-    LOG_INF("stacking, finished");
-    return;
-  }
-  LOG_INF("stacking, next is %d", next_position.value());
+  /* std::optional<int> next_position = model->get_next_step_and_increment(); */
+  /* if (!next_position.has_value()) */
+  /* { */
+  /*   LOG_INF("stacking, finished"); */
+  /*   return; */
+  /* } */
+  /* LOG_INF("stacking, next is %d", next_position.value()); */
 
-  go_to(next_position.value());
+  /* go_to(next_position.value()); */
 }

@@ -94,11 +94,13 @@ ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
 // ############################################################################
 // initialize Button
 
+static bool key_1_pressed = false;
 static void input_cb(struct input_event *evt)
 {
 
   char buf[1000];
-  LOG_DBG("type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
+  /* LOG_DBG("type: %d, code: %d, value: %d", evt->type, evt->code, evt->value); */
+  LOG_INF("type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
 
   if (evt->type != INPUT_EV_KEY)
   {
@@ -106,6 +108,9 @@ static void input_cb(struct input_event *evt)
   }
   if (evt->value == 0)
   {
+    if(evt->code == INPUT_KEY_1) {
+      key_1_pressed = false;
+    }
     return;
   }
   int err;
@@ -114,39 +119,36 @@ static void input_cb(struct input_event *evt)
   switch (evt->code)
   {
   case INPUT_KEY_2:
-    msg = {GO_CONTROLLER_ACTION,-1000};
+    if(key_1_pressed) {
+      msg = {SET_NEW_LOWER_BOUND_ACTION,0};
+    } else {
+      msg = {GO_CONTROLLER_ACTION,-1000};
+    }
     err = zbus_chan_pub(&controller_msg_chan, &msg, K_MSEC(200));
     break;
   case INPUT_KEY_1:
-    msg = { GO_TO_CONTROLLER_ACTION, 0};
-    err = zbus_chan_pub(&controller_msg_chan, &msg, K_MSEC(200));
+    key_1_pressed = true;
     break;
   case INPUT_KEY_0:
-    msg = {GO_CONTROLLER_ACTION, 1000};
+    if(key_1_pressed) {
+      msg = {SET_NEW_UPPER_BOUND_ACTION,0};
+    } else {
+      msg = {GO_CONTROLLER_ACTION, 1000};
+    }
     err = zbus_chan_pub(&controller_msg_chan, &msg, K_MSEC(200));
     break;
-  /* case INPUT_KEY_ENTER: */
-  /*   msg = {0, MOVE_ABSOLUTE}; */
-  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
-  /*   break; */
-  /* case INPUT_KEY_DOWN: */
-  /*   msg = {102, MOVE_RELATIVE}; */
-  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
-  /*   break; */
-  /* case INPUT_KEY_UP: */
-  /*   msg = {103, MOVE_RELATIVE}; */
-  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
-  /*   break; */
-  /* case INPUT_KEY_LEFT: */
-  /*   msg = {104, MOVE_RELATIVE}; */
-  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
-  /*   break; */
-  /* case INPUT_KEY_RIGHT: */
-  /*   msg = {105, MOVE_RELATIVE}; */
-  /*   err = zbus_chan_pub(&stepper_diff_chan, &msg, K_MSEC(200)); */
-  /*   break; */
+  case INPUT_KEY_ENTER:
+    break;
+  case INPUT_KEY_DOWN:
+    break;
+  case INPUT_KEY_UP:
+    break;
+  case INPUT_KEY_LEFT:
+    break;
+  case INPUT_KEY_RIGHT:
+    break;
   default:
-    LOG_INF("Unrecognized input code %u value %d",
+    LOG_DBG("Unrecognized input code %u value %d",
             evt->code, evt->value);
     return;
   }
@@ -174,8 +176,6 @@ int main(void)
   View view(&model, &controller);
 
   LOG_INF("Initialize model");
-  model.set_upper_bound(25600);
-  model.set_step_number(300);
   controller.prepare_stack();
   model.log_state();
 

@@ -14,30 +14,23 @@
 #include <optional>
 
 #include "StepperWithTarget.h"
+#include "Stack.h"
 
 struct model_status
 {
   struct stepper_with_target_status stepper_with_target_status;
   int upper_bound;
   int lower_bound;
-
-  int length_of_stack;
-  int index_in_stack;
-
-  bool stack_in_progress;
+  std::optional<Stack*> stack;
 };
 
 class Model
 {
   StepperWithTarget *stepper;
-  int upper_bound = 12800;
+  int upper_bound = 0;
   int lower_bound = 0;
 
-  int length_of_stack = 0;
-
-  int index_in_stack = 0;
-  int *stepps_of_stack;
-  bool stack_in_progress = false;
+  Stack *stack;
 
 public:
   Model(StepperWithTarget *_stepper);
@@ -53,27 +46,10 @@ public:
   void set_lower_bound(int _lower_bound);
   int get_lower_bound();
 
-  void set_step_number(int _step_number);
-  int get_step_number() { return length_of_stack; };
-  int get_step_jump_size()
-  {
-    if (length_of_stack > 1)
-    {
-      return stepps_of_stack[1] - stepps_of_stack[0];
-    }
-    else
-    {
-      return 0;
-    }
-  };
-  int get_cur_step_index() { return index_in_stack; };
-  void set_step_position(int index, int pos);
-  std::optional<int> get_next_step_and_increment();
-  void set_stack_in_progress(bool _stack_in_progress);
-  bool is_stack_in_progress();
-
   int get_cur_position();
   bool is_in_target_position();
+
+  int mk_stack(int step_size);
 
   const struct model_status get_status()
   {
@@ -81,9 +57,7 @@ public:
         .stepper_with_target_status = stepper->get_status(),
         .upper_bound = upper_bound,
         .lower_bound = lower_bound,
-        .length_of_stack = length_of_stack,
-        .index_in_stack = index_in_stack,
-        .stack_in_progress = stack_in_progress,
+        .stack = {}
     };
   }
   void pub_status();
