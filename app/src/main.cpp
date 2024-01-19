@@ -34,13 +34,6 @@ LOG_MODULE_REGISTER(rail);
 #include "mvc/Model.h"
 #include "mvc/View.h"
 
-#define SW0_NODE DT_ALIAS(sw0)
-
-StepperWithTarget *stepper_ptr;
-Controller *controller_ptr;
-Model *model_ptr;
-View *view_ptr;
-
 static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
 static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
 
@@ -120,6 +113,12 @@ INPUT_CALLBACK_DEFINE(NULL, input_cb);
 
 int main(void)
 {
+
+  StepperWithTarget *stepper_ptr;
+  Controller *controller_ptr;
+  Model *model_ptr;
+  View *view_ptr;
+
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper;
   stepper_ptr = &stepper;
