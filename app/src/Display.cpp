@@ -15,6 +15,13 @@ void Display::init_status_labels(lv_obj_t *parent)
   lv_obj_align(status_label_right, LV_ALIGN_TOP_RIGHT, 0, 0);
 }
 
+void Display::init_tabview(lv_obj_t *parent)
+{
+  tabview = lv_tabview_create(parent, LV_DIR_LEFT, 60);
+  lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 30);
+  lv_obj_align(tabview, LV_ALIGN_BOTTOM_MID, 0, 0);
+}
+
 Display::Display()
 {
   k_mutex_init(&lvgl_mutex);
@@ -32,6 +39,7 @@ Display::Display()
 #endif
 
   init_status_labels(lv_scr_act());
+  init_tabview(lv_scr_act());
 
   lv_task_handler();
   display_blanking_off(display_dev);
@@ -41,9 +49,14 @@ Display::Display()
 
 void Display::run_task_handler()
 {
-  k_mutex_lock(&lvgl_mutex, K_FOREVER);
+  /* k_mutex_lock(&lvgl_mutex, K_FOREVER); */
   lv_task_handler();
-  k_mutex_unlock(&lvgl_mutex);
+  /* k_mutex_unlock(&lvgl_mutex); */
+}
+
+lv_obj_t *Display::make_tab(const char *title)
+{
+  return lv_tabview_add_tab(tabview, title);
 }
 
 lv_obj_t *Display::add_container(lv_obj_t *parent, int width, int height)

@@ -28,7 +28,8 @@ class Display
   const struct device *display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
   void init_styles();
-
+  lv_obj_t *tabview;
+  void init_tabview(lv_obj_t *parent);
   lv_obj_t *status_label;
   lv_obj_t *status_label_left;
   lv_obj_t *status_label_right;
@@ -42,6 +43,7 @@ class Display
 public:
   Display();
 
+  lv_obj_t *make_tab(const char *title);
   lv_obj_t *add_container(lv_obj_t *parent, int width, int heigth);
   lv_obj_t *add_label(lv_obj_t *parent);
   lv_obj_t *add_panel(lv_obj_t *parent);

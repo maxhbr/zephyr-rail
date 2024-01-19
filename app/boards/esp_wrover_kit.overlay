@@ -13,3 +13,9 @@
         //pulses_per_rev = <50000>;
     };
 };
+
+&ili9341 {
+  width = <320>;
+  height = <240>;
+  rotation = <90>;
+};

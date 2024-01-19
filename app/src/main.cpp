@@ -94,6 +94,7 @@ ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
 // ############################################################################
 // initialize Button
 
+#if 0
 static bool key_1_pressed = false;
 static void input_cb(struct input_event *evt)
 {
@@ -159,6 +160,7 @@ static void input_cb(struct input_event *evt)
 }
 
 INPUT_CALLBACK_DEFINE(NULL, input_cb);
+#endif
 
 // ############################################################################
 // Main
@@ -181,12 +183,12 @@ int main(void)
 
   LOG_INF("Start main loop");
   k_sleep(K_MSEC(100));
-  start_stepper();
+  /* start_stepper(); */
   while (true)
   {
     k_sleep(K_MSEC(100));
     view.update();
-    controller.work();
+    /* controller.work(); */
   }
 
   return 0;

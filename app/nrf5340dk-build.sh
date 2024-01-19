@@ -7,5 +7,5 @@ west build \
     -b nrf5340dk_nrf5340_cpuapp \
     . \
     -t flash\
-    -- -DSHIELD=buydisplay_3_5_tft_touch_arduino
+    -- -DSHIELD=adafruit_2_8_tft_touch_v2
 
