@@ -15,7 +15,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "IrSony.h"
+#include "../ir/IrSony.h"
 #include "Model.h"
 
 
@@ -58,5 +58,7 @@ public:
   void stop_stack();
   void do_next_stack_step();
 };
+
+void set_controller_ptr_for_zbus(Controller *_controller_ptr_for_zbus);
 
 #endif // __CONTROLLER_H_

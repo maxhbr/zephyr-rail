@@ -13,7 +13,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "GPIOs.h"
+#include "../GPIOs.h"
 
 // #define PWM_IR_NODE DT_ALIAS(pwmir)
 // #define PWM_IR_CTLR DT_PWMS_CTLR(PWM_IR_NODE)

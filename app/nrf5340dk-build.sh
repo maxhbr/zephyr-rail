@@ -2,6 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p builds
+set -x
 west build \
     -d builds/nrf5340dk \
     -b nrf5340dk_nrf5340_cpuapp \

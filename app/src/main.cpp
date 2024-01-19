@@ -27,12 +27,12 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(rail);
 
-#include "IrSony.h"
-#include "StepperWithTarget.h"
-#include "Controller.h"
-#include "Model.h"
-#include "Display.h"
-#include "View.h"
+#include "ir/IrSony.h"
+#include "stepper/StepperWithTarget.h"
+#include "display/Display.h"
+#include "mvc/Controller.h"
+#include "mvc/Model.h"
+#include "mvc/View.h"
 
 #define SW0_NODE DT_ALIAS(sw0)
 
@@ -41,55 +41,8 @@ Controller *controller_ptr;
 Model *model_ptr;
 View *view_ptr;
 
-// ############################################################################
-// initialize Stepper
-
-void stepper_work_handler(struct k_work *work)
-{
-  ARG_UNUSED(work);
-  if (stepper_ptr == NULL)
-  {
-    return;
-  }
-  stepper_ptr->step_towards_target();
-}
-K_WORK_DEFINE(stepper_work, stepper_work_handler);
-void stepper_expiry_function(struct k_timer *timer_id)
-{
-  ARG_UNUSED(timer_id);
-  k_work_submit(&stepper_work);
-}
-K_TIMER_DEFINE(stepper_timer, stepper_expiry_function, NULL);
-void start_stepper()
-{
-  if (stepper_ptr == NULL)
-  {
-    return;
-  }
-  stepper_ptr->start();
-  k_timer_start(&stepper_timer, K_USEC(20), K_USEC(20));
-}
-
-// ############################################################################
-// initialize ZBus for Stepper
-ZBUS_CHAN_DEFINE(controller_msg_chan,   /* Name */
-                 struct controller_msg, /* Message type */
-                 NULL,
-                 NULL,
-                 ZBUS_OBSERVERS(controller_action_listener),
-                 ZBUS_MSG_INIT(.action = NOOP_CONTROLLER_ACTION, .value = 0));
-
-static void controller_action_listener_cb(const struct zbus_channel *chan)
-{
-  if (controller_ptr == NULL)
-  {
-    return;
-  }
-  const struct controller_msg *msg = (const struct controller_msg *)zbus_chan_const_msg(chan);
-  controller_ptr->handle_controller_msg(msg);
-}
-
-ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
+static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
+static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
 
 // ############################################################################
 // initialize Button
@@ -175,6 +128,7 @@ int main(void)
   model_ptr = &model;
   Controller controller(&model, &irsony);
   controller_ptr = &controller;
+  set_controller_ptr_for_zbus(controller);
   View view(&model, &controller);
 
   LOG_INF("Initialize model");
@@ -183,7 +137,7 @@ int main(void)
 
   LOG_INF("Start main loop");
   k_sleep(K_MSEC(100));
-  /* start_stepper(); */
+  /* start_stepper(stepper_ptr); */
   while (true)
   {
     k_sleep(K_MSEC(100));

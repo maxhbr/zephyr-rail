@@ -32,7 +32,7 @@ class StepperWithTarget : private Stepper
   int target_position = 0;
 
 public:
-  StepperWithTarget() : Stepper(){};
+  StepperWithTarget(const struct gpio_dt_spec *stepper_pulse, const struct gpio_dt_spec *stepper_dir) : Stepper(stepper_pulse, stepper_dir){};
 
   void log_state();
 
@@ -59,5 +59,7 @@ public:
     };
   }
 };
+
+void start_stepper(StepperWithTarget *_started_stepper_ptr);
 
 #endif // STEPPERWITHTARGET_H_

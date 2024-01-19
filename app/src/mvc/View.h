@@ -16,9 +16,9 @@
 /* #include <map> */
 
 #include "Controller.h"
-#include "Display.h"
+#include "../display/Display.h"
 #include "Model.h"
-#include "Stepper.h"
+#include "../stepper/Stepper.h"
 
 class View : public Display
 {

@@ -40,3 +40,33 @@ bool StepperWithTarget::step_towards_target() {
 bool StepperWithTarget::is_in_target_position() {
   return get_position() == get_target_position();
 }
+
+
+StepperWithTarget *started_stepper_ptr;
+
+void stepper_work_handler(struct k_work *work)
+{
+  ARG_UNUSED(work);
+  if (started_stepper_ptr == NULL)
+  {
+    return;
+  }
+  started_stepper_ptr->step_towards_target();
+}
+K_WORK_DEFINE(stepper_work, stepper_work_handler);
+void stepper_expiry_function(struct k_timer *timer_id)
+{
+  ARG_UNUSED(timer_id);
+  k_work_submit(&stepper_work);
+}
+K_TIMER_DEFINE(stepper_timer, stepper_expiry_function, NULL);
+void start_stepper(StepperWithTarget *_started_stepper_ptr)
+{
+  if (_started_stepper_ptr == NULL)
+  {
+    return;
+  }
+  started_stepper_ptr = _started_stepper_ptr;
+  started_stepper_ptr->start();
+  k_timer_start(&stepper_timer, K_USEC(20), K_USEC(20));
+}

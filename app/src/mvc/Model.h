@@ -13,8 +13,8 @@
 
 #include <optional>
 
-#include "StepperWithTarget.h"
-#include "Stack.h"
+#include "../stepper/StepperWithTarget.h"
+#include "../Stack.h"
 
 struct model_status
 {

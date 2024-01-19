@@ -13,7 +13,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "GPIOs.h"
+#include "../GPIOs.h"
 
 #if !DT_NODE_EXISTS(DT_NODELABEL(stepper))
 #error "Overlay for stepper node not properly defined."
@@ -33,12 +33,8 @@ public:
   };
 };
 
-#define STEPS_PER_REV 12800
 #define DIR_RIGHT 1
 #define DIR_LEFT -1
-
-static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
-static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
 
 struct stepper_status
 {
@@ -59,13 +55,13 @@ class Stepper
   int pitch_per_rev = 2; 
 	int pulses_per_rev = 50000;
 
-  PULSE pulse = PULSE(&stepper_pulse);
-  GPIO dir = GPIO(&stepper_dir, GPIO_OUTPUT_ACTIVE);
+  PULSE pulse;
+  GPIO dir;
 
   void set_direction_towards(int target);
 
 public:
-  Stepper();
+  Stepper(const struct gpio_dt_spec *stepper_pulse, const struct gpio_dt_spec *stepper_dir);
 
   void log_state();
 

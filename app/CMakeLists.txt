@@ -20,5 +20,5 @@ project(zephyr-rail)
 zephyr_library_compile_options(-lstdc++ -std=c++17 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-variable -Wno-comment)
 
 
-FILE(GLOB app_sources src/*.cpp)
+FILE(GLOB app_sources src/**/*.cpp)
 target_sources(app PRIVATE ${app_sources})

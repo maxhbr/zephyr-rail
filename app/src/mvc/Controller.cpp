@@ -184,3 +184,33 @@ void Controller::do_next_stack_step()
 
   /* go_to(next_position.value()); */
 }
+
+
+
+// ############################################################################
+// initialize ZBus for Controller
+Controller *controller_ptr_for_zbus;
+
+ZBUS_CHAN_DEFINE(controller_msg_chan,   /* Name */
+                 struct controller_msg, /* Message type */
+                 NULL,
+                 NULL,
+                 ZBUS_OBSERVERS(controller_action_listener),
+                 ZBUS_MSG_INIT(.action = NOOP_CONTROLLER_ACTION, .value = 0));
+
+static void controller_action_listener_cb(const struct zbus_channel *chan)
+{
+  if (controller_ptr_for_zbus == NULL)
+  {
+    return;
+  }
+  const struct controller_msg *msg = (const struct controller_msg *)zbus_chan_const_msg(chan);
+  controller_ptr_for_zbus->handle_controller_msg(msg);
+}
+
+ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
+
+void set_controller_ptr_for_zbus(Controller *_controller_ptr_for_zbus)
+{
+  controller_ptr_for_zbus = _controller_ptr_for_zbus;
+}

@@ -121,7 +121,7 @@ View::View(Model *_model, Controller *_controller) : Display(), model{_model}, c
     fill_move_panel(move_tab);
     stack_tab = make_tab("stack");
     /* fill_stack_panel(stack_tab); */
-    /* config_tab = make_tab("cfg"); */
+    config_tab = make_tab("cfg");
     /* fill_config_panel(config_tab); */
 }
 

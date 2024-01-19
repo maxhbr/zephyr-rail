@@ -10,11 +10,7 @@
 #include <lvgl.h>
 #include <lvgl_input_device.h>
 #include <map>
-// #include <sys/mutex.h>
 
-#include "Model.h"
-#include "StepperWithTarget.h"
-#include "Stepper.h"
 
 #ifdef CONFIG_LV_Z_KEYPAD_INPUT
 static const struct device *lvgl_keypad =
