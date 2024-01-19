@@ -17,8 +17,9 @@ cmake_minimum_required(VERSION 3.13.1)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(zephyr-rail)
 
-zephyr_library_compile_options(-lstdc++ -std=c++17 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-variable -Wno-comment)
+# zephyr_library_compile_options(-lstdc++ -std=c++17 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-variable -Wno-comment)
+zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
 
 
-FILE(GLOB app_sources src/**/*.cpp)
+FILE(GLOB app_sources src/*.cpp src/stepper/*.cpp src/display/*.cpp)
 target_sources(app PRIVATE ${app_sources})

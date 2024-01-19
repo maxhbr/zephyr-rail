@@ -13,15 +13,50 @@
 
 #include <optional>
 
+struct stack_status
+{
+  int lower_bound;
+  int upper_bound;
+};
+
 class Stack
 {
+  int lower_bound = 0;
+  int upper_bound = 0;
+  bool start_at_lower = true;
+
+  int expected_length_of_stack = 300;
+  int expected_step_size = 30;
+  bool compute_via_step_size = false;
+
+
   int length_of_stack = 0;
-  int index_in_stack = 0;
+  std::optional<int> index_in_stack = {};
   int *stepps_of_stack = (int *)malloc(sizeof(int) * 2000);
+
+  bool compute_by_step_size(const int start, const int end);
+  bool compute_by_expected_length_of_stack(const int start, const int end);
+  bool compute();
 public:
-  Stack(const int step_size, const int start, const int end);
+  Stack() {};
+
+  // stacking
+  std::optional<int> start_stack();
   std::optional<int> get_current_step();
   void increment_step();
+  bool stack_in_progress();
+
+  // configuring stack
+  void set_lower_bound(int _lower_bound);
+  void set_upper_bound(int _upper_bound);
+
+  const struct stack_status get_status()
+  {
+    return {
+        .lower_bound = lower_bound,
+        .upper_bound = upper_bound,
+    };
+  }
 };
 
 #endif // __STACK_H_

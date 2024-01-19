@@ -10,9 +10,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/types.h>
 
-#include <lvgl.h>
-
-#include <zephyr/drivers/display.h>
 #include <zephyr/drivers/gpio.h>
 
 class GPIO

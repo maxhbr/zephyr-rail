@@ -2,8 +2,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(stack);
 
-Stack::Stack(int step_size, const int start, const int end)
+bool Stack::compute_by_step_size(const int start, const int end)
 {
+  int step_size = expected_step_size;
   if (step_size == 0 || start == end) {
     return;
   }
@@ -24,13 +25,64 @@ Stack::Stack(int step_size, const int start, const int end)
   length_of_stack++;
 }
 
-std::optional<int> Stack::get_current_step(){
-  if(index_in_stack < 0 || length_of_stack <= index_in_stack) {
+bool Stack::compute_by_expected_length_of_stack(const int start, const int end){
+}
+
+bool Stack::compute() {
+  int start;
+  int end;
+  if (start_at_lower) {
+    start = lower_bound;
+    end = upper_bound;
+  } else {
+    end = lower_bound;
+    start = upper_bound;
+  }
+  if(compute_via_step_size)  {
+    return compute_by_step_size(start, end);
+  } else {
+    return compute_by_expected_length_of_stack(start, end);
+  }
+}
+
+std::optional<int> Stack::start_stack()
+{
+  bool succ = compute();
+  if (!succ) {
     return {};
   }
-  return stepps_of_stack[index_in_stack];
+  index_in_stack = 0;
+  return get_current_step();
+}
+
+std::optional<int> Stack::get_current_step(){
+  if (! index_in_stack.has_value()) {
+    return {};
+  }
+  int actual_index_in_stack = index_in_stack.value();
+  if(actual_index_in_stack < 0 || length_of_stack <= actual_index_in_stack) {
+    return {};
+  }
+  return stepps_of_stack[actual_index_in_stack];
 }
 
 void Stack::increment_step() {
-  index_in_stack++;
+  if (index_in_stack.has_value()) {
+    index_in_stack = index_in_stack.value()+1;
+  }
 }
+
+bool Stack::stack_in_progress(){
+  return index_in_stack.has_value() && get_current_step().has_value();
+}
+
+void Stack::set_lower_bound(int _lower_bound) {
+  lower_bound = _lower_bound;
+  start_at_lower = true;
+}
+
+void Stack::set_upper_bound(int _upper_bound) {
+  upper_bound = _upper_bound;
+  start_at_lower = false;
+}
+
