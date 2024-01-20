@@ -16,6 +16,8 @@ struct stack_status
 {
   int lower_bound;
   int upper_bound;
+  std::optional<int> index_in_stack;
+  int length_of_stack;
 };
 
 class Stack
@@ -39,6 +41,8 @@ class Stack
 public:
   Stack() {};
 
+  void log_state();
+
   // stacking
   std::optional<int> start_stack();
   std::optional<int> get_current_step();
@@ -54,6 +58,8 @@ public:
     return {
         .lower_bound = lower_bound,
         .upper_bound = upper_bound,
+        .index_in_stack = index_in_stack,
+        .length_of_stack = length_of_stack,
     };
   }
 };

@@ -2,6 +2,10 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(stack);
 
+void Stack::log_state() {
+  LOG_INF("%i -> %i", lower_bound, upper_bound);
+};
+
 bool Stack::compute_by_step_size(const int start, const int end)
 {
   int step_size = expected_step_size;

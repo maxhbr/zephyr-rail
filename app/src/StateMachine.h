@@ -20,7 +20,15 @@
 #include "Stack.h"
 
 
-enum stack_state { S0, S_IDLE, S_INTERACTIVE_MOVE };
+enum stack_state { 
+  S0,
+  S_IDLE,
+  S_INTERACTIVE_MOVE,
+  S_PARENT_STACKING,
+  S_STACK,
+  S_STACK_MOVE,
+  S_STACK_IMG
+};
 
 struct s_object {
     struct smf_ctx ctx;
