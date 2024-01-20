@@ -24,7 +24,6 @@ void Display::init_tabview(lv_obj_t *parent)
 
 Display::Display()
 {
-  k_mutex_init(&lvgl_mutex);
   if (!device_is_ready(display_dev))
   {
     LOG_ERR("Device not ready, aborting");
@@ -49,9 +48,7 @@ Display::Display()
 
 void Display::run_task_handler()
 {
-  /* k_mutex_lock(&lvgl_mutex, K_FOREVER); */
   lv_task_handler();
-  /* k_mutex_unlock(&lvgl_mutex); */
 }
 
 lv_obj_t *Display::make_tab(const char *title)

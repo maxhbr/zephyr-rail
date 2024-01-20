@@ -1,5 +1,4 @@
-#ifndef __STACK_H_
-#define __STACK_H_
+#pragma once
 
 #include <zephyr/device.h>
 #include <zephyr/init.h>
@@ -58,6 +57,3 @@ public:
     };
   }
 };
-
-#endif // __STACK_H_
-

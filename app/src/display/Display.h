@@ -17,7 +17,6 @@ static const struct device *lvgl_keypad =
 	DEVICE_DT_GET(DT_COMPAT_GET_ANY_STATUS_OKAY(zephyr_lvgl_keypad_input));
 #endif /* CONFIG_LV_Z_KEYPAD_INPUT */
 
-static struct k_mutex lvgl_mutex;
 
 class Display
 {
