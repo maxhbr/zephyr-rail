@@ -31,7 +31,9 @@ LOG_MODULE_REGISTER(rail);
 #include "Stack.h"
 #include "StateMachine.h"
 
-#if 0
+static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
+static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
+
 static void input_cb(struct input_event *evt)
 {
   LOG_DBG("type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
@@ -44,39 +46,29 @@ static void input_cb(struct input_event *evt)
   {
     return;
   }
+  struct controller_msg msg;
   int err;
 
   switch (evt->code)
   {
   case INPUT_KEY_0:
-    LOG_INF("-...");
-    s_obj.stepper->go_relative(-10000);
+    msg = {GO_CONTROLLER_ACTION,-1000};
     break;
   case INPUT_KEY_1:
-    LOG_INF("+...");
-    s_obj.stepper->go_relative(10000);
+    msg = {GO_CONTROLLER_ACTION,1000};
     break;
   case INPUT_KEY_2:
-    s_obj.stack->set_lower_bound(s_obj.stepper->get_target_position());
+    msg = {SET_NEW_LOWER_BOUND_ACTION,0};
     break;
   case INPUT_KEY_3:
-    s_obj.stack->set_upper_bound(s_obj.stepper->get_target_position());
+    msg = {SET_NEW_UPPER_BOUND_ACTION,0};
     break;
-  /* case INPUT_KEY_ENTER: */
-  /*   break; */
-  /* case INPUT_KEY_DOWN: */
-  /*   break; */
-  /* case INPUT_KEY_UP: */
-  /*   break; */
-  /* case INPUT_KEY_LEFT: */
-  /*   break; */
-  /* case INPUT_KEY_RIGHT: */
-  /*   break; */
   default:
     LOG_DBG("Unrecognized input code %u value %d",
             evt->code, evt->value);
     return;
   }
+  err = controller_action_pub(&msg);
   if (err == -ENOMSG)
   {
     LOG_INF("Pub an invalid value to a channel with validator successfully.");
@@ -84,10 +76,6 @@ static void input_cb(struct input_event *evt)
 }
 
 INPUT_CALLBACK_DEFINE(NULL, input_cb);
-#endif
-
-static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
-static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
 
 int main(void)
 {

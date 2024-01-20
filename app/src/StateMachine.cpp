@@ -74,3 +74,50 @@ static int32_t run_state_machine()
 {
   return smf_run_state(SMF_CTX(s_obj_ptr));
 }
+
+// ############################################################################
+// initialize ZBus
+
+ZBUS_CHAN_DEFINE(controller_msg_chan,   /* Name */
+                 struct controller_msg, /* Message type */
+                 NULL,
+                 NULL,
+                 ZBUS_OBSERVERS(controller_action_listener),
+                 ZBUS_MSG_INIT(.action = NOOP_CONTROLLER_ACTION, .value = 0));
+static void controller_action_listener_cb(const struct zbus_channel *chan)
+{
+  if (s_obj_ptr == NULL)
+  {
+    return;
+  }
+  const struct controller_msg *msg = (const struct controller_msg *)zbus_chan_const_msg(chan);
+  switch (msg->action)
+  {
+  case NOOP_CONTROLLER_ACTION:
+    break;
+  case GO_CONTROLLER_ACTION:
+    s_obj_ptr->stepper->go_relative(msg->value);
+    break;
+  case GO_TO_CONTROLLER_ACTION:
+    s_obj_ptr->stepper->set_target_position(msg->value);
+    break;
+  case SET_NEW_LOWER_BOUND_ACTION:
+    s_obj_ptr->stack->set_lower_bound(s_obj_ptr->stepper->get_target_position());
+    break;
+  case SET_NEW_UPPER_BOUND_ACTION:
+    s_obj_ptr->stack->set_upper_bound(s_obj_ptr->stepper->get_target_position());
+    break;
+  default:
+    LOG_ERR("unknown action: %i", msg->action);
+    break;
+  }
+}
+
+ZBUS_LISTENER_DEFINE(controller_action_listener, controller_action_listener_cb);
+
+
+static int controller_action_pub(controller_msg *msg) 
+{
+  return  zbus_chan_pub(&controller_msg_chan, msg, K_MSEC(200));
+}
+
