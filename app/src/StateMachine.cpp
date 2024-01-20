@@ -55,12 +55,14 @@ static void s_interactive_move_run(void *o)
 
 static void s_parent_stacking_entry(void *o)
 {
+  LOG_DBG("%s", __FUNCTION__);
   struct s_object *s = (struct s_object *)o;
   s->stack->start_stack();
 }
 
 static void s_parent_stacking_exit(void *o)
 {
+  LOG_DBG("%s", __FUNCTION__);
 }
 
 static void s_stack_run(void *o)
@@ -77,11 +79,13 @@ static void s_stack_run(void *o)
 
 static void s_stack_move_run(void *o)
 {
+  LOG_DBG("%s", __FUNCTION__);
   smf_set_state(SMF_CTX(s_obj_ptr), s_stack_img_ptr);
 }
 
 static void s_stack_img_run(void *o)
 {
+  LOG_DBG("%s", __FUNCTION__);
   struct s_object *s = (struct s_object *)o;
   s->stack->increment_step();
   smf_set_state(SMF_CTX(s_obj_ptr), s_stack_ptr);
@@ -93,8 +97,8 @@ static const struct smf_state stack_states[] = {
   [S_INTERACTIVE_MOVE] = SMF_CREATE_STATE(NULL, s_interactive_move_run, NULL, NULL),
   [S_PARENT_STACKING] = SMF_CREATE_STATE(s_parent_stacking_entry, NULL, s_parent_stacking_exit, NULL),
   [S_STACK] = SMF_CREATE_STATE(NULL, s_stack_run, NULL, &stack_states[S_PARENT_STACKING]),
-  [S_STACK_MOVE] = SMF_CREATE_STATE(NULL, NULL, NULL, &stack_states[S_PARENT_STACKING]),
-  [S_STACK_IMG] = SMF_CREATE_STATE(NULL, NULL, NULL, &stack_states[S_PARENT_STACKING]),
+  [S_STACK_MOVE] = SMF_CREATE_STATE(NULL, s_stack_move_run, NULL, &stack_states[S_PARENT_STACKING]),
+  [S_STACK_IMG] = SMF_CREATE_STATE(NULL, s_stack_img_run, NULL, &stack_states[S_PARENT_STACKING]),
 };
 
 
