@@ -83,8 +83,9 @@ int main(void)
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
   Stack stack;
+  struct s_object s_obj = init_state_machine(&stepper, &stack);
+
   Gui gui;
-  struct s_object s_obj = init_state_machine(&stepper, &stack, &gui);
 
   start_stepper(&stepper);
   int32_t ret;

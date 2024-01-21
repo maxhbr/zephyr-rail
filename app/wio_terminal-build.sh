@@ -3,7 +3,9 @@ set -euo pipefail
 
 build() {
   local board="$1"
-  local builddir="$2"
+  shift
+  local builddir="$1"
+  shift
 
   west=west
   if command -v west-arm &> /dev/null; then
@@ -15,7 +17,7 @@ build() {
     $west build \
         -d "$builddir" \
         -b "$board" \
-        .
+        . "$@"
   )
 }
 
@@ -50,11 +52,13 @@ main() {
   local builddir="builds/$board"
   mkdir -p "$builddir"
 
-  build "$board" "$builddir"
 
   if [[ "$#" -gt 0 && "$1" == "flash" ]]; then
-    local uf2="$builddir/zephyr/zephyr.uf2"
-    flash_via_mount "Arduino" "$uf2"
+    # local uf2="$builddir/zephyr/zephyr.uf2"
+    # flash_via_mount "Arduino" "$uf2"
+    build "$board" "$builddir" -t flash
+  else
+    build "$board" "$builddir"
   fi
 }
 

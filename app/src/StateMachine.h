@@ -33,25 +33,25 @@ enum stack_state {
 struct s_object {
     struct smf_ctx ctx;
     /* Other state specific data add here */
-    StepperWithTarget *stepper;
-    Stack *stack;
-    Gui *gui;
+    const StepperWithTarget *stepper;
+    const Stack *stack;
 };
 
 
-struct s_object init_state_machine(const StepperWithTarget *stepper, const Stack * stack, const Gui * gui);
+struct s_object init_state_machine(const StepperWithTarget *stepper, const Stack * stack);
 int32_t run_state_machine();
 
-
-#define NOOP_CONTROLLER_ACTION 0
-#define GO_CONTROLLER_ACTION 1
-#define GO_TO_CONTROLLER_ACTION 2
-#define SET_NEW_LOWER_BOUND_ACTION 3
-#define SET_NEW_UPPER_BOUND_ACTION 4
+enum state_action {
+  NOOP_CONTROLLER_ACTION,
+  GO_CONTROLLER_ACTION,
+  GO_TO_CONTROLLER_ACTION,
+  SET_NEW_LOWER_BOUND_ACTION,
+  SET_NEW_UPPER_BOUND_ACTION
+};
 
 struct controller_msg
 {
-  int action;
+  state_action action;
   int value;
 };
 

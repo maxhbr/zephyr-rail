@@ -102,7 +102,7 @@ static const struct smf_state stack_states[] = {
 };
 
 
-static struct s_object init_state_machine(const StepperWithTarget *stepper, const Stack * stack, const Gui * gui)
+static struct s_object init_state_machine(const StepperWithTarget *stepper, const Stack * stack)
 {
   struct s_object s_obj;
   s_obj_ptr = &s_obj;
@@ -116,7 +116,6 @@ static struct s_object init_state_machine(const StepperWithTarget *stepper, cons
 
   s_obj.stepper = stepper;
   s_obj.stack = stack;
-  s_obj.gui = gui;
 
   smf_set_initial(SMF_CTX(s_obj_ptr), s0_ptr);
 
