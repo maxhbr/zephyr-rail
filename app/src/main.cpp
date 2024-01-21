@@ -25,8 +25,7 @@
 
 #include "stepper/StepperWithTarget.h"
 #include "Gui.h"
-#include "Stack.h"
-#include "StateMachine.h"
+#include "state/StateMachine.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(rail);
@@ -82,8 +81,7 @@ int main(void)
 
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
-  Stack stack;
-  struct s_object s_obj = init_state_machine(&stepper, &stack);
+  struct s_object s_obj = init_state_machine(&stepper);
 
   Gui gui;
 
@@ -96,7 +94,7 @@ int main(void)
     }
 
     /* update GUI */
-    gui.update(&s_obj.stepper->get_status(), &s_obj.stack->get_status());
+    gui.update(&s_obj.stepper->get_status(), &s_obj.stack.get_status());
     gui.run_task_handler();
 
     /* sleep */

@@ -39,7 +39,7 @@ class Stack
   bool compute_by_expected_length_of_stack(const int start, const int end);
   bool compute();
 public:
-  Stack() {};
+  Stack();
 
   void log_state();
 

@@ -15,8 +15,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "stepper/StepperWithTarget.h"
-#include "Gui.h"
+#include "../stepper/StepperWithTarget.h"
 #include "Stack.h"
 
 
@@ -34,11 +33,11 @@ struct s_object {
     struct smf_ctx ctx;
     /* Other state specific data add here */
     const StepperWithTarget *stepper;
-    const Stack *stack;
+    const Stack stack;
 };
 
 
-struct s_object init_state_machine(const StepperWithTarget *stepper, const Stack * stack);
+struct s_object init_state_machine(const StepperWithTarget *stepper);
 int32_t run_state_machine();
 
 enum state_action {

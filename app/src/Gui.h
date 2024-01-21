@@ -16,7 +16,7 @@
 
 #include "stepper/StepperWithTarget.h"
 #include "display/Display.h"
-#include "Stack.h"
+#include "state/Stack.h"
 
 
 class Gui : public Display

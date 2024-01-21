@@ -57,7 +57,7 @@ static void s_parent_stacking_entry(void *o)
 {
   LOG_DBG("%s", __FUNCTION__);
   struct s_object *s = (struct s_object *)o;
-  s->stack->start_stack();
+  s->stack.start_stack();
 }
 
 static void s_parent_stacking_exit(void *o)
@@ -69,8 +69,8 @@ static void s_stack_run(void *o)
 {
   LOG_DBG("%s", __FUNCTION__);
   struct s_object *s = (struct s_object *)o;
-  s->stack->log_state();
-  if(s->stack->stack_in_progress()) {
+  s->stack.log_state();
+  if(s->stack.stack_in_progress()) {
     smf_set_state(SMF_CTX(s_obj_ptr), s_stack_move_ptr);
   } else {
     smf_set_state(SMF_CTX(s_obj_ptr), s_idle_state_ptr);
@@ -87,7 +87,7 @@ static void s_stack_img_run(void *o)
 {
   LOG_DBG("%s", __FUNCTION__);
   struct s_object *s = (struct s_object *)o;
-  s->stack->increment_step();
+  s->stack.increment_step();
   smf_set_state(SMF_CTX(s_obj_ptr), s_stack_ptr);
 }
 
@@ -102,7 +102,7 @@ static const struct smf_state stack_states[] = {
 };
 
 
-static struct s_object init_state_machine(const StepperWithTarget *stepper, const Stack * stack)
+static struct s_object init_state_machine(const StepperWithTarget *stepper)
 {
   struct s_object s_obj;
   s_obj_ptr = &s_obj;
@@ -115,6 +115,7 @@ static struct s_object init_state_machine(const StepperWithTarget *stepper, cons
   s_stack_img_ptr = &stack_states[S_STACK_IMG];
 
   s_obj.stepper = stepper;
+  Stack stack;
   s_obj.stack = stack;
 
   smf_set_initial(SMF_CTX(s_obj_ptr), s0_ptr);
@@ -162,10 +163,10 @@ static void controller_action_listener_cb(const struct zbus_channel *chan)
     s_obj_ptr->stepper->set_target_position(msg->value);
     break;
   case SET_NEW_LOWER_BOUND_ACTION:
-    s_obj_ptr->stack->set_lower_bound(s_obj_ptr->stepper->get_target_position());
+    s_obj_ptr->stack.set_lower_bound(s_obj_ptr->stepper->get_target_position());
     break;
   case SET_NEW_UPPER_BOUND_ACTION:
-    s_obj_ptr->stack->set_upper_bound(s_obj_ptr->stepper->get_target_position());
+    s_obj_ptr->stack.set_upper_bound(s_obj_ptr->stepper->get_target_position());
     break;
   default:
     LOG_ERR("unknown action: %i", msg->action);

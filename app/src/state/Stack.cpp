@@ -2,6 +2,10 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(stack);
 
+Stack::Stack() {
+  LOG_INF("setup stack");
+};
+
 void Stack::log_state() {
   LOG_INF("%i -> %i", lower_bound, upper_bound);
 };

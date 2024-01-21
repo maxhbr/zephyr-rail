@@ -21,5 +21,5 @@ project(zephyr-rail)
 zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
 
 
-FILE(GLOB app_sources src/*.cpp src/stepper/*.cpp src/display/*.cpp)
+FILE(GLOB app_sources src/*.cpp src/stepper/*.cpp src/display/*.cpp src/state/*.cpp)
 target_sources(app PRIVATE ${app_sources})
