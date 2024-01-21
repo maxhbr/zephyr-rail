@@ -23,13 +23,13 @@
 
 #include <zephyr/console/console.h>
 
-#include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(rail);
-
 #include "stepper/StepperWithTarget.h"
 #include "Gui.h"
 #include "Stack.h"
 #include "StateMachine.h"
+
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(rail);
 
 static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
 static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);

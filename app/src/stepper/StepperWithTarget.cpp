@@ -14,7 +14,7 @@ void StepperWithTarget::wait_and_pause() {
   while (!is_in_target_position()) {
     k_sleep(K_MSEC(100));
   }
-  Stepper::pause();
+  pause();
   LOG_INF("...pause");
 }
 

@@ -15,10 +15,6 @@
 
 #include "../GPIOs.h"
 
-#if !DT_NODE_EXISTS(DT_NODELABEL(stepper))
-#error "Overlay for stepper node not properly defined."
-#endif
-
 class PULSE : public GPIO
 {
 public:
