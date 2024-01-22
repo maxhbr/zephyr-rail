@@ -45,7 +45,7 @@ static void input_cb(struct input_event *evt)
   {
     return;
   }
-  struct controller_msg msg;
+  struct state_msg msg;
   int err;
 
   switch (evt->code)
@@ -67,7 +67,7 @@ static void input_cb(struct input_event *evt)
             evt->code, evt->value);
     return;
   }
-  err = controller_action_pub(&msg);
+  err = state_action_pub(&msg);
   if (err == -ENOMSG)
   {
     LOG_INF("Pub an invalid value to a channel with validator successfully.");
@@ -88,7 +88,7 @@ int main(void)
   start_stepper(&stepper);
   int32_t ret;
   while(1) {
-    ret = run_state_machine();
+    ret = run_state_machine(&s_obj);
     if (ret) {
       break;
     }
@@ -100,5 +100,7 @@ int main(void)
     /* sleep */
     k_msleep(50);
   }
+
+  return ret;
 }
 
