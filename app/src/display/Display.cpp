@@ -56,6 +56,26 @@ lv_obj_t *Display::make_tab(const char *title)
   return lv_tabview_add_tab(tabview, title);
 }
 
+lv_obj_t *Display::make_status_table_tab()
+{
+  lv_obj_t *tab = make_tab("status");
+  table = lv_table_create(tab);
+  lv_obj_set_width(table, LV_SIZE_CONTENT);
+  return tab;
+}
+
+void Display::set_table_cell_value(int y, int x, const char *value)
+{
+  lv_table_set_cell_value(table, y, x, value);
+}
+
+void Display::set_table_cell_value_int(int y, int x, int value)
+{
+  char str[30];
+  sprintf(str, "%d", value);
+  set_table_cell_value(y,x,str);
+}
+
 lv_obj_t *Display::add_container(lv_obj_t *parent, int width, int height)
 {
   lv_obj_t *container = lv_win_create(parent, NULL);

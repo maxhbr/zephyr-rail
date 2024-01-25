@@ -6,17 +6,10 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: nrfconnect
       url-base: http://github.com/nrfconnect
-    - name:  joelguittet
-      url-base: http://github.com/joelguittet
   projects:
-    # - name: zephyr
-    #   remote: zephyrproject-rtos
-    #   revision: 982fc416f8df34977a720a372564b3b673e1fd1e
-    #   clone-depth: 1
-    #   import: true
     - name: zephyr
-      remote: joelguittet
-      revision: jguittet/fix-gpio-keys-wio-terminal
+      remote: zephyrproject-rtos
+      revision: e7875de3f9ad434e1c6e21416c58afcb21ed3acf
       clone-depth: 1
       import: true
     # - name: nrf

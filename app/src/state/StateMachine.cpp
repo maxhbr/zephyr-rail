@@ -15,6 +15,7 @@ ZBUS_CHAN_DEFINE(state_msg_chan,   /* Name */
 
 static int state_action_pub(state_msg *msg) 
 {
+  LOG_INF("send msg: action=%d value=%d", msg->action, msg->value);
   return  zbus_chan_pub(&state_msg_chan, msg, K_MSEC(200));
 }
 
@@ -133,11 +134,8 @@ static const struct smf_state stack_states[] = {
   [S_STACK_IMG] = SMF_CREATE_STATE(NULL, s_stack_img_run, NULL, &stack_states[S_PARENT_STACKING]),
 };
 
-
-static struct s_object init_state_machine(const StepperWithTarget *stepper)
+StateMachine::StateMachine(const StepperWithTarget *stepper)
 {
-  struct s_object s_obj;
-
   s0_ptr = &stack_states[S0];
   s_interactive_state_ptr = &stack_states[S_INTERACTIVE];
   s_stack_ptr = &stack_states[S_STACK];
@@ -149,12 +147,18 @@ static struct s_object init_state_machine(const StepperWithTarget *stepper)
   s_obj.stack = stack;
 
   smf_set_initial(SMF_CTX(&s_obj), s0_ptr);
-
-  return s_obj;
 }
 
-static int32_t run_state_machine(struct s_object *s)
+int32_t StateMachine::run_state_machine()
 {
-  return smf_run_state(SMF_CTX(s));
+  LOG_DBG("%s", __FUNCTION__);
+  return smf_run_state(SMF_CTX(&s_obj));
 }
 
+
+const struct stepper_with_target_status StateMachine::get_stepper_status() {
+  return s_obj.stepper->get_status();
+}
+const struct stack_status StateMachine::get_stack_status() {
+  return s_obj.stack.get_status();
+}

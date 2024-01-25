@@ -39,7 +39,7 @@ bool Stepper::step_towards(int target) {
 
   set_direction_towards(target);
   pulse.pulse();
-  position += direction * step_jump;
+  position += direction;
 
   k_sem_give(stepper_sem);
 

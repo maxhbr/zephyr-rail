@@ -7,12 +7,82 @@ int Gui::position_as_nm(const int pitch_per_rev, const int pulses_per_rev, const
   return (position * pitch_per_rev * 1000) / pulses_per_rev;
 }
 
+
+void Gui::fill_move_panel(lv_obj_t *parent)
+{
+
+  
+    /*lv_obj_t * dd = lv_dropdown_create(parent); */
+    /*lv_dropdown_set_options(dd, */
+    /*    "1\n" */
+    /*    "10\n" */
+    /*    "100\n" */
+    /*    "1000\n" */
+    /*    "10000"); */
+    /*lv_obj_align(dd, LV_ALIGN_TOP_MID, 0, 20); */
+
+    lv_obj_t *left_btn = Display::add_button(parent, "<<", 100, 60);
+    lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
+    lv_obj_add_event_cb(
+        left_btn, [](lv_event_t *event) {
+          struct state_msg msg;
+          msg = {GO_CONTROLLER_ACTION,-1000};
+          state_action_pub(&msg);
+        },
+        LV_EVENT_PRESSED, NULL);
+    lv_obj_t *right_btn = Display::add_button(parent, ">>", 100, 60);
+    lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
+    lv_obj_add_event_cb(
+        right_btn, [](lv_event_t *event) {
+          struct state_msg msg;
+          msg = {GO_CONTROLLER_ACTION,1000};
+          state_action_pub(&msg);
+        },
+        LV_EVENT_PRESSED, NULL);
+
+    lv_obj_t *set_lower = Display::add_button(parent, "Set lower", 100, 30);
+    lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
+    //   lv_obj_add_event_cb(set_lower, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_SET_LOWER, btn, event);
+    //   });
+    lv_obj_t *set_upper = Display::add_button(parent, "Set upper", 100, 30);
+    lv_obj_align(set_upper, LV_ALIGN_TOP_RIGHT, -10, 75);
+    //   lv_obj_add_event_cb(set_upper, [](lv_obj_t *btn, lv_event_t event) {
+    //     //static_view_pointer->event_cb(ACTION_SET_UPPER, btn, event);
+    //   });
+
+    /* lv_obj_t *go_to_lower = Display::add_button(parent, NULL, 100, 30); */
+    /* lower_label = Display::add_label(go_to_lower); */
+    /* lv_label_set_text(lower_label, "Go to lower"); */
+    /* lv_obj_align(go_to_lower, LV_ALIGN_TOP_LEFT, 10, 110); */
+    /* //   lv_obj_add_event_cb(go_to_lower, [](lv_obj_t *btn, lv_event_t event) { */
+    /* //     //static_view_pointer->event_cb(ACTION_GO_TO_LOWER, btn, event); */
+    /* //   }); */
+
+    /* lv_obj_t *go_to_upper = Display::add_button(parent, NULL, 100, 30); */
+    /* upper_label = Display::add_label(go_to_upper); */
+    /* lv_label_set_text(upper_label, "Go to upper"); */
+    /* lv_obj_align(go_to_upper, LV_ALIGN_TOP_RIGHT, -10, 110); */
+    /* //   lv_obj_add_event_cb(go_to_upper, [](lv_obj_t *btn, lv_event_t event) { */
+    /* //     //static_view_pointer->event_cb(ACTION_GO_TO_UPPER, btn, event); */
+    /* //   }); */
+
+    lv_obj_t *slider = lv_slider_create(parent);
+    lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_slider_set_range(slider, 0, 7);
+    lv_slider_set_value(slider, 7, 0);
+    // lv_obj_set_width(slider, LV_PCT(95))
+
+
+}
+
 Gui::Gui() : Display()
 {
     move_tab = make_tab("move");
+    fill_move_panel(move_tab);
     stack_tab = make_tab("stack");
     config_tab = make_tab("cfg");
-    status_tab = make_tab("status");
+    make_status_table_tab();
 }
 
 void Gui::update(const struct stepper_with_target_status *stepper_with_target_status,
@@ -62,6 +132,21 @@ void Gui::update(const struct stepper_with_target_status *stepper_with_target_st
       snprintf(buf, sizeof(buf), ">> %d", upper_bound_nm);
     }
     Display::set_status_right(buf);
+  /* int direction; */
+  /* int step_jump; */
+  /* int position; */
+  /* int pitch_per_rev; */ 
+	/* int pulses_per_rev; */
+    int row=0;
+    set_table_cell_value(row,0,"pitch_per_rev");
+    set_table_cell_value_int(row,1,stepper_status->pitch_per_rev);
+    set_table_cell_value(row,2,"pulses_per_rev");
+    set_table_cell_value_int(row,3,stepper_status->pulses_per_rev);
+    row++;
+    set_table_cell_value(row,0,"position");
+    set_table_cell_value_int(row,1,stepper_status->position);
+    set_table_cell_value(row,2,"position_nm");
+    set_table_cell_value_int(row,3,position_nm);
 }
 
 
@@ -71,9 +156,6 @@ void Gui::update(const struct stepper_with_target_status *stepper_with_target_st
 
 /* void View::fill_move_panel(lv_obj_t *parent) */
 /* { */
-
-
-
 /*     /1* step_size_roller = Display::add_roller(parent, "12800\n" *1/ */
 /*     /1*                                                "6400\n" *1/ */
 /*     /1*                                                "1280\n" *1/ */

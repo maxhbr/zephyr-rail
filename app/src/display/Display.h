@@ -29,6 +29,7 @@ class Display
   lv_obj_t *status_label_left;
   lv_obj_t *status_label_right;
   void init_status_labels(lv_obj_t *parent);
+  lv_obj_t *table;
 
   const lv_font_t *font_title = &lv_font_montserrat_14;    // _28;
   const lv_font_t *font_subtitle = &lv_font_montserrat_14; // _24;
@@ -39,6 +40,9 @@ public:
   Display();
 
   lv_obj_t *make_tab(const char *title);
+  lv_obj_t *make_status_table_tab();
+  void set_table_cell_value(int y, int x, const char *value);
+  void set_table_cell_value_int(int y, int x, int value);
   lv_obj_t *add_container(lv_obj_t *parent, int width, int heigth);
   lv_obj_t *add_label(lv_obj_t *parent);
   lv_obj_t *add_panel(lv_obj_t *parent);

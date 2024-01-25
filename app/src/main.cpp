@@ -81,25 +81,33 @@ int main(void)
 
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
-  struct s_object s_obj = init_state_machine(&stepper);
+  StateMachine sm(&stepper);
 
   Gui gui;
 
   start_stepper(&stepper);
+
   int32_t ret;
+  
+  struct stepper_with_target_status stepper_status;
+  struct stack_status stack_status;
   while(1) {
-    ret = run_state_machine(&s_obj);
+    ret = sm.run_state_machine();
     if (ret) {
       break;
     }
 
     /* update GUI */
-    gui.update(&s_obj.stepper->get_status(), &s_obj.stack.get_status());
+    stepper_status = sm.get_stepper_status();
+    stack_status = sm.get_stack_status(); 
+    gui.update(&stepper_status, &stack_status);
     gui.run_task_handler();
 
     /* sleep */
     k_msleep(50);
   }
+
+  LOG_ERR("Exited the infinite loop...");
 
   return ret;
 }

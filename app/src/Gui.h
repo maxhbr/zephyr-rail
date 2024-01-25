@@ -17,6 +17,7 @@
 #include "stepper/StepperWithTarget.h"
 #include "display/Display.h"
 #include "state/Stack.h"
+#include "state/StateMachine.h"
 
 
 class Gui : public Display
@@ -27,6 +28,7 @@ private:
 
   
   lv_obj_t *move_tab;
+  void fill_move_panel(lv_obj_t *parent);
   lv_obj_t *stack_tab;
   lv_obj_t *config_tab;
   lv_obj_t *status_tab;

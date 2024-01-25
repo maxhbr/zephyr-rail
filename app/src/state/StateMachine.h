@@ -18,6 +18,22 @@
 #include "../stepper/StepperWithTarget.h"
 #include "Stack.h"
 
+enum state_action {
+  NOOP_CONTROLLER_ACTION,
+  GO_CONTROLLER_ACTION,
+  GO_TO_CONTROLLER_ACTION,
+  SET_NEW_LOWER_BOUND_ACTION,
+  SET_NEW_UPPER_BOUND_ACTION,
+  // Stacking
+  START_STACK
+};
+
+struct state_msg
+{
+  state_action action;
+  int value;
+};
+int state_action_pub(state_msg *msg);
 
 enum stack_state { 
   S0,
@@ -35,32 +51,15 @@ struct s_object {
     const Stack stack;
 };
 
-
-struct s_object init_state_machine(const StepperWithTarget *stepper);
-int32_t run_state_machine(struct s_object *s);
-
-enum state_action {
-  NOOP_CONTROLLER_ACTION,
-  GO_CONTROLLER_ACTION,
-  GO_TO_CONTROLLER_ACTION,
-  SET_NEW_LOWER_BOUND_ACTION,
-  SET_NEW_UPPER_BOUND_ACTION,
-  // Stacking
-  START_STACK
-};
-
-struct controller_msg
+class StateMachine
 {
-  state_action action;
-  int value;
+  struct s_object s_obj; 
+public:
+  StateMachine(const StepperWithTarget *stepper);
+
+  int32_t run_state_machine();
+
+  const struct stepper_with_target_status get_stepper_status();
+  const struct stack_status get_stack_status();
 };
 
-int controller_action_pub(controller_msg *msg);
-
-struct state_msg
-{
-  state_action action;
-  int value;
-};
-
-int state_action_pub(state_msg *msg);

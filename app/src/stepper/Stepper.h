@@ -35,7 +35,6 @@ public:
 struct stepper_status
 {
   int direction;
-  int step_jump;
   int position;
   int pitch_per_rev; 
 	int pulses_per_rev;
@@ -45,7 +44,6 @@ class Stepper
 {
   struct k_sem *stepper_sem;
   int direction = DIR_RIGHT;
-  int step_jump = 1;
   int position = 0;
 
   int pitch_per_rev = 2; 
@@ -70,7 +68,6 @@ public:
   {
     return {
         .direction = direction,
-        .step_jump = step_jump,
         .position = position,
         .pitch_per_rev = pitch_per_rev,
         .pulses_per_rev = pulses_per_rev};
