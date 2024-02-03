@@ -80,8 +80,8 @@ Gui::Gui() : Display()
 {
     move_tab = make_tab("move");
     fill_move_panel(move_tab);
-    stack_tab = make_tab("stack");
-    config_tab = make_tab("cfg");
+    /* stack_tab = make_tab("stack"); */
+    /* config_tab = make_tab("cfg"); */
     make_status_table_tab();
 }
 
@@ -132,21 +132,16 @@ void Gui::update(const struct stepper_with_target_status *stepper_with_target_st
       snprintf(buf, sizeof(buf), ">> %d", upper_bound_nm);
     }
     Display::set_status_right(buf);
-  /* int direction; */
-  /* int step_jump; */
-  /* int position; */
-  /* int pitch_per_rev; */ 
-	/* int pulses_per_rev; */
-    int row=0;
-    set_table_cell_value(row,0,"pitch_per_rev");
-    set_table_cell_value_int(row,1,stepper_status->pitch_per_rev);
-    set_table_cell_value(row,2,"pulses_per_rev");
-    set_table_cell_value_int(row,3,stepper_status->pulses_per_rev);
-    row++;
-    set_table_cell_value(row,0,"position");
-    set_table_cell_value_int(row,1,stepper_status->position);
-    set_table_cell_value(row,2,"position_nm");
-    set_table_cell_value_int(row,3,position_nm);
+/* int row=0; */
+    /* set_table_cell_value(row,0,"pitch_per_rev"); */
+    /* set_table_cell_value_int(row,1,stepper_status->pitch_per_rev); */
+    /* set_table_cell_value(row,2,"pulses_per_rev"); */
+    /* set_table_cell_value_int(row,3,stepper_status->pulses_per_rev); */
+    /* row++; */
+    /* set_table_cell_value(row,0,"position"); */
+    /* set_table_cell_value_int(row,1,stepper_status->position); */
+    /* set_table_cell_value(row,2,"position_nm"); */
+    /* set_table_cell_value_int(row,3,position_nm); */
 }
 
 
