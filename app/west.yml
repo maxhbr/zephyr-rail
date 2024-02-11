@@ -9,7 +9,7 @@ manifest:
   projects:
     - name: zephyr
       remote: zephyrproject-rtos
-      revision: e7875de3f9ad434e1c6e21416c58afcb21ed3acf
+      revision: b4e66299cdf687003ad6d7e010328f468fda1fbd
       clone-depth: 1
       import: true
     # - name: nrf

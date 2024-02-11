@@ -23,22 +23,22 @@ void Gui::fill_move_panel(lv_obj_t *parent)
 
     lv_obj_t *left_btn = Display::add_button(parent, "<<", 100, 60);
     lv_obj_align(left_btn, LV_ALIGN_TOP_LEFT, 10, 10);
-    lv_obj_add_event_cb(
-        left_btn, [](lv_event_t *event) {
-          struct state_msg msg;
-          msg = {GO_CONTROLLER_ACTION,-1000};
-          state_action_pub(&msg);
-        },
-        LV_EVENT_PRESSED, NULL);
+    /* lv_obj_add_event_cb( */
+    /*     left_btn, [](lv_event_t *event) { */
+    /*       struct state_msg msg; */
+    /*       msg = {GO_CONTROLLER_ACTION,-1000}; */
+    /*       state_action_pub(&msg); */
+    /*     }, */
+    /*     LV_EVENT_PRESSED, NULL); */
     lv_obj_t *right_btn = Display::add_button(parent, ">>", 100, 60);
     lv_obj_align(right_btn, LV_ALIGN_TOP_RIGHT, -10, 10);
-    lv_obj_add_event_cb(
-        right_btn, [](lv_event_t *event) {
-          struct state_msg msg;
-          msg = {GO_CONTROLLER_ACTION,1000};
-          state_action_pub(&msg);
-        },
-        LV_EVENT_PRESSED, NULL);
+    /* lv_obj_add_event_cb( */
+    /*     right_btn, [](lv_event_t *event) { */
+    /*       struct state_msg msg; */
+    /*       msg = {GO_CONTROLLER_ACTION,1000}; */
+    /*       state_action_pub(&msg); */
+    /*     }, */
+    /*     LV_EVENT_PRESSED, NULL); */
 
     lv_obj_t *set_lower = Display::add_button(parent, "Set lower", 100, 30);
     lv_obj_align(set_lower, LV_ALIGN_TOP_LEFT, 10, 75);
