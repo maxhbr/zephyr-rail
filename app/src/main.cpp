@@ -56,14 +56,11 @@ int main(void)
       break;
     }
 
-    /* update GUI */
-    stepper_status = sm.get_stepper_status();
-    stack_status = sm.get_stack_status(); 
-    gui.update(&stepper_status, &stack_status);
-    gui.run_task_handler();
-
-    /* sleep */
-    k_msleep(50);
+    /* /1* update GUI *1/ */
+    /* stepper_status = sm.get_stepper_status(); */
+    /* stack_status = sm.get_stack_status(); */ 
+    /* gui.update(&stepper_status, &stack_status); */
+    /* gui.run_task_handler(); */
   }
 
   LOG_ERR("Exited the infinite loop...");

@@ -18,15 +18,6 @@
 #include "../stepper/StepperWithTarget.h"
 #include "Stack.h"
 
-/* #define EVENT_INPUT_KEY_0     BIT(INPUT_KEY_0) */
-/* #define EVENT_INPUT_KEY_1     BIT(INPUT_KEY_1) */
-/* #define EVENT_INPUT_KEY_2     BIT(INPUT_KEY_2) */
-/* #define EVENT_INPUT_KEY_ENTER BIT(INPUT_KEY_ENTER) */
-/* #define EVENT_INPUT_KEY_DOWN  BIT(INPUT_KEY_DOWN) */
-/* #define EVENT_INPUT_KEY_UP    BIT(INPUT_KEY_UP) */
-/* #define EVENT_INPUT_KEY_LEFT  BIT(INPUT_KEY_LEFT) */
-/* #define EVENT_INPUT_KEY_RIGHT BIT(INPUT_KEY_RIGHT) */
-
 /* enum state_action { */
 /*   NOOP_CONTROLLER_ACTION, */
 /*   GO_CONTROLLER_ACTION, */
