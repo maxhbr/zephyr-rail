@@ -23,9 +23,8 @@
 
 #include <zephyr/console/console.h>
 
-#include "stepper/StepperWithTarget.h"
-#include "Gui.h"
-#include "state/StateMachine.h"
+#include "StepperWithTarget.h"
+#include "StateMachine.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(rail);
@@ -41,8 +40,6 @@ int main(void)
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
   StateMachine sm(&stepper);
-
-  Gui gui;
 
   start_stepper(&stepper);
 

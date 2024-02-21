@@ -15,7 +15,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "../stepper/StepperWithTarget.h"
+#include "StepperWithTarget.h"
 #include "Stack.h"
 
 /* enum state_action { */
