@@ -28,12 +28,15 @@ jobs:
           git config --global user.email "bot@maxhbr.de"
           git config --global user.name "Maxhbr Bot"
           git config --global --add safe.directory "$(readlink -f .)"
-          ./init.sh
+          cd app
+          west init -l
+          west update --narrow
 
       - name: build
         run: |
           app/wio_terminal-build.sh
-      - uses: actions/upload-artifact@v3
+
+      - uses: actions/upload-artifact@v4
         with:
           name: build-output
           path: ./app/builds/wio_terminal
