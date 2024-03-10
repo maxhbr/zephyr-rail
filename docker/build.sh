@@ -4,9 +4,9 @@ set -euo pipefail
 oci_cmd=docker
 
 context="$( cd -- "$( dirname -- "$(readlink -f "${BASH_SOURCE[0]}")" )" &> /dev/null && pwd )"
-repo="$(readlink -f "${context}/..")"
-path="$(cat "$repo/west.yml" | yq -r '.manifest.self.path')"
-tag="maxhbr/${path}-zephyrbuilder"
+path="app"
+repo="$(readlink -f "${context}/../${path}")"
+tag="maxhbr/zephyr-rail-zephyrbuilder"
 
 oci_build() {
     $oci_cmd build "$context" --tag "$tag"
@@ -28,7 +28,7 @@ if [[ $# -gt 0 && "$1" == "build" ]]; then
     oci_build
 fi
 
-[[ -d ".west" ]] || oci_west init -l "$path"
+[[ -d ".west" ]] || oci_west init
 oci_west update #-f always
 oci_west config -l
 oci_west zephyr-export

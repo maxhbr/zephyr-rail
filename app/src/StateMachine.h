@@ -15,29 +15,50 @@
 
 #include <zephyr/logging/log.h>
 
-#include "../stepper/StepperWithTarget.h"
+#include "StepperWithTarget.h"
 #include "Stack.h"
 
-enum state_action {
-  NOOP_CONTROLLER_ACTION,
-  GO_CONTROLLER_ACTION,
-  GO_TO_CONTROLLER_ACTION,
-  SET_NEW_LOWER_BOUND_ACTION,
-  SET_NEW_UPPER_BOUND_ACTION,
-  // Stacking
-  START_STACK
-};
+/* enum state_action { */
+/*   NOOP_CONTROLLER_ACTION, */
+/*   GO_CONTROLLER_ACTION, */
+/*   GO_TO_CONTROLLER_ACTION, */
+/*   SET_NEW_LOWER_BOUND_ACTION, */
+/*   SET_NEW_UPPER_BOUND_ACTION, */
+/*   // Stacking */
+/*   START_STACK */
+/* }; */
 
-struct state_msg
-{
-  state_action action;
-  int value;
+/* struct state_msg */
+/* { */
+/*   state_action action; */
+/*   int value; */
+/* }; */
+/* int state_action_pub(state_msg *msg); */
+
+enum event {
+  EVENT_INPUT_KEY_0,
+  EVENT_INPUT_KEY_1,
+  EVENT_INPUT_KEY_2,
+  EVENT_INPUT_KEY_ENTER,
+  EVENT_INPUT_KEY_DOWN,
+  EVENT_INPUT_KEY_UP,
+  EVENT_INPUT_KEY_LEFT,
+  EVENT_INPUT_KEY_RIGHT
 };
-int state_action_pub(state_msg *msg);
+struct event_msg
+{
+  std::optional<event> event;
+};
+int event_pub(event event); 
+void input_cb(struct input_event *evt);
 
 enum stack_state { 
   S0,
-  S_INTERACTIVE,
+
+  S_PARENT_INTERACTIVE,
+  S_INTERACTIVE_MOVE,
+  S_INTERACTIVE_PRE_STACKING,
+
   S_PARENT_STACKING,
   S_STACK,
   S_STACK_MOVE,

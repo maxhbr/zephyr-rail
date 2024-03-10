@@ -1,4 +1,4 @@
-ARG ZEPHYR_CI_IMAGE_VERSION="v0.26.6"
+ARG ZEPHYR_CI_IMAGE_VERSION="v0.26.8"
 
 FROM ghcr.io/zephyrproject-rtos/zephyr-build:${ZEPHYR_CI_IMAGE_VERSION}
 
