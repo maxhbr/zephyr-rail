@@ -13,7 +13,7 @@
 
 #include <zephyr/logging/log.h>
 
-#include "../GPIOs.h"
+#include "GPIOs.h"
 
 class PULSE : public GPIO
 {
