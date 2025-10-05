@@ -5,16 +5,15 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Customize the version of Zephyr used by the flake here
-    zephyr.url = "github:zephyrproject-rtos/zephyr/v3.7.0";
+    zephyr.url = "github:zephyrproject-rtos/zephyr/v4.2.0";
     zephyr.flake = false;
-    
+
+    zephyr-nix.url = "github:nix-community/zephyr-nix";
+    zephyr-nix.inputs.nixpkgs.follows = "nixpkgs";
+    zephyr-nix.inputs.zephyr.follows = "zephyr";
 
     flake-utils.url = "github:numtide/flake-utils";
     flake-utils.inputs.nixpkgs.follows = "nixpkgs";
-
-    zephyr-nix.url = "github:maxhbr/zephyr-nix";
-    zephyr-nix.inputs.nixpkgs.follows = "nixpkgs";
-    zephyr-nix.inputs.zephyr.follows = "zephyr";
 
     west2nix.url = "github:adisbladis/west2nix";
     west2nix.inputs.nixpkgs.follows = "nixpkgs";
