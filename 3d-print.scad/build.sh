@@ -82,8 +82,8 @@ if [[ $# -gt 0 ]]; then
             buildPart "$1" "${1}_v${version}.stl"
             ;;
         render)
-            time render -o rail-1.png --camera=41.42,79.40,57.78,61.30,0,32.7,1579.6 &
-            time render -o rail-2.png --camera=-22.35,75.49,-46.77,48.7,0,202.5,679.97 &
+            time render -o rail-1.png -D 'mode="develop"' --camera=41.42,79.40,57.78,61.30,0,32.7,1579.6 &
+            time render -o rail-2.png -D 'mode="assembly"' --camera=-58.68,86.05,58.29,55.7,0,303.1,495.7 &
             wait
             ;;
         test)
