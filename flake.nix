@@ -116,7 +116,7 @@
             };
         };
         devShells.default = pkgs.mkShell {
-          packages = [zephyr-env];
+          packages = [ zephyr-env ];
         };
       }
     ));
