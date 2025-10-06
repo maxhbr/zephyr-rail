@@ -38,7 +38,8 @@ flash_via_mount() {
             (
                 set -x
                 udisksctl mount -b "$dev"
-                local mnt="$(findmnt -nr -o target -S "$dev")"
+                local mnt
+                mnt="$(findmnt -nr -o target -S "$dev")"
                 cp "$uf2" "$mnt"
             )
             break

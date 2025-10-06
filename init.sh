@@ -84,6 +84,11 @@ west_update_if_was_not_updated_already_today() {
     touch "$stamp_file"
 }
 
+regenerate_mermaild_svg() {
+    echo "INFO: Regenerating mermaid SVG"
+    mmdc -i - -o app/mermaid.StateMachine.svg -t neutral -b transparent <app/mermaid.StateMachine.mmd
+}
+
 main() {
     go_to_root_of_git
     local remote name ref
@@ -93,6 +98,7 @@ main() {
     generate_west_yml "$remote" "$name" "$ref"
     west_init_once
     west_update_if_was_not_updated_already_today
+    regenerate_mermaild_svg
 }
 
 main

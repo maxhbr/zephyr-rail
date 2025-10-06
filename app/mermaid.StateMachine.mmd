@@ -1,9 +1,3 @@
-#!/usr/bin/env nix-shell
-#! nix-shell -i bash -p mermaid-cli entr
-
-mermaid() {
-    # S_PARENT_INTERACTIVE;
-  cat <<EOF |mmdc -i - -o mermaid.StateMachine.svg -t neutral -b transparent
 flowchart LR;
     S0((S0));
 
@@ -27,11 +21,3 @@ flowchart LR;
 
     S_INTERACTIVE_MOVE -->|press\n- up: inc step\n- down: dec step\n...| S_INTERACTIVE_MOVE;
     S_INTERACTIVE_PRE_STACKING -->|press\n- up: inc nmbr\n- down: dec nmbr\n...| S_INTERACTIVE_PRE_STACKING;
-EOF
-}
-
-if [[ "$1" == "run" ]]; then
-  mermaid
-else
-  echo "$0" | entr "$0" run
-fi
