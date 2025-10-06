@@ -8,4 +8,4 @@ west build \
     -b b_u585i_iot02a \
     . \
     -- -DSHIELD=adafruit_2_8_tft_touch_v2
- west flash -d builds/b_u585i_iot02a -r openocd
+west flash -d builds/b_u585i_iot02a -r openocd

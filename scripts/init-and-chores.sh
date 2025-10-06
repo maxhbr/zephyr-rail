@@ -144,11 +144,8 @@ main() {
         exit 1
     fi
 
-    west_init_once
-
-    if [[ $chores == "true" ]]; then
-        west_update_if_was_not_updated_already_today
-    fi
+    west_init_and_update
+    west_update_if_was_not_updated_already_today
 
     if [[ $headless == "false" ]]; then
         if ! regenerate_mermaid_svg && [[ $fail_if_out_of_sync == "true" ]]; then
