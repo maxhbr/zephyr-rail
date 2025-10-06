@@ -13,7 +13,6 @@
     zephyr-nix.inputs.zephyr.follows = "zephyr";
 
     flake-utils.url = "github:numtide/flake-utils";
-    flake-utils.inputs.nixpkgs.follows = "nixpkgs";
 
     git-hooks.url = "github:cachix/git-hooks.nix";
 
@@ -33,9 +32,25 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        zephyr-packages = inputs.zephyr-nix.packages.${system};
-        # west2nix = pkgs.callPackage inputs.west2nix.lib.mkWest2nix { };
         inherit (nixpkgs) lib;
+        zephyr-packages = inputs.zephyr-nix.packages.${system};
+        zephyr-env = pkgs.symlinkJoin {
+          name = "zephyr-env";
+          paths = [
+            (zephyr-packages.sdk.override {
+              targets = [
+                "arm-zephyr-eabi"
+              ];
+            })
+            zephyr-packages.pythonEnv
+            zephyr-packages.hosttools-nix
+          ]
+          ++ (with pkgs; [
+            cmake
+            ninja
+          ]);
+        };
+        # west2nix = pkgs.callPackage inputs.west2nix.lib.mkWest2nix { };
       in
       {
         apps = {
@@ -46,7 +61,7 @@
                 init-script = pkgs.writeShellApplication {
                   name = "init-script";
                   runtimeInputs = [
-                    zephyr-packages.pythonEnv
+                    zephyr-env
                   ]
                   ++ (with pkgs; [
                     git
@@ -58,6 +73,10 @@
                 };
               in
               "${init-script}/bin/init-script";
+          };
+          west = {
+            type = "app";
+            program = "${zephyr-env}/bin/west";
           };
         };
         formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
@@ -97,19 +116,7 @@
             };
         };
         devShells.default = pkgs.mkShell {
-          packages = [
-            (zephyr-packages.sdk.override {
-              targets = [
-                "arm-zephyr-eabi"
-              ];
-            })
-            zephyr-packages.pythonEnv
-            zephyr-packages.hosttools-nix
-          ]
-          ++ (with pkgs; [
-            cmake
-            ninja
-          ]);
+          packages = [zephyr-env];
         };
       }
     ));
