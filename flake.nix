@@ -15,9 +15,9 @@
     flake-utils.url = "github:numtide/flake-utils";
     flake-utils.inputs.nixpkgs.follows = "nixpkgs";
 
-    west2nix.url = "github:adisbladis/west2nix";
-    west2nix.inputs.nixpkgs.follows = "nixpkgs";
-    west2nix.inputs.zephyr-nix.follows = "zephyr-nix";
+    # west2nix.url = "github:adisbladis/west2nix";
+    # west2nix.inputs.nixpkgs.follows = "nixpkgs";
+    # west2nix.inputs.zephyr-nix.follows = "zephyr-nix";
   };
 
   outputs =
@@ -32,6 +32,7 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         zephyr-packages = inputs.zephyr-nix.packages.${system};
+        # west2nix = pkgs.callPackage inputs.west2nix.lib.mkWest2nix { };
         inherit (nixpkgs) lib;
       in
       {
