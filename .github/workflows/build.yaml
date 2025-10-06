@@ -59,7 +59,9 @@ jobs:
           nix run .#init -- --init-only
 
       - name: build
-        run: nix develop -c ${{ matrix.config.script }}
+        run: |
+          pwd
+          nix develop -c ${{ matrix.config.script }}
 
       # - uses: actions/upload-artifact@v4
       #   with:
