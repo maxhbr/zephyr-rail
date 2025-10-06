@@ -100,7 +100,7 @@ west_update_if_was_not_updated_already_today() {
         fi
     fi
     echo "INFO: Updating west"
-    west update
+    west update --narrow
     touch "$stamp_file"
 }
 
