@@ -6,6 +6,7 @@ on: push
   #     - main
 
 jobs:
+
   nix-flake-check:
     runs-on: ubuntu-latest
     steps:
@@ -15,6 +16,7 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - run: nix flake check
+
   init-ci:
     runs-on: ubuntu-latest
     steps:
@@ -24,21 +26,23 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - run: nix run .#init -- --ci
-  build:
+
+  build-nix:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/zephyrproject-rtos/ci:v0.26.8
-      options: '--entrypoint /bin/bash'
-    env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.5-1
-      LLVM_TOOLCHAIN_PATH: /usr/lib/llvm-16
+    strategy:
+      matrix:
+        config:
+          - { script: app/wio_terminal-build.sh , output: ./app/builds/wio_terminal }
+      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        # with:
-        #   ref: ${{ github.event.pull_request.head.sha }}
-        #   fetch-depth: 0
-        #   persist-credentials: false
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            experimental-features = nix-command flakes
 
       - name: Environment Setup
         run: |
@@ -49,10 +53,43 @@ jobs:
           nix run .#init -- --init-only
 
       - name: build
-        run: |
-          app/wio_terminal-build.sh
+        run: nix develop -c ${{ matrix.config.script }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: ./app/builds/wio_terminal
+          path: ${{ matrix.config.output }}
+
+  build-container:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - { script: app/wio_terminal-build.sh , output: ./app/builds/wio_terminal }
+      fail-fast: false
+    container:
+      image: ghcr.io/zephyrproject-rtos/ci:v0.26.8
+      options: '--entrypoint /bin/bash'
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.5-1
+      LLVM_TOOLCHAIN_PATH: /usr/lib/llvm-16
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Environment Setup
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          git config --global user.email "bot@maxhbr.de"
+          git config --global user.name "Maxhbr Bot"
+          git config --global --add safe.directory "$(readlink -f .)"
+          west init -l app
+          west update --narrow
+
+      - name: build
+        run: ${{ matrix.config.script }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: ${{ matrix.config.output }}
