@@ -6,6 +6,24 @@ on: push
   #     - main
 
 jobs:
+  nix-flake-check:
+    runs-on: ubuntu-latest
+    steps:
+    - run: git config --global init.defaultBranch main
+    - uses: actions/checkout@v5
+    - uses: cachix/install-nix-action@v31
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+    - run: nix flake check
+  init-ci:
+    runs-on: ubuntu-latest
+    steps:
+    - run: git config --global init.defaultBranch main
+    - uses: actions/checkout@v5
+    - uses: cachix/install-nix-action@v31
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+    - run: nix run .#init -- --ci
   build:
     runs-on: ubuntu-latest
     container:
@@ -28,9 +46,7 @@ jobs:
           git config --global user.email "bot@maxhbr.de"
           git config --global user.name "Maxhbr Bot"
           git config --global --add safe.directory "$(readlink -f .)"
-          cd app
-          west init -l
-          west update --narrow
+          nix run .#init -- --init-only
 
       - name: build
         run: |
@@ -40,13 +56,3 @@ jobs:
         with:
           name: build-output
           path: ./app/builds/wio_terminal
-
-  nix-flake-check:
-    runs-on: ubuntu-latest
-    steps:
-    - run: git config --global init.defaultBranch main
-    - uses: actions/checkout@v5
-    - uses: cachix/install-nix-action@v31
-      with:
-        github_access_token: ${{ secrets.GITHUB_TOKEN }}
-    - run: nix flake check

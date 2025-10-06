@@ -54,7 +54,7 @@
                     diffutils
                     mermaid-cli
                   ]);
-                  text = builtins.readFile ./init.sh;
+                  text = builtins.readFile ./scripts/init-and-chores.sh;
                 };
               in
               "${init-script}/bin/init-script";
@@ -76,7 +76,7 @@
             let
               pkgs = inputs.nixpkgs.legacyPackages."${system}";
               files = pkgs.lib.concatStringsSep " " [
-                "init.sh"
+                "scripts/init-and-chores.sh"
               ];
             in
             pkgs.stdenv.mkDerivation {

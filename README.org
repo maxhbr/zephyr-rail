@@ -15,7 +15,8 @@ The Camera is controlled via IR. The IR LED is driven by a transistor.
 
 ** Controller
 MCU:
-- [[https://www.st.com/en/evaluation-tools/stm32h747i-disco.html][STM32H747I-DISCO]]
+- [[https://www.st.com/en/evaluation-tools/stm32h747i-disco.html][STM32H747I-DISCO]] with [[https://docs.zephyrproject.org/latest/boards/st/stm32h747i_disco/doc/index.html][-b stm32h747i_disco]]
+- [[https://www.st.com/en/evaluation-tools/stm32h7b3i-dk.html][STM32H7B3I-DK]] with [[https://docs.zephyrproject.org/latest/boards/st/stm32h7b3i_dk/doc/index.html][-b stm32h7b3i_dk]]
 - [[https://www.st.com/en/evaluation-tools/b-u585i-iot02a.html][B-U585I-IOT02A]] with Adafruit 2.4" TFT
 - ~~[[https://www.seeedstudio.com/Wio-Terminal-p-4509.html][WIO Terminal]]~~ only the first three gpio-keys work and [[https://github.com/zephyrproject-rtos/zephyr/issues/66547][PWM is not clear]]
 
