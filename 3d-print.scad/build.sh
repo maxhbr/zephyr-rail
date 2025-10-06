@@ -94,13 +94,13 @@ if [[ $# -gt 0 ]]; then
 Build script for 3D printable parts of the Zephyr Rail
 
 Usage:
-    $0 all              Build all parts
-    $0 print|ball_base_mount|ringclamp
+    \$0 all              Build all parts
+    \$0 print|ball_base_mount|ringclamp
         print           Build the main rail part
         ball_base_mount Build the ball base mount part
         ringclamp       Build the ring clamp part
-    $0 render           Render images for the README
-    $0 test             Test $scad for syntax and integrity
+    \$0 render           Render images for the README
+    \$0 test             Test $scad for syntax and integrity
 EOF
             exit 1
             ;;
