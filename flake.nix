@@ -20,14 +20,22 @@
     west2nix.inputs.zephyr-nix.follows = "zephyr-nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }@inputs: (
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      ...
+    }@inputs:
+    (flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         zephyr-packages = inputs.zephyr-nix.packages.${system};
         inherit (nixpkgs) lib;
       in
       {
+        formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
         devShells.default = pkgs.mkShell {
           packages = [
             (zephyr-packages.sdk.override {
@@ -37,7 +45,8 @@
             })
             zephyr-packages.pythonEnv
             zephyr-packages.hosttools-nix
-          ] ++ (with pkgs; [
+          ]
+          ++ (with pkgs; [
             cmake
             ninja
           ]);
