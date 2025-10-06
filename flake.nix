@@ -15,6 +15,8 @@
     flake-utils.url = "github:numtide/flake-utils";
     flake-utils.inputs.nixpkgs.follows = "nixpkgs";
 
+    git-hooks.url = "github:cachix/git-hooks.nix";
+
     # west2nix.url = "github:adisbladis/west2nix";
     # west2nix.inputs.nixpkgs.follows = "nixpkgs";
     # west2nix.inputs.zephyr-nix.follows = "zephyr-nix";
@@ -58,6 +60,41 @@
           };
         };
         formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+        checks = {
+          pre-commit-check = inputs.git-hooks.lib.${system}.run {
+            src = ./.;
+            hooks = {
+              nixfmt-rfc-style.enable = true;
+              # shfmt.enable = true;
+              # shfmt.settings.simplify = true;
+              # shellcheck.enable = true;
+              # typos.enable = true;
+            };
+          };
+          shell-fmt-check =
+            let
+              pkgs = inputs.nixpkgs.legacyPackages."${system}";
+              files = pkgs.lib.concatStringsSep " " [
+                "init.sh"
+              ];
+            in
+            pkgs.stdenv.mkDerivation {
+              name = "shell-fmt-check";
+              src = ./.;
+              doCheck = true;
+              nativeBuildInputs = with pkgs; [
+                shellcheck
+                shfmt
+              ];
+              checkPhase = ''
+                shfmt -d -s -i 4 -ci ${files}
+                shellcheck -x ${files}
+              '';
+              installPhase = ''
+                mkdir "$out"
+              '';
+            };
+        };
         devShells.default = pkgs.mkShell {
           packages = [
             (zephyr-packages.sdk.override {
