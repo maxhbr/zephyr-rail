@@ -10,7 +10,7 @@ ZBUS_CHAN_DEFINE(event_msg_chan,   /* Name */
                  NULL,
                  NULL,
                  ZBUS_OBSERVERS(event_sub),
-                 ZBUS_MSG_INIT(.event = {}));
+                 ZBUS_MSG_INIT(.evt = {}));
 
 
 static int event_pub(event event) 
@@ -22,7 +22,7 @@ static int event_pub(event event)
 
 ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 
-static void input_cb(struct input_event *evt)
+static void input_cb(struct input_event *evt, void *user_data)
 {
   LOG_DBG("type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
 
@@ -128,9 +128,10 @@ struct smf_state *s_stack_img_ptr;
 /*   return false; */
 /* } */
 
-static void s0_run(void *o)
+static enum smf_state_result s0_run(void *o)
 {
   smf_set_state(SMF_CTX(o), s_interactive_move_ptr);
+  return SMF_EVENT_HANDLED;
 }
 
 static void s_log_state(void *o)
@@ -150,7 +151,7 @@ static void s_parent_interactive_exit(void *o)
   LOG_INF("%s", __FUNCTION__);
 }
 
-static void s_interactive_move_run(void *o)
+static enum smf_state_result s_interactive_move_run(void *o)
 {
   struct s_object *s = (struct s_object *)o;
 
@@ -162,12 +163,12 @@ static void s_interactive_move_run(void *o)
       struct event_msg msg;
 			zbus_chan_read(&event_msg_chan, &msg, K_MSEC(100));
 
-      if (! msg.event.has_value()) {
+      if (! msg.evt.has_value()) {
         LOG_INF("no value in event_msg");
-        return;
+        return SMF_EVENT_HANDLED;
       }
 
-      switch(msg.event.value()) {
+      switch(msg.evt.value()) {
         case EVENT_INPUT_KEY_RIGHT:
           smf_set_state(SMF_CTX(o), s_interactive_pre_stacking_ptr);
           break;
@@ -180,15 +181,16 @@ static void s_interactive_move_run(void *o)
           s->stepper->go_relative(-100);
           break;
         default:
-          LOG_INF("unsupported event: %d", msg.event.value());
+          LOG_INF("unsupported event: %d", msg.evt.value());
       }
 		}
   } else {
     LOG_ERR("failed to wait for zbus");
 	}
+  return SMF_EVENT_HANDLED;
 }
 
-static void s_interactive_pre_stacking_run(void *o)
+static enum smf_state_result s_interactive_pre_stacking_run(void *o)
 {
   struct s_object *s = (struct s_object *)o;
 
@@ -200,22 +202,23 @@ static void s_interactive_pre_stacking_run(void *o)
       struct event_msg msg;
 			zbus_chan_read(&event_msg_chan, &msg, K_MSEC(100));
 
-      if (! msg.event.has_value()) {
+      if (! msg.evt.has_value()) {
         LOG_INF("no value in event_msg");
-        return;
+        return SMF_EVENT_HANDLED;
       }
 
-      switch(msg.event.value()) {
+      switch(msg.evt.value()) {
         case EVENT_INPUT_KEY_LEFT:
           smf_set_state(SMF_CTX(o), s_interactive_move_ptr);
           break;
         default:
-          LOG_INF("unsupported event: %d", msg.event.value());
+          LOG_INF("unsupported event: %d", msg.evt.value());
       }
 		}
   } else {
     LOG_ERR("failed to wait for zbus");
 	}
+  return SMF_EVENT_HANDLED;
 }
 
 static void s_parent_stacking_entry(void *o)
@@ -228,7 +231,7 @@ static void s_parent_stacking_exit(void *o)
 {
 }
 
-static void s_stack_run(void *o)
+static enum smf_state_result s_stack_run(void *o)
 {
   struct s_object *s = (struct s_object *)o;
   s->stack.log_state();
@@ -237,31 +240,34 @@ static void s_stack_run(void *o)
   } else {
     smf_set_state(SMF_CTX(o), s_interactive_move_ptr);
   }
+  return SMF_EVENT_HANDLED;
 }
 
-static void s_stack_move_run(void *o)
+static enum smf_state_result s_stack_move_run(void *o)
 {
   smf_set_state(SMF_CTX(o), s_stack_img_ptr);
+  return SMF_EVENT_HANDLED;
 }
 
-static void s_stack_img_run(void *o)
+static enum smf_state_result s_stack_img_run(void *o)
 {
   struct s_object *s = (struct s_object *)o;
   s->stack.increment_step();
   smf_set_state(SMF_CTX(o), s_stack_ptr);
+  return SMF_EVENT_HANDLED;
 }
 
 static const struct smf_state stack_states[] = {
-  [S0] = SMF_CREATE_STATE(NULL, s0_run, NULL, NULL),
+  [S0] = SMF_CREATE_STATE(NULL, s0_run, NULL, NULL, NULL),
 
-  [S_PARENT_INTERACTIVE] = SMF_CREATE_STATE(s_parent_interactive_entry, NULL, s_parent_interactive_exit, NULL),
-  [S_INTERACTIVE_MOVE] = SMF_CREATE_STATE(s_log_state, s_interactive_move_run, NULL, &stack_states[S_PARENT_INTERACTIVE]),
-  [S_INTERACTIVE_PRE_STACKING] = SMF_CREATE_STATE(s_log_state, s_interactive_pre_stacking_run, NULL, &stack_states[S_PARENT_INTERACTIVE]),
+  [S_PARENT_INTERACTIVE] = SMF_CREATE_STATE(s_parent_interactive_entry, NULL, s_parent_interactive_exit, NULL, NULL),
+  [S_INTERACTIVE_MOVE] = SMF_CREATE_STATE(s_log_state, s_interactive_move_run, NULL, &stack_states[S_PARENT_INTERACTIVE], NULL),
+  [S_INTERACTIVE_PRE_STACKING] = SMF_CREATE_STATE(s_log_state, s_interactive_pre_stacking_run, NULL, &stack_states[S_PARENT_INTERACTIVE], NULL),
 
-  [S_PARENT_STACKING] = SMF_CREATE_STATE(s_parent_stacking_entry, NULL, s_parent_stacking_exit, NULL),
-  [S_STACK] = SMF_CREATE_STATE(NULL, s_stack_run, NULL, &stack_states[S_PARENT_STACKING]),
-  [S_STACK_MOVE] = SMF_CREATE_STATE(NULL, s_stack_move_run, NULL, &stack_states[S_PARENT_STACKING]),
-  [S_STACK_IMG] = SMF_CREATE_STATE(NULL, s_stack_img_run, NULL, &stack_states[S_PARENT_STACKING]),
+  [S_PARENT_STACKING] = SMF_CREATE_STATE(s_parent_stacking_entry, NULL, s_parent_stacking_exit, NULL, NULL),
+  [S_STACK] = SMF_CREATE_STATE(NULL, s_stack_run, NULL, &stack_states[S_PARENT_STACKING], NULL),
+  [S_STACK_MOVE] = SMF_CREATE_STATE(NULL, s_stack_move_run, NULL, &stack_states[S_PARENT_STACKING], NULL),
+  [S_STACK_IMG] = SMF_CREATE_STATE(NULL, s_stack_img_run, NULL, &stack_states[S_PARENT_STACKING], NULL),
 };
 
 StateMachine::StateMachine(const StepperWithTarget *stepper)

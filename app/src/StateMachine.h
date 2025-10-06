@@ -47,10 +47,10 @@ enum event {
 };
 struct event_msg
 {
-  std::optional<event> event;
+  std::optional<event> evt;
 };
 int event_pub(event event); 
-void input_cb(struct input_event *evt);
+void input_cb(struct input_event *evt, void *user_data);
 
 enum stack_state { 
   S0,
