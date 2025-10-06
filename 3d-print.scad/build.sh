@@ -25,15 +25,46 @@ render() {
 
 version="${1:-"1.1.6-unstable"}"
 
-# time buildPart "print" "rail_v${version}.stl" &
-# time buildPart "ball_base_mount" "ball_base_mount_v${version}.stl" &
-# time buildPart "ringclamp" "ringclamp_v${version}.stl" &
-time render -o rail-1.png --camera=41.42,79.40,57.78,61.30,0,32.7,1579.6 &
-time render -o rail-2.png --camera=-22.35,75.49,-46.77,48.7,0,202.5,679.97 &
-# time render -o Nidavellir-1.png --camera=250,93,4,73,0,351,495 &
-# time render -o Nidavellir-2.png --camera=-22.35,75.49,-46.77,57.1,0,145.1,679.97 &
-# time render -o Nidavellir-3.png --camera=-22.35,75.49,-46.77,48.7,0,202.5,679.97 &
-# time render -o Nidavellir-4.png --camera=-154.39,134.1,-14.54,66.9,0,315.7,446.13 &
+build_all() {
+    time buildPart "print" "rail_v${version}.stl" &
+    time buildPart "ball_base_mount" "ball_base_mount_v${version}.stl" &
+    time buildPart "ringclamp" "ringclamp_v${version}.stl" &
 
-wait
+    wait
+}
+
+if [[ $# -gt 0 ]]; then
+    case "$1" in
+        all)
+            time "$0" print &
+            time "$0" ball_base_mount & 
+            time "$0" ringclamp &
+            wait
+            ;;
+        print|ball_base_mount|ringclamp)
+            buildPart "$1" "${1}_v${version}.stl"
+            ;;
+        render)
+            time render -o rail-1.png --camera=41.42,79.40,57.78,61.30,0,32.7,1579.6 &
+            time render -o rail-2.png --camera=-22.35,75.49,-46.77,48.7,0,202.5,679.97 &
+            wait
+            ;;
+        *)
+            cat <<EOF
+Build script for 3D printable parts of the Zephyr Rail
+
+Usage:
+    $0 all              Build all parts
+    $0 print|ball_base_mount|ringclamp
+        print           Build the main rail part
+        ball_base_mount Build the ball base mount part
+        ringclamp       Build the ring clamp part
+    $0 render           Render images for the README
+EOF
+            exit 1
+            ;;
+    esac
+    exit 0
+fi
+
 times
