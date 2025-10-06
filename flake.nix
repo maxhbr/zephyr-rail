@@ -36,6 +36,26 @@
         inherit (nixpkgs) lib;
       in
       {
+        apps = {
+          init = {
+            type = "app";
+            program =
+              let
+                init-script = pkgs.writeShellApplication {
+                  name = "init-script";
+                  runtimeInputs = [
+                    zephyr-packages.pythonEnv
+                  ]
+                  ++ (with pkgs; [
+                    git
+                    jq
+                  ]);
+                  text = builtins.readFile ./init.sh;
+                };
+              in
+              "${init-script}/bin/init-script";
+          };
+        };
         formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
         devShells.default = pkgs.mkShell {
           packages = [
