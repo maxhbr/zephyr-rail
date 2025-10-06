@@ -68,6 +68,23 @@ jobs:
       #     name: build-output
       #     path: ${{ matrix.config.output }}
 
+  test-scad:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Test SCAD files
+        run: |
+          cd 3d-print.scad
+          nix run .#scad-build -- --test
+
   # build-container:
   #   runs-on: ubuntu-latest
   #   strategy:

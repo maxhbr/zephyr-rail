@@ -78,6 +78,20 @@
             type = "app";
             program = "${zephyr-env}/bin/west";
           };
+          scad-build = {
+            type = "app";
+            program =
+              let
+                scad-build = pkgs.writeShellApplication {
+                  name = "scad-build";
+                  runtimeInputs = with pkgs; [
+                    openscad
+                  ];
+                  text = builtins.readFile ./3d-print.scad/build.sh;
+                };
+              in
+              "${scad-build}/bin/scad-build";
+          };
         };
         formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
         checks = {
