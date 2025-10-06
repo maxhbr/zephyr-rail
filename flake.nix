@@ -49,6 +49,7 @@
                   ++ (with pkgs; [
                     git
                     jq
+                    diffutils
                   ]);
                   text = builtins.readFile ./init.sh;
                 };

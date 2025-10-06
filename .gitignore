@@ -1,8 +1,15 @@
-.west/
+_*
+
+# build outputs
+build/
+builds/
+
+# zephyr specific ignores
+/.west/
 /bootloader/
 /modules/
 /tools/
 /zephyr/
-build/
-builds/
-_*
+
+# temporary file for init.sh
+app/.tmp.west.yml
