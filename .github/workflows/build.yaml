@@ -32,6 +32,12 @@ jobs:
     strategy:
       matrix:
         config:
+          - { script: app/b_u585i_iot02a-build.sh , output: ./app/builds/b_u585i_iot02a }
+          - { script: app/native_sim-build.sh , output: ./app/builds/native_sim }
+          - { script: app/nrf5340dk-build.sh , output: ./app/builds/nrf5340dk }
+          - { script: app/qemu_x86-build.sh , output: ./app/builds/qemu_x86 }
+          - { script: app/stm32h747i_disco-build.sh , output: ./app/builds/stm32h747i_disco }
+          - { script: app/stm32h7b3i_dk-build.sh , output: ./app/builds/stm32h7b3i_dk }
           - { script: app/wio_terminal-build.sh , output: ./app/builds/wio_terminal }
       fail-fast: false
     steps:
@@ -55,41 +61,41 @@ jobs:
       - name: build
         run: nix develop -c ${{ matrix.config.script }}
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: ${{ matrix.config.output }}
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build-output
+      #     path: ${{ matrix.config.output }}
 
-  build-container:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        config:
-          - { script: app/wio_terminal-build.sh , output: ./app/builds/wio_terminal }
-      fail-fast: false
-    container:
-      image: ghcr.io/zephyrproject-rtos/ci:v0.26.8
-      options: '--entrypoint /bin/bash'
-    env:
-      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.5-1
-      LLVM_TOOLCHAIN_PATH: /usr/lib/llvm-16
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # build-container:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       config:
+  #         - { script: app/wio_terminal-build.sh , output: ./app/builds/wio_terminal }
+  #     fail-fast: false
+  #   container:
+  #     image: ghcr.io/zephyrproject-rtos/ci:v0.26.8
+  #     options: '--entrypoint /bin/bash'
+  #   env:
+  #     ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.5-1
+  #     LLVM_TOOLCHAIN_PATH: /usr/lib/llvm-16
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Environment Setup
-        run: |
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          git config --global user.email "bot@maxhbr.de"
-          git config --global user.name "Maxhbr Bot"
-          git config --global --add safe.directory "$(readlink -f .)"
-          west init -l app
-          west update --narrow
+  #     - name: Environment Setup
+  #       run: |
+  #         echo "$HOME/.local/bin" >> $GITHUB_PATH
+  #         git config --global user.email "bot@maxhbr.de"
+  #         git config --global user.name "Maxhbr Bot"
+  #         git config --global --add safe.directory "$(readlink -f .)"
+  #         west init -l app
+  #         west update --narrow
 
-      - name: build
-        run: ${{ matrix.config.script }}
+  #     - name: build
+  #       run: ${{ matrix.config.script }}
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: ${{ matrix.config.output }}
+  #     # - uses: actions/upload-artifact@v4
+  #     #   with:
+  #     #     name: build-output
+  #     #     path: ${{ matrix.config.output }}
