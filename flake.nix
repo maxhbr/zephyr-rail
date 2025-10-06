@@ -24,16 +24,24 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        zephyr-packages = inputs.zephyr-nix.packages.${system};
         inherit (nixpkgs) lib;
-
-        callPackage = pkgs.newScope (pkgs // {
-          zephyr = inputs.zephyr-nix.packages.${system};
-          west2nix = callPackage inputs.west2nix.lib.mkWest2nix { };
-        });
       in
       {
-        packages.default = callPackage ./default.nix { };
-        devShells.default = callPackage ./shell.nix { };
+        devShells.default = pkgs.mkShell {
+          packages = [
+            (zephyr-packages.sdk.override {
+              targets = [
+                "arm-zephyr-eabi"
+              ];
+            })
+            zephyr-packages.pythonEnv
+            zephyr-packages.hosttools-nix
+          ] ++ (with pkgs; [
+            cmake
+            ninja
+          ]);
+        };
       }
     ));
 }
