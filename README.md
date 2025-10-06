@@ -9,6 +9,7 @@ This Project is structured as follows
     - Arca Swiss Clamp round, diameter 60mm: [link to mjkzz](https://www.mjkzz.de/collections/camera-plates/products/mjkzz-round-quick-release-system?variant=29216681427059)
     - Camera Plate 200mm: [LEOFOTO Quick Release Plate PL-200](https://www.amazon.de/dp/B081DBJ4B8)
   - Some adapters and parts are 3D printent. See [./3d-print.scad](./3d-print.scad).
+    - ![3d-print.scad](./3d-print.scad/rail-1.png)
 - Firmware
 - Electronics
   - Control of the Stepper Motor
