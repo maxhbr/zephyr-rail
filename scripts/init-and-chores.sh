@@ -144,7 +144,7 @@ main() {
         exit 1
     fi
 
-    west_init_and_update
+    west_init_once
     west_update_if_was_not_updated_already_today
 
     if [[ $headless == "false" ]]; then
