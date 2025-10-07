@@ -102,6 +102,21 @@
             type = "app";
             program = "${zephyr-env}/bin/west";
           };
+          entr-mermaid = {
+            type = "app";
+            program =
+              let
+                entr-mermaid = pkgs.writeShellApplication {
+                  name = "entr-mermaid";
+                  runtimeInputs = with pkgs; [
+                    entr
+                    mermaid-cli
+                  ];
+                  text = builtins.readFile ./scripts/entr-mermaid.sh;
+                };
+              in
+              "${entr-mermaid}/bin/entr-mermaid";
+          };
           scad-build = {
             type = "app";
             program =

@@ -105,9 +105,17 @@ west_update_if_was_not_updated_already_today() {
 }
 
 regenerate_mermaid_svg() {
+    local mmd
+    mmd="$1"
+    svg="${mmd%.mmd}.svg"
+    tmpsvg="$(dirname "$svg")/.tmp.$(basename "$svg")"
+    if [ ! -f "$mmd" ]; then
+        echo "ERROR: $mmd does not exist"
+        return 1
+    fi
     echo "INFO: Regenerating mermaid SVG"
-    mmdc -i - -o app/.tmp.mermaid.StateMachine.svg -t neutral -b transparent <app/mermaid.StateMachine.mmd
-    compare_and_replace_generated_and_old app/.tmp.mermaid.StateMachine.svg app/mermaid.StateMachine.svg
+    mmdc -i - -o "$tmpsvg" -t neutral -b transparent <"$mmd"
+    compare_and_replace_generated_and_old "$tmpsvg" "$svg"
 }
 
 main() {
@@ -148,7 +156,11 @@ main() {
     west_update_if_was_not_updated_already_today
 
     if [[ $headless == "false" ]]; then
-        if ! regenerate_mermaid_svg && [[ $fail_if_out_of_sync == "true" ]]; then
+        if ! regenerate_mermaid_svg "app/mermaid.StateMachine.mmd" && [[ $fail_if_out_of_sync == "true" ]]; then
+            echo "ERROR: mermaid SVG was out of sync"
+            exit 1
+        fi
+        if ! regenerate_mermaid_svg "electronics/high-level-plan.mmd" && [[ $fail_if_out_of_sync == "true" ]]; then
             echo "ERROR: mermaid SVG was out of sync"
             exit 1
         fi
