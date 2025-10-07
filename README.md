@@ -25,8 +25,8 @@ Some of the shelf Mechanical Parts used in this project:
 
 ### 3D Printed
 Some adapters and parts are 3D printent. See [./3d-print.scad](./3d-print.scad).
-- ![rail-1.png](./3d-print.scad/rail-1.png)
-- ![rail-2.png](./3d-print.scad/rail-2.png)
+![rail-1.png](./3d-print.scad/rail-1.png)
+![rail-2.png](./3d-print.scad/rail-2.png)
 
 ## Electronics
 Electronics
