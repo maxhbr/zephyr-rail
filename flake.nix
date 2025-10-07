@@ -48,6 +48,8 @@
           ++ (with pkgs; [
             cmake
             ninja
+            # openocd
+            # segger-jlink-headless
           ]);
         };
         # west2nix = pkgs.callPackage inputs.west2nix.lib.mkWest2nix { };

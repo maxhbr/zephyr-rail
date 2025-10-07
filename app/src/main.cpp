@@ -23,12 +23,17 @@
 
 #include <zephyr/console/console.h>
 
+#if 0
 #include "StepperWithTarget.h"
 #include "StateMachine.h"
+#else
+#include "sony_remote.h"
+#endif
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(rail);
 
+#if 0
 static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
 static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
 
@@ -65,3 +70,38 @@ int main(void)
   return ret;
 }
 
+
+#else
+
+extern "C" void main(void) {
+    if (int err = bt_enable(nullptr); err) {
+        printk("bt_enable failed (%d)\n", err);
+        return;
+    }
+
+    printk("BLE on. Enable 'Bluetooth Rmt Ctrl' on the A7R V and pair on first connect.\n");
+
+    SonyRemote remote;
+    remote.begin();
+    remote.startScan();
+
+    bool shot_once = false;
+
+    while (true) {
+        if (!shot_once && remote.ready()) {
+            k_sleep(K_SECONDS(2));
+            remote.focusDown();
+            k_msleep(80);
+            remote.shutterDown();
+            k_msleep(80);
+            remote.shutterUp();
+            k_msleep(50);
+            remote.focusUp();
+            printk("One still shot triggered.\n");
+            shot_once = true;
+        }
+        k_sleep(K_MSEC(200));
+    }
+}
+
+#endif
