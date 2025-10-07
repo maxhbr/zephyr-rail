@@ -11,5 +11,7 @@ builds/
 /tools/
 /zephyr/
 
+stm32cubeprg-lin-*
+
 # temporary file for init.sh
 app/.tmp.west.yml

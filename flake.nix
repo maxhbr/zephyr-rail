@@ -31,8 +31,22 @@
     (flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
-        inherit (nixpkgs) lib;
+        # allow unfree in nixpkgs
+        pkgs = import nixpkgs {
+          inherit system;
+          config = {
+            allowUnfreePredicate =
+              pkg:
+              builtins.elem (lib.getName pkg) [
+                "segger-jlink"
+                "STM32CubeProg"
+              ];
+            segger-jlink.acceptLicense = true;
+            # allowUnfree = true;
+          };
+        };
+        inherit (pkgs) lib;
+        STM32CubeProg = pkgs.callPackage ./nix/STM32CubeProg.nix {};
         zephyr-packages = inputs.zephyr-nix.packages.${system};
         zephyr-env = pkgs.symlinkJoin {
           name = "zephyr-env";
@@ -44,37 +58,45 @@
             })
             zephyr-packages.pythonEnv
             zephyr-packages.hosttools-nix
+            STM32CubeProg
           ]
           ++ (with pkgs; [
             cmake
             ninja
+            binutils
+            gdb
+            pkg-config
+
             # openocd
             # segger-jlink-headless
+            stlink         # st-flash, st-info, st-util
+            dfu-util
+            pyocd
           ]);
         };
         # west2nix = pkgs.callPackage inputs.west2nix.lib.mkWest2nix { };
+        init-script = pkgs.writeShellApplication {
+          name = "init-script";
+          runtimeInputs = [
+            zephyr-env
+          ]
+          ++ (with pkgs; [
+            git
+            jq
+            diffutils
+            mermaid-cli
+          ]);
+          text = builtins.readFile ./scripts/init-and-chores.sh;
+        };
       in
       {
+        packages = {
+          inherit STM32CubeProg;
+        };
         apps = {
           init = {
             type = "app";
-            program =
-              let
-                init-script = pkgs.writeShellApplication {
-                  name = "init-script";
-                  runtimeInputs = [
-                    zephyr-env
-                  ]
-                  ++ (with pkgs; [
-                    git
-                    jq
-                    diffutils
-                    mermaid-cli
-                  ]);
-                  text = builtins.readFile ./scripts/init-and-chores.sh;
-                };
-              in
-              "${init-script}/bin/init-script";
+            program = "${init-script}/bin/init-script";
           };
           west = {
             type = "app";
@@ -130,7 +152,7 @@
             };
         };
         devShells.default = pkgs.mkShell {
-          packages = [ zephyr-env ];
+          packages = [ zephyr-env init-script ];
         };
       }
     ));
