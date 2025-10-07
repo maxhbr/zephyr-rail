@@ -24,17 +24,14 @@
 
 #include <zephyr/console/console.h>
 
-#if 0
 #include "StepperWithTarget.h"
 #include "StateMachine.h"
-#else
 #include "sony_remote.h"
-#endif
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(rail);
 
-#if 0
+#if 1
 static const struct gpio_dt_spec stepper_pulse = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
 static const struct gpio_dt_spec stepper_dir = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
 
