@@ -12,6 +12,7 @@ This Project is structured as follows
     - ![rail-2.png](./3d-print.scad/rail-2.png)
 - Firmware
 - Electronics
+  - ![sketch.svg](./electronics/sketch.svg)
   - Control of the Stepper Motor
   - Control of the Camera
     - Ideas: IR does no longer work with A7Rv, so  maybe use the trigger cable or USB or bluetooth?
