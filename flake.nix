@@ -131,7 +131,17 @@
               "${scad-build}/bin/scad-build";
           };
         };
-        formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+        # formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+        formatter =
+          let
+            pkgs = nixpkgs.legacyPackages.${system};
+            config = self.checks.${system}.pre-commit-check.config;
+            inherit (config) package configFile;
+            script = ''
+              ${pkgs.lib.getExe package} run --all-files --config ${configFile}
+            '';
+          in
+          pkgs.writeShellScriptBin "pre-commit-run" script;
         checks = {
           pre-commit-check = inputs.git-hooks.lib.${system}.run {
             src = ./.;
@@ -141,6 +151,9 @@
               # shfmt.settings.simplify = true;
               shellcheck.enable = true;
               # typos.enable = true;
+              cmake-format.enable = true;
+              clang-format.enable = true;
+              # clang-tidy.enable = true;
             };
           };
           shell-fmt-check =
@@ -165,12 +178,21 @@
               '';
             };
         };
-        devShells.default = pkgs.mkShell {
-          packages = [
-            zephyr-env
-            init-script
-          ];
-        };
+        devShells.default =
+          let
+            inherit (self.checks.${system}.pre-commit-check) shellHook enabledPackages;
+          in
+          pkgs.mkShell {
+            packages = [
+              zephyr-env
+              init-script
+            ]
+            ++ enabledPackages;
+            shellHook = ''
+              ${shellHook}
+              source <(west completion bash)
+            '';
+          };
       }
     ));
 }

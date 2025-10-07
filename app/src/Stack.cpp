@@ -2,16 +2,11 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(stack);
 
-Stack::Stack() {
-  LOG_INF("setup stack");
-};
+Stack::Stack() { LOG_INF("setup stack"); };
 
-void Stack::log_state() {
-  LOG_INF("%i -> %i", lower_bound, upper_bound);
-};
+void Stack::log_state() { LOG_INF("%i -> %i", lower_bound, upper_bound); };
 
-bool Stack::compute_by_step_size(const int start, const int end)
-{
+bool Stack::compute_by_step_size(const int start, const int end) {
   int step_size = expected_step_size;
   if (step_size == 0 || start == end) {
     return;
@@ -24,17 +19,18 @@ bool Stack::compute_by_step_size(const int start, const int end)
   stepps_of_stack[length_of_stack] = start;
   while (stepps_of_stack[length_of_stack] <= end) {
     length_of_stack++;
-    if(length_of_stack > 1999) {
+    if (length_of_stack > 1999) {
       return;
     }
-    stepps_of_stack[length_of_stack] = stepps_of_stack[length_of_stack - 1] + step_size;
+    stepps_of_stack[length_of_stack] =
+        stepps_of_stack[length_of_stack - 1] + step_size;
   }
   stepps_of_stack[length_of_stack] = end;
   length_of_stack++;
 }
 
-bool Stack::compute_by_expected_length_of_stack(const int start, const int end){
-}
+bool Stack::compute_by_expected_length_of_stack(const int start,
+                                                const int end) {}
 
 bool Stack::compute() {
   int start;
@@ -46,15 +42,14 @@ bool Stack::compute() {
     end = lower_bound;
     start = upper_bound;
   }
-  if(compute_via_step_size)  {
+  if (compute_via_step_size) {
     return compute_by_step_size(start, end);
   } else {
     return compute_by_expected_length_of_stack(start, end);
   }
 }
 
-std::optional<int> Stack::start_stack()
-{
+std::optional<int> Stack::start_stack() {
   bool succ = compute();
   if (!succ) {
     return {};
@@ -63,12 +58,12 @@ std::optional<int> Stack::start_stack()
   return get_current_step();
 }
 
-std::optional<int> Stack::get_current_step(){
-  if (! index_in_stack.has_value()) {
+std::optional<int> Stack::get_current_step() {
+  if (!index_in_stack.has_value()) {
     return {};
   }
   int actual_index_in_stack = index_in_stack.value();
-  if(actual_index_in_stack < 0 || length_of_stack <= actual_index_in_stack) {
+  if (actual_index_in_stack < 0 || length_of_stack <= actual_index_in_stack) {
     return {};
   }
   return stepps_of_stack[actual_index_in_stack];
@@ -76,11 +71,11 @@ std::optional<int> Stack::get_current_step(){
 
 void Stack::increment_step() {
   if (index_in_stack.has_value()) {
-    index_in_stack = index_in_stack.value()+1;
+    index_in_stack = index_in_stack.value() + 1;
   }
 }
 
-bool Stack::stack_in_progress(){
+bool Stack::stack_in_progress() {
   return index_in_stack.has_value() && get_current_step().has_value();
 }
 
@@ -93,4 +88,3 @@ void Stack::set_upper_bound(int _upper_bound) {
   upper_bound = _upper_bound;
   start_at_lower = false;
 }
-

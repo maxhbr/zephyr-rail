@@ -1,22 +1,22 @@
 #pragma once
 
-#include <zephyr/device.h>
-#include <zephyr/init.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zephyr/device.h>
+#include <zephyr/init.h>
+#include <zephyr/input/input.h>
 #include <zephyr/kernel.h>
 #include <zephyr/types.h>
 #include <zephyr/zbus/zbus.h>
-#include <zephyr/input/input.h>
 
 #include <zephyr/smf.h>
 
 #include <zephyr/logging/log.h>
 
-#include "StepperWithTarget.h"
 #include "Stack.h"
+#include "StepperWithTarget.h"
 
 /* enum state_action { */
 /*   NOOP_CONTROLLER_ACTION, */
@@ -45,14 +45,13 @@ enum event {
   EVENT_INPUT_KEY_LEFT,
   EVENT_INPUT_KEY_RIGHT
 };
-struct event_msg
-{
+struct event_msg {
   std::optional<event> evt;
 };
-int event_pub(event event); 
+int event_pub(event event);
 void input_cb(struct input_event *evt, void *user_data);
 
-enum stack_state { 
+enum stack_state {
   S0,
 
   S_PARENT_INTERACTIVE,
@@ -66,15 +65,15 @@ enum stack_state {
 };
 
 struct s_object {
-    struct smf_ctx ctx;
-    /* Other state specific data add here */
-    const StepperWithTarget *stepper;
-    const Stack stack;
+  struct smf_ctx ctx;
+  /* Other state specific data add here */
+  const StepperWithTarget *stepper;
+  const Stack stack;
 };
 
-class StateMachine
-{
-  struct s_object s_obj; 
+class StateMachine {
+  struct s_object s_obj;
+
 public:
   StateMachine(const StepperWithTarget *stepper);
 
@@ -83,4 +82,3 @@ public:
   const struct stepper_with_target_status get_stepper_status();
   const struct stack_status get_stack_status();
 };
-

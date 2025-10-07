@@ -4,9 +4,9 @@
 LOG_MODULE_REGISTER(stepper);
 
 K_SEM_DEFINE(_stepper_sem, 0, 1);
-Stepper::Stepper(const struct gpio_dt_spec *stepper_pulse, const struct gpio_dt_spec *stepper_dir)
-  : pulse{PULSE(stepper_pulse)}, dir{GPIO(stepper_dir, GPIO_OUTPUT_ACTIVE)}
-{ 
+Stepper::Stepper(const struct gpio_dt_spec *stepper_pulse,
+                 const struct gpio_dt_spec *stepper_dir)
+    : pulse{PULSE(stepper_pulse)}, dir{GPIO(stepper_dir, GPIO_OUTPUT_ACTIVE)} {
   stepper_sem = &_stepper_sem;
 }
 

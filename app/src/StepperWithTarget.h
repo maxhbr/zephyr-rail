@@ -1,38 +1,38 @@
 #ifndef STEPPERWITHTARGET_H_
 #define STEPPERWITHTARGET_H_
 
-#include <zephyr/device.h>
-#include <zephyr/init.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zephyr/device.h>
+#include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/types.h>
 
+#include <soc.h>
 #include <zephyr/arch/cpu.h>
 #include <zephyr/drivers/gpio.h>
-#include <soc.h>
 #include <zephyr/sys/printk.h>
 
 #include <optional>
 
 #include "Stepper.h"
 
-struct stepper_with_target_status
-{
+struct stepper_with_target_status {
   struct stepper_status stepper_status;
   bool is_moving;
   int target_position;
 };
 
-class StepperWithTarget : private Stepper
-{
+class StepperWithTarget : private Stepper {
   bool is_moving = false;
   int target_position = 0;
 
 public:
-  StepperWithTarget(const struct gpio_dt_spec *stepper_pulse, const struct gpio_dt_spec *stepper_dir) : Stepper(stepper_pulse, stepper_dir){};
+  StepperWithTarget(const struct gpio_dt_spec *stepper_pulse,
+                    const struct gpio_dt_spec *stepper_dir)
+      : Stepper(stepper_pulse, stepper_dir) {};
 
   void log_state();
 
@@ -50,8 +50,7 @@ public:
 
   bool is_in_target_position();
 
-  const struct stepper_with_target_status get_status()
-  {
+  const struct stepper_with_target_status get_status() {
     return {
         .stepper_status = Stepper::get_status(),
         .is_moving = is_moving,

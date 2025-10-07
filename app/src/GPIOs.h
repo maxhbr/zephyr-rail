@@ -1,19 +1,18 @@
 #ifndef __GPIOS_H_
 #define __GPIOS_H_
 
-#include <zephyr/device.h>
-#include <zephyr/init.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zephyr/device.h>
+#include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/types.h>
 
 #include <zephyr/drivers/gpio.h>
 
-class GPIO
-{
+class GPIO {
   const struct gpio_dt_spec *spec;
   const struct device *dev;
   int pin = -1;
@@ -25,11 +24,9 @@ public:
   void set(bool value);
 };
 
-class LED : public GPIO
-{
+class LED : public GPIO {
 public:
-  LED(const struct gpio_dt_spec *spec) : GPIO(spec, GPIO_OUTPUT_ACTIVE)
-  {
+  LED(const struct gpio_dt_spec *spec) : GPIO(spec, GPIO_OUTPUT_ACTIVE) {
     set(true);
     k_msleep(100);
     set(false);

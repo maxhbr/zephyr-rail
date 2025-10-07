@@ -1,14 +1,14 @@
 {
-    "cmake.configureOnOpen": false,
-    "files.associations": {
-        "optional": "cpp",
-        "log_backend.h": "c",
-        "iterable_sections.h": "c",
-        "log_ctrl.h": "c",
-        "log_backend_net.h": "c",
-        "kernel.h": "c",
-        "log_output.h": "c",
-        "log_msg.h": "c",
-        "sstream": "cpp"
-    }
+  "cmake.configureOnOpen": false,
+  "files.associations": {
+    "optional": "cpp",
+    "log_backend.h": "c",
+    "iterable_sections.h": "c",
+    "log_ctrl.h": "c",
+    "log_backend_net.h": "c",
+    "kernel.h": "c",
+    "log_output.h": "c",
+    "log_msg.h": "c",
+    "sstream": "cpp"
+  }
 }
