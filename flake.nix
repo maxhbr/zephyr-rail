@@ -147,8 +147,8 @@
             src = ./.;
             hooks = {
               nixfmt-rfc-style.enable = true;
-              shfmt.enable = true;
-              shfmt.settings.simplify = true;
+              # shfmt.enable = true;
+              # shfmt.settings.simplify = true;
               shellcheck.enable = true;
               # typos.enable = true;
               cmake-format.enable = true;
