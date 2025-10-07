@@ -10,11 +10,7 @@ It internally has a state machine:
 
 It has a GUI with LVGL.
 
-It runs on an embeded MCU which is not yet decided, potential options include:
-- [STM32H747I-DISCO](https://www.st.com/en/evaluation-tools/stm32h747i-disco.html) with [-b stm32h747i_disco](https://docs.zephyrproject.org/latest/boards/st/stm32h747i_disco/doc/index.html)
-- [STM32H7B3I-DK](https://www.st.com/en/evaluation-tools/stm32h7b3i-dk.html) with [-b stm32h7b3i_dk](https://docs.zephyrproject.org/latest/boards/st/stm32h7b3i_dk/doc/index.html)
-- [B-U585I-IOT02A](https://www.st.com/en/evaluation-tools/b-u585i-iot02a.html) with Adafruit 2.4" TFT
-- ~~[WIO Terminal](https://www.seeedstudio.com/Wio-Terminal-p-4509.html)~~ only the first three gpio-keys work and [PWM is not clear](https://github.com/zephyrproject-rtos/zephyr/issues/66547)
+It runs on [STM32H7B3I-DK](https://www.st.com/en/evaluation-tools/stm32h7b3i-dk.html) (in Zephyr: [stm32h7b3i_dk](https://docs.zephyrproject.org/latest/boards/st/stm32h7b3i_dk/doc/index.html)). Bluetooth is added with the dev board X-NUCLEO-IDB05AI.
 
 ## Hardware
 Some of the shelf Mechanical Parts used in this project:
