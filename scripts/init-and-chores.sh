@@ -104,23 +104,15 @@ west_update_if_was_not_updated_already_today() {
     touch "$stamp_file"
 }
 
-regenerate_mermaid_svg() {
-    echo "INFO: Regenerating mermaid SVG"
-    mmdc -i - -o app/.tmp.mermaid.StateMachine.svg -t neutral -b transparent <app/mermaid.StateMachine.mmd
-    compare_and_replace_generated_and_old app/.tmp.mermaid.StateMachine.svg app/mermaid.StateMachine.svg
-}
-
 main() {
     go_to_root_of_git
 
-    local headless="false"
     local chores="true"
     local fail_if_out_of_sync="false"
     if [[ $# -gt 0 && $1 == "--ci" ]]; then
         shift
         chores="false"
         fail_if_out_of_sync="true"
-        headless="true"
     elif [[ $# -gt 0 && $1 == "--init-only" ]]; then
         chores="false"
         fail_if_out_of_sync="false"
@@ -146,13 +138,6 @@ main() {
 
     west_init_once
     west_update_if_was_not_updated_already_today
-
-    if [[ $headless == "false" ]]; then
-        if ! regenerate_mermaid_svg && [[ $fail_if_out_of_sync == "true" ]]; then
-            echo "ERROR: mermaid SVG was out of sync"
-            exit 1
-        fi
-    fi
 }
 
 main "$@"

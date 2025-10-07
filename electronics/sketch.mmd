@@ -1,0 +1,54 @@
+---
+config:
+---
+flowchart LR;
+
+  subgraph ControlBox
+    direction LR 
+    subgraph STM32H7B3I_DK
+      STM32H7B3I
+      ST-Link --> STM32H7B3I
+      Display
+    end
+    STM32H7B3I_DK -->|Arduino UNO R3| X-NUCLEO-IDB05AI
+    STM32H7B3I_DK -->|Arduino UNO R3| ControlBoard
+  end
+
+  PC([PC])
+  PC ==>|USB| ST-Link
+
+  subgraph RailAssembly
+    subgraph RailBoard
+      direction TB 
+      24Vto5V
+      IMU
+    end
+    subgraph Rail
+      StepperMotor
+      PositioningSensor
+      Camera
+    end
+
+    StepperMotor ===>|24V| 24Vto5V
+    RailBoard    -->|ENA+| StepperMotor
+    RailBoard    -->|DIR+| StepperMotor
+    RailBoard    -->|PUL+| StepperMotor
+  end
+
+  cable@{ shape: das, label: ".... cable ...." }
+
+  ControlBoard === cable
+
+  cable   -->|ENA+| RailBoard
+  cable   -->|DIR+| RailBoard
+  cable   -->|PUL+| RailBoard
+  cable   -->|???| IMU
+  cable   -->|???| IMU
+  cable   -->|???| IMU
+  24Vto5V ==>|5V| cable
+
+  24V@{ shape: bolt }
+  24V ====>|24V| StepperMotor
+  X-NUCLEO-IDB05AI-. bluetooth .->Camera
+
+  style PositioningSensor stroke-dasharray: 5 5

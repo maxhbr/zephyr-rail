@@ -1,13 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-# Re-direct the directory where the 'boards' directory is found from
-# $ZEPHYR_BASE to this directory.
-# set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
-
-
-# set(BOARD wio_terminal)
-# set(BOARD nucleo_f767zi)
-# set(SHIELD adafruit_2_8_tft_touch_v2)
+set(BOARD stm32h7b3i_dk)
+set(SHIELD x_nucleo_idb05a1)
 
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)
