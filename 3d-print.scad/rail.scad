@@ -1,4 +1,4 @@
-mode="develop"; // [ "print", "develop", "assembly", "carrigeToClampV2", "motorAdapterFlangeF3", "pcbMount", "feetArcaSwiss", "ball_base_mount" , "ringclamp" ]
+mode="develop"; // [ "print", "develop", "assembly", "carriageToClampV2", "motorAdapterFlangeF3", "pcbMount", "feetArcaSwiss", "ball_base_mount" , "ringclamp" ]
 
 $fn=100;
 
@@ -57,7 +57,7 @@ module m5insertShort(addH=0) {
   insert(6.4,5.8+addH);
 }
 
-module quaterInchInsert(addH=0) {
+module quarterInchInsert(addH=0) {
   insert(8,12.7+addH);
 }
 
@@ -72,7 +72,7 @@ module clamp() {
   }
 }
 
-module carrigeToClamp(){
+module carriageToClamp(){
   holeXDist = 25;
   holeYDist = 30;
   clampDiameter = 60;
@@ -152,7 +152,7 @@ module carrigeToClamp(){
   }
 }
 
-module carrigeToClampV2(){
+module carriageToClampV2(){
   holeXDist = 25;
   holeYDist = 30;
   clampDiameter = 60;
@@ -463,7 +463,7 @@ module pcbMount(shroud=false) {
   }
 }
 
-module motorCopuling() {
+module motorCoupling() {
   render()
   difference() {
     cylinder(h=25, d=19);
@@ -609,7 +609,7 @@ module ringclamp() {
           translate([0,0,-0.3]) cylinder(d=12,h=1);
           cylinder(d=16,h=1);
         }
-        translate([0,0,-0.3]) quaterInchInsert(addH=3);
+        translate([0,0,-0.3]) quarterInchInsert(addH=3);
       }
 
     translate([0,-innerd/2-25,maxh-10])
@@ -622,7 +622,7 @@ module ringclamp() {
 
 module assembly_view() {
 
-  translate([0,88+25,26]) carrigeToClampV2();
+  translate([0,88+25,26]) carriageToClampV2();
 
   translate([0,220+7,16]) rotate([90,0,0]) motorAdapterFlangeF3();
 
@@ -637,7 +637,7 @@ module assembly_view() {
     color("lightgray",0.8) import(railStl, convexity=3);
 
     color("gray",0.8) translate([-3,260,16]) rotate([90,0,0]) import("./motors/NEMA_17.stl", convexity=3);
-    color("darkgray") translate([0,220-11,16]) rotate([90,0,0]) motorCopuling();
+    color("darkgray") translate([0,220-11,16]) rotate([90,0,0]) motorCoupling();
     color("gray") translate([-20,0,-19]) scale([1,4/3,1]) rotate([90,0,180]) import("./arcaswiss/150mm_Arcaswiss_Style_Rail.stl", convexity=3);
 
     color("darkgray") render() translate([0,88+25,26]+[0,0,16.5-7]) {
@@ -651,7 +651,7 @@ module assembly_view() {
 }
 
 module print_view() {
-  translate([0,-10,0]) carrigeToClampV2();
+  translate([0,-10,0]) carriageToClampV2();
   // translate([52,0,0]) rotate([180,0,90]) feetVslot();
   // translate([-52,0,0]) rotate([180,0,90]) feetVslot();
   translate([40,50,0]) motorAdapterFlangeF3();
@@ -701,7 +701,7 @@ if (mode == "assembly") {
     color("lightblue") {
       translate([0,130,0]) {
         render() difference() {
-          carrigeToClampV2();
+          carriageToClampV2();
           cube([100,100,100]);
           rotate([0,0,45]) cube([100,100,100]);
           translate([-100,-120,0]) cube([100,100,100]);
@@ -723,26 +723,26 @@ if (mode == "assembly") {
       }
     }
   }
-} else if (mode == "carrigeToClamp") {
-  carrigeToClamp();
+} else if (mode == "carriageToClamp") {
+  carriageToClamp();
   if ($preview) {
     color("lightblue") {
       translate([100,0,0]) {
         render() difference() {
-          carrigeToClamp();
+          carriageToClamp();
           cube([100,100,100]);
           rotate([0,0,45]) cube([100,100,100]);
         }
       }
     }
   }
-} else if (mode == "carrigeToClampV2") {
-  carrigeToClampV2();
+} else if (mode == "carriageToClampV2") {
+  carriageToClampV2();
   if ($preview) {
     color("lightblue") {
       translate([100,0,0]) {
         render() difference() {
-          carrigeToClampV2();
+          carriageToClampV2();
           cube([100,100,100]);
           rotate([0,0,45]) cube([100,100,100]);
         }

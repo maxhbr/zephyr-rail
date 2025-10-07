@@ -147,13 +147,13 @@
             src = ./.;
             hooks = {
               nixfmt-rfc-style.enable = true;
-              # shfmt.enable = true;
-              # shfmt.settings.simplify = true;
+              shfmt.enable = false;
+              shfmt.settings.simplify = true;
               shellcheck.enable = true;
-              # typos.enable = true;
-              cmake-format.enable = true;
+              typos.enable = true;
+              cmake-format.enable = false;
               clang-format.enable = true;
-              # clang-tidy.enable = true;
+              clang-tidy.enable = false;
             };
           };
           shell-fmt-check =
