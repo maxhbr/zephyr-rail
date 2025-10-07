@@ -20,6 +20,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/input/input.h>
 #include <zephyr/smf.h>
+#include <zephyr/bluetooth/bluetooth.h>
 
 #include <zephyr/console/console.h>
 
@@ -73,10 +74,11 @@ int main(void)
 
 #else
 
-extern "C" void main(void) {
+int main(void)
+{
     if (int err = bt_enable(nullptr); err) {
         printk("bt_enable failed (%d)\n", err);
-        return;
+        return err;
     }
 
     printk("BLE on. Enable 'Bluetooth Rmt Ctrl' on the A7R V and pair on first connect.\n");

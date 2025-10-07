@@ -104,31 +104,15 @@ west_update_if_was_not_updated_already_today() {
     touch "$stamp_file"
 }
 
-regenerate_mermaid_svg() {
-    local mmd
-    mmd="$1"
-    svg="${mmd%.mmd}.svg"
-    tmpsvg="$(dirname "$svg")/.tmp.$(basename "$svg")"
-    if [ ! -f "$mmd" ]; then
-        echo "ERROR: $mmd does not exist"
-        return 1
-    fi
-    echo "INFO: Regenerating mermaid SVG"
-    mmdc -i - -o "$tmpsvg" -t neutral -b transparent <"$mmd"
-    compare_and_replace_generated_and_old "$tmpsvg" "$svg"
-}
-
 main() {
     go_to_root_of_git
 
-    local headless="false"
     local chores="true"
     local fail_if_out_of_sync="false"
     if [[ $# -gt 0 && $1 == "--ci" ]]; then
         shift
         chores="false"
         fail_if_out_of_sync="true"
-        headless="true"
     elif [[ $# -gt 0 && $1 == "--init-only" ]]; then
         chores="false"
         fail_if_out_of_sync="false"
@@ -154,17 +138,6 @@ main() {
 
     west_init_once
     west_update_if_was_not_updated_already_today
-
-    if [[ $headless == "false" ]]; then
-        if ! regenerate_mermaid_svg "app/mermaid.StateMachine.mmd" && [[ $fail_if_out_of_sync == "true" ]]; then
-            echo "ERROR: mermaid SVG was out of sync"
-            exit 1
-        fi
-        if ! regenerate_mermaid_svg "electronics/high-level-plan.mmd" && [[ $fail_if_out_of_sync == "true" ]]; then
-            echo "ERROR: mermaid SVG was out of sync"
-            exit 1
-        fi
-    fi
 }
 
 main "$@"

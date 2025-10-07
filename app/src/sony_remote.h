@@ -26,6 +26,15 @@ public:
     void zoomWPress();
     void zoomWRelease();
 
+    // callbacks (public because they need to be accessed from C code)
+    static void on_connected(struct bt_conn* conn, uint8_t err);
+    static void on_disconnected(struct bt_conn* conn, uint8_t reason);
+    static uint8_t on_discover(struct bt_conn* conn,
+                               const struct bt_gatt_attr* attr,
+                               struct bt_gatt_discover_params* params);
+    static void on_scan(const bt_addr_le_t* addr, int8_t rssi, uint8_t type,
+                        struct net_buf_simple* ad);
+
 private:
     // singleton-style bridge for C callbacks
     static SonyRemote* self_;
@@ -35,15 +44,6 @@ private:
 
     bt_gatt_discover_params disc_params_{};
     bt_gatt_subscribe_params sub_params_{}; // reserved if you later use 0xFF02
-
-    // callbacks
-    static void on_connected(struct bt_conn* conn, uint8_t err);
-    static void on_disconnected(struct bt_conn* conn, uint8_t reason);
-    static uint8_t on_discover(struct bt_conn* conn,
-                               const struct bt_gatt_attr* attr,
-                               struct bt_gatt_discover_params* params);
-    static void on_scan(const bt_addr_le_t* addr, int8_t rssi, uint8_t type,
-                        struct net_buf_simple* ad);
 
     // helpers
     void start_discovery();

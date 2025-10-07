@@ -29,7 +29,7 @@ static bt_conn_cb kConnCbs = {
     .disconnected = SonyRemote::on_disconnected,
 };
 
-static bool accept_any(const bt_data* /*data*/, void* /*user*/) {
+static bool accept_any(bt_data* /*data*/, void* /*user*/) {
     return true; // make stricter later by parsing Manufacturer ID 0x012D or name
 }
 
@@ -42,7 +42,12 @@ void SonyRemote::begin() {
 }
 
 void SonyRemote::startScan() {
-    int err = bt_le_scan_start(BT_LE_SCAN_ACTIVE, SonyRemote::on_scan);
+    static struct bt_le_scan_param scan_param = BT_LE_SCAN_PARAM_INIT(
+        BT_LE_SCAN_TYPE_ACTIVE, 
+        BT_LE_SCAN_OPT_NONE,
+        BT_GAP_SCAN_FAST_INTERVAL,
+        BT_GAP_SCAN_FAST_WINDOW);
+    int err = bt_le_scan_start(&scan_param, SonyRemote::on_scan);
     if (err) {
         printk("Scan start failed (%d)\n", err);
     } else {
@@ -83,7 +88,12 @@ void SonyRemote::on_disconnected(bt_conn* /*conn*/, uint8_t reason) {
     }
     self_->ff01_handle_ = 0;
     // resume scanning
-    int err = bt_le_scan_start(BT_LE_SCAN_ACTIVE, SonyRemote::on_scan);
+    static struct bt_le_scan_param scan_param = BT_LE_SCAN_PARAM_INIT(
+        BT_LE_SCAN_TYPE_ACTIVE, 
+        BT_LE_SCAN_OPT_NONE,
+        BT_GAP_SCAN_FAST_INTERVAL,
+        BT_GAP_SCAN_FAST_WINDOW);
+    int err = bt_le_scan_start(&scan_param, SonyRemote::on_scan);
     if (err) printk("Scan restart failed (%d)\n", err);
 }
 
@@ -140,15 +150,21 @@ void SonyRemote::on_scan(const bt_addr_le_t* addr, int8_t rssi, uint8_t type,
         printk("Trying to connect %s (RSSI %d)\n", s, rssi);
 
         if (bt_le_scan_stop() == 0) {
-            auto* create_param = BT_CONN_LE_CREATE_PARAM(
+            static struct bt_conn_le_create_param create_param = BT_CONN_LE_CREATE_PARAM_INIT(
                 BT_CONN_LE_OPT_NONE,
                 BT_GAP_SCAN_FAST_INTERVAL,
                 BT_GAP_SCAN_FAST_WINDOW);
-            auto* conn_param = BT_LE_CONN_PARAM_DEFAULT;
-            int err = bt_conn_le_create(addr, create_param, conn_param, &self_->conn_);
+            static struct bt_le_conn_param conn_param = BT_LE_CONN_PARAM_INIT(
+                BT_GAP_INIT_CONN_INT_MIN, BT_GAP_INIT_CONN_INT_MAX, 0, 400);
+            int err = bt_conn_le_create(addr, &create_param, &conn_param, &self_->conn_);
             if (err) {
                 printk("Create conn failed (%d)\n", err);
-                bt_le_scan_start(BT_LE_SCAN_ACTIVE, SonyRemote::on_scan);
+                static struct bt_le_scan_param scan_param = BT_LE_SCAN_PARAM_INIT(
+                    BT_LE_SCAN_TYPE_ACTIVE, 
+                    BT_LE_SCAN_OPT_NONE,
+                    BT_GAP_SCAN_FAST_INTERVAL,
+                    BT_GAP_SCAN_FAST_WINDOW);
+                bt_le_scan_start(&scan_param, SonyRemote::on_scan);
             }
         }
     }

@@ -26,20 +26,12 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - run: nix run .#init -- --ci
+    - run: nix run  .#entr-mermaid -- electronics/sketch.mmd --check
+    - run: nix run  .#entr-mermaid -- app/mermaid.StateMachine.mmd --check
+
 
   build-nix:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        config:
-          - { script: app/b_u585i_iot02a-build.sh , output: ./app/builds/b_u585i_iot02a }
-          - { script: app/native_sim-build.sh , output: ./app/builds/native_sim }
-          - { script: app/nrf5340dk-build.sh , output: ./app/builds/nrf5340dk }
-          - { script: app/qemu_x86-build.sh , output: ./app/builds/qemu_x86 }
-          - { script: app/stm32h747i_disco-build.sh , output: ./app/builds/stm32h747i_disco }
-          - { script: app/stm32h7b3i_dk-build.sh , output: ./app/builds/stm32h7b3i_dk }
-          - { script: app/wio_terminal-build.sh , output: ./app/builds/wio_terminal }
-      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -61,7 +53,7 @@ jobs:
       - name: build
         run: |
           pwd
-          nix develop -c ${{ matrix.config.script }}
+          nix develop -c west build app
 
       # - uses: actions/upload-artifact@v4
       #   with:

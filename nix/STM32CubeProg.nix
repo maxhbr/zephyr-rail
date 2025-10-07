@@ -7,7 +7,20 @@
 # This package is distributed under the terms of the MIT license.
 # See the LICENSE file for details.
 
-{ lib, stdenv, requireFile, unzip, autoPatchelfHook, jdk17, writeTextFile, buildFHSEnv, libusb1, glib, libz, libkrb5 }:
+{
+  lib,
+  stdenv,
+  requireFile,
+  unzip,
+  autoPatchelfHook,
+  jdk17,
+  writeTextFile,
+  buildFHSEnv,
+  libusb1,
+  glib,
+  libz,
+  libkrb5,
+}:
 
 let
   version = "2.20.0";
@@ -35,8 +48,17 @@ stdenv.mkDerivation {
     sha256 = "07j0y7r4kw44p82zrq5ka84znv7bzl931al798xjriy0a29nmqjz";
   };
 
-  nativeBuildInputs = [ unzip autoPatchelfHook ];
-  buildInputs = [ jdk17 libusb1 glib libz libkrb5 ];
+  nativeBuildInputs = [
+    unzip
+    autoPatchelfHook
+  ];
+  buildInputs = [
+    jdk17
+    libusb1
+    glib
+    libz
+    libkrb5
+  ];
 
   unpackCmd = ''
     unzip $curSrc
@@ -105,7 +127,7 @@ stdenv.mkDerivation {
       autoPatchelf $out/bin/STM32_SigningTool_CLI
       autoPatchelf $out/bin/STM32_KeyGen_CLI
       autoPatchelf $out/lib/libSTLinkUSBDriver.so
-      
+
       runHook postInstall
     '';
 

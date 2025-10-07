@@ -46,7 +46,7 @@
           };
         };
         inherit (pkgs) lib;
-        STM32CubeProg = pkgs.callPackage ./nix/STM32CubeProg.nix {};
+        STM32CubeProg = pkgs.callPackage ./nix/STM32CubeProg.nix { };
         zephyr-packages = inputs.zephyr-nix.packages.${system};
         zephyr-env = pkgs.symlinkJoin {
           name = "zephyr-env";
@@ -69,7 +69,7 @@
 
             # openocd
             # segger-jlink-headless
-            stlink         # st-flash, st-info, st-util
+            stlink # st-flash, st-info, st-util
             dfu-util
             pyocd
           ]);
@@ -84,7 +84,6 @@
             git
             jq
             diffutils
-            mermaid-cli
           ]);
           text = builtins.readFile ./scripts/init-and-chores.sh;
         };
@@ -167,7 +166,10 @@
             };
         };
         devShells.default = pkgs.mkShell {
-          packages = [ zephyr-env init-script ];
+          packages = [
+            zephyr-env
+            init-script
+          ];
         };
       }
     ));
