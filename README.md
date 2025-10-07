@@ -14,6 +14,10 @@ This Project is structured as follows
 - Electronics
   - Control of the Stepper Motor
   - Control of the Camera
+    - Ideas: IR does no longer work with A7Rv, so  maybe use the trigger cable or USB or bluetooth?
+  - 12v -> 5v conversation to power the MCU
+  - Ideas:
+    - limit switches and positioning
 ## Details
 ### Firmware
 The firmware is written with zephyr. The code is in [./app](./app).
@@ -34,3 +38,4 @@ It runs on an embeded MCU which is not yet decided, potential options include:
 Optocopplers to drive the stepper motor
 ### Electronics / Control of the Camera
 The Camera ~~is~~was controlled via IR. The IR LED is driven by a transistor.
+
