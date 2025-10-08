@@ -70,9 +70,12 @@ int main(void) {
 
   int32_t ret;
 
+  LOG_INF("Start Loop ...");
   struct stepper_with_target_status stepper_status;
   struct stack_status stack_status;
   while (1) {
+    gui.run_task_handler();
+
     ret = sm.run_state_machine();
     if (ret) {
       break;
@@ -83,7 +86,6 @@ int main(void) {
     stack_status = sm.get_stack_status();
 
     gui.update(&stepper_status, &stack_status);
-    gui.run_task_handler();
   }
 
   LOG_ERR("Exited the infinite loop...");
