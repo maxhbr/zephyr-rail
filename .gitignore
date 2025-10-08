@@ -4,6 +4,8 @@ _*
 
 # build outputs
 build/
+*.build
+build.*
 builds/
 
 # zephyr specific ignores

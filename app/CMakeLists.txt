@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-set(BOARD stm32h7b3i_dk)
-set(SHIELD x_nucleo_idb05a1)
+# set(BOARD stm32h7b3i_dk)
+# set(SHIELD x_nucleo_idb05a1)
 
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)

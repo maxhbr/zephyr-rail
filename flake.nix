@@ -15,10 +15,6 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     git-hooks.url = "github:cachix/git-hooks.nix";
-
-    # west2nix.url = "github:adisbladis/west2nix";
-    # west2nix.inputs.nixpkgs.follows = "nixpkgs";
-    # west2nix.inputs.zephyr-nix.follows = "zephyr-nix";
   };
 
   outputs =
@@ -81,7 +77,6 @@
             pyocd
           ]);
           postBuild = ''
-            # wrap bin/west to set environment variables:
             wrapProgram "$out/bin/west" \
               --prefix PATH : $out/bin \
               --prefix PKG_CONFIG_PATH : "${SDL2.dev}/lib/pkgconfig" \
@@ -90,7 +85,6 @@
               --set ZEPHYR_TOOLCHAIN_VARIANT zephyr
           '';
         };
-        # west2nix = pkgs.callPackage inputs.west2nix.lib.mkWest2nix { };
         init-script = pkgs.writeShellApplication {
           name = "init-script";
           runtimeInputs = [
@@ -147,7 +141,6 @@
               "${scad-build}/bin/scad-build";
           };
         };
-        # formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
         formatter =
           let
             pkgs = nixpkgs.legacyPackages.${system};
