@@ -7,12 +7,18 @@ The environment can be bootstrapped via `nix run .#init` and west is either avai
 
 It runs on [STM32H7B3I-DK](https://www.st.com/en/evaluation-tools/stm32h7b3i-dk.html) (in Zephyr: [stm32h7b3i_dk](https://docs.zephyrproject.org/latest/boards/st/stm32h7b3i_dk/doc/index.html)). Bluetooth is added with the dev board X-NUCLEO-IDB05AI.
 
-### State Machine
+### State and State Machine
+- The rail knows its absolute position and the current target position.
+- It knows how many images to take per stack.
+- It knows the absolute positions of Start and End of the stack.
+
 It internally has a state machine:
 ![State Machine](./app/mermaid.StateMachine.svg)
 
 ### UI
 It has a GUI with LVGL.
+
+It has two main views corresponding to the states `S_PARENT_INTERACTIVE` und `S_PARENT_STACKING`.
 
 ## Hardware
 Some of the shelf Mechanical Parts used in this project:

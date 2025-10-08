@@ -27,12 +27,14 @@ struct stepper_with_target_status {
 
 class StepperWithTarget : private Stepper {
   bool is_moving = false;
-  int target_position = 0;
+  int target_position;
 
 public:
   StepperWithTarget(const struct gpio_dt_spec *stepper_pulse,
                     const struct gpio_dt_spec *stepper_dir)
-      : Stepper(stepper_pulse, stepper_dir) {};
+      : Stepper(stepper_pulse, stepper_dir) {
+    target_position = Stepper::get_position();
+  }
 
   void log_state();
 

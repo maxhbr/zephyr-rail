@@ -46,19 +46,26 @@
           };
         };
         inherit (pkgs) lib;
+        inherit (pkgs.pkgsi686Linux) SDL2; # for 32-bit libs needed by native_sim
         STM32CubeProg = pkgs.callPackage ./nix/STM32CubeProg.nix { };
         zephyr-packages = inputs.zephyr-nix.packages.${system};
+        zephyr-sdk = zephyr-packages.sdk.override {
+          targets = [
+            "arm-zephyr-eabi"
+          ];
+        };
         zephyr-env = pkgs.symlinkJoin {
           name = "zephyr-env";
+          meta.mainProgram = "west";
+          nativeBuildInputs = with pkgs; [
+            makeWrapper
+          ];
           paths = [
-            (zephyr-packages.sdk.override {
-              targets = [
-                "arm-zephyr-eabi"
-              ];
-            })
+            zephyr-sdk
             zephyr-packages.pythonEnv
             zephyr-packages.hosttools-nix
             STM32CubeProg
+            SDL2
           ]
           ++ (with pkgs; [
             cmake
@@ -73,6 +80,15 @@
             dfu-util
             pyocd
           ]);
+          postBuild = ''
+            # wrap bin/west to set environment variables:
+            wrapProgram "$out/bin/west" \
+              --prefix PATH : $out/bin \
+              --prefix PKG_CONFIG_PATH : "${SDL2.dev}/lib/pkgconfig" \
+              --prefix LD_LIBRARY_PATH : "${SDL2.out}/lib" \
+              --prefix CMAKE_PREFIX_PATH : ${zephyr-sdk}/cmake \
+              --set ZEPHYR_TOOLCHAIN_VARIANT zephyr
+          '';
         };
         # west2nix = pkgs.callPackage inputs.west2nix.lib.mkWest2nix { };
         init-script = pkgs.writeShellApplication {
