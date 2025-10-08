@@ -3,21 +3,21 @@ flowchart LR;
 
     subgraph S_PARENT_INTERACTIVE
       direction TB 
+      S_INTERACTIVE{S_INTERACTIVE}
+      S_INTERACTIVE_EVENT([S_INTERACTIVE_EVENT])
+      S_INTERACTIVE --> S_INTERACTIVE_EVENT;
+      S_INTERACTIVE_EVENT --> S_INTERACTIVE;
       S_INTERACTIVE_MOVE;
-      S_INTERACTIVE_MOVE -->|press right| S_INTERACTIVE_PRE_STACKING;
-      S_INTERACTIVE_PRE_STACKING -->|press left| S_INTERACTIVE_MOVE;
     end
-    S0 --> S_INTERACTIVE_MOVE;
+    S0 --> S_INTERACTIVE;
 
     subgraph S_PARENT_STACKING;
       direction TB
-      S_INTERACTIVE_PRE_STACKING --->|press enter| S_STACK{S_STACK\ndone?};
-      S_STACK --> S_STACK_MOVE;
-      S_STACK_MOVE --> S_STACK_IMG;
-      S_STACK_IMG --> S_STACK;
+      S_STACK{S_STACK}
+      S_STACK_MOVE --> S_STACK;
+      S_STACK --> S_STACK_SETTLE;
+      S_STACK_SETTLE --> S_STACK_IMG;
+      S_STACK_IMG --> S_STACK_MOVE;
     end
-      S_STACK --->|done| S0;
-
-
-    S_INTERACTIVE_MOVE -->|press\n- up: inc step\n- down: dec step\n...| S_INTERACTIVE_MOVE;
-    S_INTERACTIVE_PRE_STACKING -->|press\n- up: inc nmbr\n- down: dec nmbr\n...| S_INTERACTIVE_PRE_STACKING;
+    S_STACK --->|done| S0;
+    S_INTERACTIVE ---> S_STACK_MOVE;
