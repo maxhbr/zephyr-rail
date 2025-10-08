@@ -4,8 +4,10 @@
 LOG_MODULE_REGISTER(gui, LOG_LEVEL_INF);
 
 // Constructor
-GUI::GUI()
-    : display_dev(nullptr), main_screen(nullptr), status_label(nullptr) {}
+GUI::GUI(const StateMachine *sm)
+    : display_dev(nullptr), main_screen(nullptr), status_label(nullptr) {
+  this->sm = sm;
+}
 
 // Destructor
 GUI::~GUI() { deinit(); }
@@ -54,19 +56,43 @@ void GUI::update(const struct stepper_with_target_status *stepper_status,
     return;
   }
 
-  // Update status based on movement
-  if (status_label) {
-    const char *status_text;
-    if (stepper_status->is_moving) {
-      status_text = "Moving...";
-    } else if (stack_status->index_in_stack.has_value()) {
-      status_text = "Stacking Active";
+  const struct stepper_status inner_stepper_status =
+      stepper_status->stepper_status;
+
+  char buf[1000];
+  const int pitch_per_rev = inner_stepper_status.pitch_per_rev;
+  const int pulses_per_rev = inner_stepper_status.pulses_per_rev;
+
+  const int position_nm = position_as_nm(pitch_per_rev, pulses_per_rev,
+                                         inner_stepper_status.position);
+
+  if (stepper_status->is_moving) {
+    const int target_position_nm = position_as_nm(
+        pitch_per_rev, pulses_per_rev, stepper_status->target_position);
+    if (stepper_status->target_position > inner_stepper_status.position) {
+      snprintf(buf, sizeof(buf), "%d (-> %d)", position_nm, target_position_nm);
     } else {
-      status_text = "Ready";
+      snprintf(buf, sizeof(buf), "(%d <-) %d", target_position_nm, position_nm);
     }
-    LOG_DBG("Status: %s", status_text);
-    lv_label_set_text(status_label, status_text);
+  } else {
+    snprintf(buf, sizeof(buf), "@%dnm", position_nm);
   }
+  LOG_DBG("Status: %s", buf);
+  lv_label_set_text(status_label, buf);
+
+  // // Update status based on movement
+  // if (status_label) {
+  //   const char *status_text;
+  //   if (stepper_status->is_moving) {
+  //     status_text = "Moving...";
+  //   } else if (stack_status->index_in_stack.has_value()) {
+  //     status_text = "Stacking Active";
+  //   } else {
+  //     status_text = "Ready";
+  //   }
+  //   LOG_DBG("Status: %s", status_text);
+  //   lv_label_set_text(status_label, status_text);
+  // }
 }
 
 // Set main status
@@ -83,6 +109,13 @@ void GUI::set_status(const char *status) {
 
 // Run LVGL task handler
 void GUI::run_task_handler() {
+  /* update GUI */
+  struct stepper_with_target_status stepper_status;
+  struct stack_status stack_status;
+  stepper_status = this->sm->get_stepper_status();
+  stack_status = this->sm->get_stack_status();
+
+  this->update(&stepper_status, &stack_status);
   lv_task_handler();
   lv_timer_handler();
 }

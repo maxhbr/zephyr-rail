@@ -32,6 +32,31 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(rail);
 
+// Global GUI instance for thread access
+static GUI *g_gui = nullptr;
+
+// GUI thread function
+static void gui_thread_func(void *arg1, void *arg2, void *arg3) {
+  ARG_UNUSED(arg1);
+  ARG_UNUSED(arg2);
+  ARG_UNUSED(arg3);
+
+  while (g_gui == nullptr) {
+    k_sleep(K_MSEC(10));
+  }
+
+  LOG_INF("GUI thread started");
+
+  while (1) {
+    g_gui->run_task_handler();
+    k_sleep(K_MSEC(5)); // Run at ~200Hz
+  }
+}
+
+// Define GUI thread with 1KB stack, priority 7
+K_THREAD_DEFINE(gui_thread_id, 1024, gui_thread_func, NULL, NULL, NULL, 7, 0,
+                0);
+
 #if 1
 static const struct gpio_dt_spec stepper_pulse =
     GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
@@ -60,35 +85,31 @@ int main(void) {
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
   StateMachine sm(&stepper);
 
-  GUI gui;
+  GUI gui(&sm);
   if (!gui.init()) {
     LOG_ERR("Failed to initialize GUI");
     return -1;
   }
+
+  // Set global GUI pointer for thread access
+  g_gui = &gui;
 
   start_stepper(&stepper);
 
   int32_t ret;
 
   LOG_INF("Start Loop ...");
-  struct stepper_with_target_status stepper_status;
-  struct stack_status stack_status;
   while (1) {
-    gui.run_task_handler();
-
     ret = sm.run_state_machine();
     if (ret) {
       break;
     }
-
-    /* update GUI */
-    stepper_status = sm.get_stepper_status();
-    stack_status = sm.get_stack_status();
-
-    gui.update(&stepper_status, &stack_status);
   }
 
   LOG_ERR("Exited the infinite loop...");
+
+  // Clear global GUI pointer on exit
+  g_gui = nullptr;
 
   return ret;
 }

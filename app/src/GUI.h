@@ -9,6 +9,7 @@
 
 // Include the status structures
 #include "Stack.h"
+#include "StateMachine.h"
 #include "StepperWithTarget.h"
 
 // Conditional LVGL includes
@@ -21,6 +22,8 @@ typedef void *lv_obj_t;
 
 class GUI {
 private:
+  // State machine reference
+  const StateMachine *sm;
   // Display device
   const struct device *display_dev;
 
@@ -32,7 +35,7 @@ private:
   int position_as_nm(int pitch_per_rev, int pulses_per_rev, int position);
 
 public:
-  GUI();
+  GUI(const StateMachine *sm);
   ~GUI();
 
   // Initialization and lifecycle
