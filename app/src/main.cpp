@@ -41,6 +41,18 @@ INPUT_CALLBACK_DEFINE(NULL, input_cb, NULL);
 
 int main(void) {
 
+  if (int err = bt_enable(nullptr); err) {
+    printk("bt_enable failed (%d)\n", err);
+    return err;
+  }
+
+  LOG_INF("BLE on. Enable 'Bluetooth Rmt Ctrl' on the A7R V and pair on first "
+          "connect.\n");
+
+  SonyRemote remote;
+  remote.begin();
+  remote.startScan();
+
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
   StateMachine sm(&stepper);

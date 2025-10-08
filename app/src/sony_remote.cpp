@@ -4,6 +4,8 @@
 #include <cstring>
 #include <zephyr/sys/byteorder.h>
 
+LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_DBG);
+
 SonyRemote *SonyRemote::self_ = nullptr;
 
 namespace {
@@ -46,9 +48,9 @@ void SonyRemote::startScan() {
                             BT_GAP_SCAN_FAST_INTERVAL, BT_GAP_SCAN_FAST_WINDOW);
   int err = bt_le_scan_start(&scan_param, SonyRemote::on_scan);
   if (err) {
-    printk("Scan start failed (%d)\n", err);
+    LOG_ERR("Scan start failed (%d)", err);
   } else {
-    printk("Scanning for Sony camera...\n");
+    LOG_INF("Scanning for Sony camera...");
   }
 }
 
@@ -70,10 +72,10 @@ void SonyRemote::zoomWRelease() {
 
 void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
   if (err) {
-    printk("Connect failed (%u)\n", err);
+    LOG_ERR("Connect failed (%u)", err);
     return;
   }
-  printk("Connected\n");
+  LOG_INF("Connected");
   if (self_->conn_)
     bt_conn_unref(self_->conn_);
   self_->conn_ = bt_conn_ref(conn);
@@ -81,7 +83,7 @@ void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
 }
 
 void SonyRemote::on_disconnected(bt_conn * /*conn*/, uint8_t reason) {
-  printk("Disconnected (0x%02x)\n", reason);
+  LOG_INF("Disconnected (0x%02x)", reason);
   if (self_->conn_) {
     bt_conn_unref(self_->conn_);
     self_->conn_ = nullptr;
@@ -93,13 +95,13 @@ void SonyRemote::on_disconnected(bt_conn * /*conn*/, uint8_t reason) {
                             BT_GAP_SCAN_FAST_INTERVAL, BT_GAP_SCAN_FAST_WINDOW);
   int err = bt_le_scan_start(&scan_param, SonyRemote::on_scan);
   if (err)
-    printk("Scan restart failed (%d)\n", err);
+    LOG_ERR("Scan restart failed (%d)", err);
 }
 
 uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
                                 bt_gatt_discover_params *params) {
   if (!attr) {
-    printk("Discovery complete\n");
+    LOG_DBG("Discovery complete");
     std::memset(params, 0, sizeof(*params));
     return BT_GATT_ITER_STOP;
   }
@@ -109,7 +111,7 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
     if (chrc->uuid->type == BT_UUID_TYPE_16 &&
         BT_UUID_16(chrc->uuid)->val == 0xFF01) {
       self_->ff01_handle_ = chrc->value_handle;
-      printk("Found FF01 (handle 0x%04x)\n", self_->ff01_handle_);
+      LOG_DBG("Found FF01 (handle 0x%04x)", self_->ff01_handle_);
       std::memset(params, 0, sizeof(*params));
       return BT_GATT_ITER_STOP;
     }
@@ -126,7 +128,7 @@ void SonyRemote::start_discovery() {
   disc_params_.end_handle = 0xffff;
   int err = bt_gatt_discover(conn_, &disc_params_);
   if (err)
-    printk("Primary svc discover err: %d (continuing)\n", err);
+    LOG_WRN("Primary svc discover err: %d (continuing)", err);
 
   // Robust: search the whole DB for 0xFF01 characteristic
   disc_params_ = {};
@@ -137,7 +139,7 @@ void SonyRemote::start_discovery() {
   disc_params_.end_handle = 0xffff;
   err = bt_gatt_discover(conn_, &disc_params_);
   if (err)
-    printk("Char discover err: %d\n", err);
+    LOG_ERR("Char discover err: %d", err);
 }
 
 void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
@@ -148,7 +150,7 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
       type == BT_GAP_ADV_TYPE_ADV_DIRECT_IND) {
     char s[BT_ADDR_LE_STR_LEN];
     bt_addr_le_to_str(addr, s, sizeof(s));
-    printk("Trying to connect %s (RSSI %d)\n", s, rssi);
+    LOG_DBG("Trying to connect %s (RSSI %d)", s, rssi);
 
     if (bt_le_scan_stop() == 0) {
       static struct bt_conn_le_create_param create_param =
@@ -160,7 +162,7 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
       int err =
           bt_conn_le_create(addr, &create_param, &conn_param, &self_->conn_);
       if (err) {
-        printk("Create conn failed (%d)\n", err);
+        LOG_ERR("Create conn failed (%d)", err);
         static struct bt_le_scan_param scan_param = BT_LE_SCAN_PARAM_INIT(
             BT_LE_SCAN_TYPE_ACTIVE, BT_LE_SCAN_OPT_NONE,
             BT_GAP_SCAN_FAST_INTERVAL, BT_GAP_SCAN_FAST_WINDOW);
@@ -172,11 +174,11 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
 
 void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
   if (!ready()) {
-    printk("Not ready (conn=%p, ff01=0x%04x)\n", conn_, ff01_handle_);
+    LOG_ERR("Not ready (conn=%p, ff01=0x%04x)", conn_, ff01_handle_);
     return;
   }
   int err =
       bt_gatt_write_without_response(conn_, ff01_handle_, buf, len, false);
   if (err)
-    printk("WWR failed: %d\n", err);
+    LOG_ERR("WWR failed: %d", err);
 }
