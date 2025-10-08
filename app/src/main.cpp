@@ -41,8 +41,9 @@ INPUT_CALLBACK_DEFINE(NULL, input_cb, NULL);
 
 int main(void) {
 
+#if 0
   if (int err = bt_enable(nullptr); err) {
-    printk("bt_enable failed (%d)\n", err);
+    LOG_ERR("bt_enable failed (%d)\n", err);
     return err;
   }
 
@@ -52,6 +53,7 @@ int main(void) {
   SonyRemote remote;
   remote.begin();
   remote.startScan();
+#endif
 
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);

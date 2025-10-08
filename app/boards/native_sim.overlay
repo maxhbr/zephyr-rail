@@ -16,6 +16,7 @@
 
 	stepper: stepper {
 		compatible = "maxhbr,stepper";
+		status = "okay";
 		gpios = <&gpio_emul 10 GPIO_ACTIVE_HIGH>, /* D6 */
                 <&gpio_emul 11 GPIO_ACTIVE_HIGH>; /* D5 */
 		// pitch = <2>;
