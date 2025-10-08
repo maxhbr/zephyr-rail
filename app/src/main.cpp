@@ -24,6 +24,7 @@
 
 #include <zephyr/console/console.h>
 
+#include "GUI.h"
 #include "StateMachine.h"
 #include "StepperWithTarget.h"
 #include "sony_remote.h"
@@ -59,6 +60,12 @@ int main(void) {
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
   StateMachine sm(&stepper);
 
+  GUI gui;
+  if (!gui.init()) {
+    LOG_ERR("Failed to initialize GUI");
+    return -1;
+  }
+
   start_stepper(&stepper);
 
   int32_t ret;
@@ -75,8 +82,8 @@ int main(void) {
     stepper_status = sm.get_stepper_status();
     stack_status = sm.get_stack_status();
 
-    /* gui.update(&stepper_status, &stack_status); */
-    /* gui.run_task_handler(); */
+    gui.update(&stepper_status, &stack_status);
+    gui.run_task_handler();
   }
 
   LOG_ERR("Exited the infinite loop...");
