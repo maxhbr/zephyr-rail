@@ -97,10 +97,11 @@
           ]);
           text = builtins.readFile ./scripts/init-and-chores.sh;
         };
+        west-commands = import ./app/flake.west-commands.nix inputs system;
       in
       {
         packages = {
-          inherit STM32CubeProg;
+          inherit STM32CubeProg zephyr-env;
         };
         apps = {
           init = {
@@ -196,6 +197,7 @@
               zephyr-env
               init-script
             ]
+            ++ west-commands
             ++ enabledPackages;
             shellHook = ''
               ${shellHook}
