@@ -75,6 +75,7 @@
             stlink # st-flash, st-info, st-util
             dfu-util
             pyocd
+            bossa
           ]);
           postBuild = ''
             wrapProgram "$out/bin/west" \

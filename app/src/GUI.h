@@ -13,12 +13,7 @@
 #include "StepperWithTarget.h"
 
 // Conditional LVGL includes
-#ifdef CONFIG_LVGL
 #include <lvgl.h>
-#else
-// Define dummy types when LVGL is not available
-typedef void *lv_obj_t;
-#endif
 
 class GUI {
 private:

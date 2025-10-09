@@ -63,6 +63,13 @@ in
     "-t"
     "flash"
   ])
+  (mkWestCommand "wio_terminal-build" [
+    "build"
+    "--build-dir"
+    "builds/wio_terminal"
+    "-b"
+    "wio_terminal"
+  ])
   (mkWestCommand "native_sim-build" [
     "build"
     "--build-dir"

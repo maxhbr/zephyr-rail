@@ -79,20 +79,6 @@ void GUI::update(const struct stepper_with_target_status *stepper_status,
   }
   LOG_DBG("Status: %s", buf);
   lv_label_set_text(status_label, buf);
-
-  // // Update status based on movement
-  // if (status_label) {
-  //   const char *status_text;
-  //   if (stepper_status->is_moving) {
-  //     status_text = "Moving...";
-  //   } else if (stack_status->index_in_stack.has_value()) {
-  //     status_text = "Stacking Active";
-  //   } else {
-  //     status_text = "Ready";
-  //   }
-  //   LOG_DBG("Status: %s", status_text);
-  //   lv_label_set_text(status_label, status_text);
-  // }
 }
 
 // Set main status
@@ -110,10 +96,9 @@ void GUI::set_status(const char *status) {
 // Run LVGL task handler
 void GUI::run_task_handler() {
   /* update GUI */
-  struct stepper_with_target_status stepper_status;
-  struct stack_status stack_status;
-  stepper_status = this->sm->get_stepper_status();
-  stack_status = this->sm->get_stack_status();
+  struct stepper_with_target_status stepper_status =
+      this->sm->get_stepper_status();
+  struct stack_status stack_status = this->sm->get_stack_status();
 
   this->update(&stepper_status, &stack_status);
   lv_task_handler();

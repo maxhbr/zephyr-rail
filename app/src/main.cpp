@@ -10,7 +10,9 @@
 #include <string.h>
 #include <zephyr/types.h>
 
+#ifdef CONFIG_BT
 #include <zephyr/bluetooth/bluetooth.h>
+#endif
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/init.h>
@@ -67,7 +69,7 @@ INPUT_CALLBACK_DEFINE(NULL, input_cb, NULL);
 
 int main(void) {
 
-#if 0
+#ifdef CONFIG_BT
   if (int err = bt_enable(nullptr); err) {
     LOG_ERR("bt_enable failed (%d)\n", err);
     return err;
