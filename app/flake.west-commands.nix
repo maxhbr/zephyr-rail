@@ -22,6 +22,14 @@ let
     };
 in
 [
+  (pkgs.writeShellScriptBin "west-build-for-board" ''
+    set -ueo pipefail
+    board="$1"
+    shift
+    ${mkWestCommand "build-for-board" [ "build" ]}/bin/west-build-for-board \
+      --build-dir "builds/$(echo "$board" | sed 's%/%_%g')" \
+      -b "$board" "$@"
+  '')
   (mkWestCommand "build" [
     "build"
     "--build-dir"

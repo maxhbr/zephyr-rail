@@ -38,7 +38,6 @@
                 "STM32CubeProg"
               ];
             segger-jlink.acceptLicense = true;
-            # allowUnfree = true;
           };
         };
         inherit (pkgs) lib;
@@ -48,6 +47,7 @@
         zephyr-sdk = zephyr-packages.sdk.override {
           targets = [
             "arm-zephyr-eabi"
+            "xtensa-espressif_esp32s3_zephyr-elf"
           ];
         };
         zephyr-env = pkgs.symlinkJoin {
