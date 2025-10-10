@@ -50,6 +50,12 @@
             "xtensa-espressif_esp32s3_zephyr-elf"
           ];
         };
+        zephyr-python-env = zephyr-packages.pythonEnv.override {
+          extraPackages =
+            ps: with ps; [
+              pykwalify
+            ];
+        };
         zephyr-env = pkgs.symlinkJoin {
           name = "zephyr-env";
           meta.mainProgram = "west";
