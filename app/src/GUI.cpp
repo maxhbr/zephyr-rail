@@ -1,4 +1,5 @@
 #include "GUI.h"
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(gui, LOG_LEVEL_INF);
@@ -36,6 +37,8 @@ bool GUI::init() {
   lv_obj_set_style_text_color(status_label, lv_color_white(), 0);
 
   lv_timer_handler();
+  k_sleep(K_MSEC(20));
+
   display_blanking_off(display_dev);
 
   LOG_INF("Minimal GUI initialized successfully");

@@ -79,6 +79,6 @@ public:
 
   int32_t run_state_machine();
 
-  const struct stepper_with_target_status get_stepper_status();
-  const struct stack_status get_stack_status();
+  const struct stepper_with_target_status get_stepper_status() const;
+  const struct stack_status get_stack_status() const;
 };

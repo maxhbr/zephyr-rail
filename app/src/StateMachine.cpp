@@ -273,9 +273,10 @@ int32_t StateMachine::run_state_machine() {
   return smf_run_state(SMF_CTX(&s_obj));
 }
 
-const struct stepper_with_target_status StateMachine::get_stepper_status() {
+const struct stepper_with_target_status
+StateMachine::get_stepper_status() const {
   return s_obj.stepper->get_status();
 }
-const struct stack_status StateMachine::get_stack_status() {
+const struct stack_status StateMachine::get_stack_status() const {
   return s_obj.stack.get_status();
 }

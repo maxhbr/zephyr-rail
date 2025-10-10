@@ -104,6 +104,6 @@
 };
 
 &sdl_dc {
-	height = < 272 >;            /* in zephyr/boards/native/native_sim/native_sim.dts:193 */
+	height = < 272 >;
 	width = < 480 >;
 };
