@@ -74,37 +74,38 @@ INPUT_CALLBACK_DEFINE(NULL, input_cb, NULL);
 
 int main(void) {
 
-#ifdef CONFIG_BT
-  if (int err = bt_enable(nullptr); err) {
-    LOG_ERR("bt_enable failed (%d)\n", err);
-    return err;
-  }
-
-  LOG_INF("BLE on. Enable 'Bluetooth Rmt Ctrl' on the A7R V and pair on first "
-          "connect.\n");
-
-  SonyRemote remote;
-  remote.begin();
-  remote.startScan();
-
-  // bool shot_once = false;
-
-  // while (true) {
-  //   if (!shot_once && remote.ready()) {
-  //     k_sleep(K_SECONDS(2));
-  //     remote.focusDown();
-  //     k_msleep(80);
-  //     remote.shutterDown();
-  //     k_msleep(80);
-  //     remote.shutterUp();
-  //     k_msleep(50);
-  //     remote.focusUp();
-  //     printk("One still shot triggered.\n");
-  //     shot_once = true;
+  // #ifdef CONFIG_BT
+  //   if (int err = bt_enable(nullptr); err) {
+  //     LOG_ERR("bt_enable failed (%d)\n", err);
+  //     return err;
   //   }
-  //   k_sleep(K_MSEC(200));
-  // }
-#endif
+
+  //   LOG_INF("BLE on. Enable 'Bluetooth Rmt Ctrl' on the A7R V and pair on
+  //   first "
+  //           "connect.\n");
+
+  //   SonyRemote remote;
+  //   remote.begin();
+  //   remote.startScan();
+
+  //   // bool shot_once = false;
+
+  //   // while (true) {
+  //   //   if (!shot_once && remote.ready()) {
+  //   //     k_sleep(K_SECONDS(2));
+  //   //     remote.focusDown();
+  //   //     k_msleep(80);
+  //   //     remote.shutterDown();
+  //   //     k_msleep(80);
+  //   //     remote.shutterUp();
+  //   //     k_msleep(50);
+  //   //     remote.focusUp();
+  //   //     printk("One still shot triggered.\n");
+  //   //     shot_once = true;
+  //   //   }
+  //   //   k_sleep(K_MSEC(200));
+  //   // }
+  // #endif
 
   LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
   StepperWithTarget stepper(&stepper_pulse, &stepper_dir);

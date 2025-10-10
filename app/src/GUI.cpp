@@ -28,13 +28,13 @@ bool GUI::init() {
   main_screen = lv_scr_act();
 
   // Set background color
-  lv_obj_set_style_bg_color(main_screen, lv_color_black(), 0);
+  // lv_obj_set_style_bg_color(main_screen, lv_color_black(), 0);
 
   // Create status label at top
   status_label = lv_label_create(main_screen);
   lv_label_set_text(status_label, "Zephyr Rail Ready");
   lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 10);
-  lv_obj_set_style_text_color(status_label, lv_color_white(), 0);
+  // lv_obj_set_style_text_color(status_label, lv_color_white(), 0);
 
   lv_timer_handler();
   k_sleep(K_MSEC(20));
