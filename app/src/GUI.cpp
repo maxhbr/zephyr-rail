@@ -5,7 +5,7 @@
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/logging/log_output.h>
 
-LOG_MODULE_REGISTER(gui, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(gui, LOG_LEVEL_DBG);
 
 // Constructor
 GUI::GUI(const StateMachine *sm)
@@ -89,10 +89,10 @@ void GUI::update(const struct stepper_with_target_status *stepper_status,
     } else {
       snprintf(buf, sizeof(buf), "(%d <-) %d", target_position_nm, position_nm);
     }
+    LOG_DBG("Status: %s", buf);
   } else {
     snprintf(buf, sizeof(buf), "@%dnm", position_nm);
   }
-  LOG_DBG("Status: %s", buf);
   lv_label_set_text(status_label, buf);
 }
 
@@ -132,63 +132,64 @@ void GUI::add_log_line(const char *log_data, size_t length) {
   if (!log_textarea) {
     return;
   }
-  LOG_DBG("Adding log line: %.*s\n", (int)length, log_data);
-
-  // Create a null-terminated string
   char log_line[256];
-  size_t copy_len = MIN(length, 256 - 2);
+  size_t copy_len = MIN(length, 256 - 1);
   memcpy(log_line, log_data, copy_len);
-  k_sleep(K_MSEC(200));
 
-  log_line[copy_len - 1] = '\n';
   log_line[copy_len] = '\0';
 
-  // Remove trailing newline if present
-  if (copy_len > 0 && log_line[copy_len - 1] == '\n') {
-    log_line[copy_len - 1] = '\0';
+  const char *current_text = lv_textarea_get_text(log_textarea);
+  static const int MAX_LOG_LINES = 30;
+  // Walk backwards from the end, counting newlines
+  size_t text_len = strlen(current_text);
+  if (text_len > 0) {
+    int newline_count = 0;
+    const char *p = current_text + text_len - 1;
+    while (p > current_text && newline_count < (MAX_LOG_LINES - 1)) {
+      if (*p == '\n') {
+        newline_count++;
+      }
+      p--;
+    }
+    if (newline_count >= (MAX_LOG_LINES - 1)) {
+      if (*p == '\n') {
+        p++;
+      } else {
+        while (*p && *p != '\n') {
+          p++;
+        }
+        if (*p == '\n') {
+          p++;
+        }
+      }
+      lv_textarea_set_text(log_textarea, p);
+    }
   }
 
-  // Get current text
-  const char *current_text = lv_textarea_get_text(log_textarea);
-
-  // Limit the number of lines to prevent memory issues
-  static const int MAX_LOG_LINES = 15;
-
-  // // Count total lines in current text
-  // int line_count = 0;
   // for (const char *p = current_text; *p; p++) {
-  //   if (*p == '\n') {
+  //   if (*p == '\n' || *p == '\r') {
   //     line_count++;
   //   }
   // }
-  // // Add 1 for the line we're about to add
   // line_count++;
 
-  // // If we exceed the limit, remove lines from the beginning
+  // LOG_DBG("line_count=%d", line_count);
+
   // if (line_count > MAX_LOG_LINES) {
   //   int lines_to_remove = line_count - MAX_LOG_LINES;
   //   const char *new_start = current_text;
 
-  //   // Find the position after the lines we want to remove
   //   for (int i = 0; i < lines_to_remove && *new_start; i++) {
-  //     // Find the next newline
-  //     while (*new_start && *new_start != '\n') {
+  //     while (*new_start && (*new_start != '\n' || *new_start != '\r')) {
   //       new_start++;
   //     }
-  //     // Skip the newline itself
-  //     if (*new_start == '\n') {
+  //     if (*new_start == '\n' || *new_start == '\r') {
   //       new_start++;
   //     }
   //   }
 
-  //   // Set the text to the trimmed version
   //   lv_textarea_set_text(log_textarea, new_start);
   // }
-
-  // Add new log line
   lv_textarea_add_text(log_textarea, log_line);
-  // lv_textarea_add_text(log_textarea, "\n");
-
-  // Scroll to bottom
   lv_obj_scroll_to_y(log_textarea, LV_COORD_MAX, LV_ANIM_OFF);
 }
