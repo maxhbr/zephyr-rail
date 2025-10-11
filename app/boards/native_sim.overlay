@@ -104,6 +104,8 @@
 };
 
 &sdl_dc {
-	height = < 272 >;
-	width = < 480 >;
+	/*height = < 272 >;*/
+	/*width = < 480 >;*/
+	height = < 816 >;
+	width = < 1440 >;
 };

@@ -19,7 +19,7 @@ GUI::~GUI() { deinit(); }
 
 // Initialize the GUI
 bool GUI::init() {
-  LOG_INF("Initializing minimal GUI");
+  LOG_INF("Initializing GUI");
 
   // Get display device
   display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
@@ -34,13 +34,11 @@ bool GUI::init() {
   // Set background color
   // lv_obj_set_style_bg_color(main_screen, lv_color_black(), 0);
 
-  LOG_DBG("Initializing minimal GUI: Create status label at top");
   status_label = lv_label_create(main_screen);
   lv_label_set_text(status_label, "Zephyr Rail Ready");
   lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 10);
   // lv_obj_set_style_text_color(status_label, lv_color_white(), 0);
 
-  LOG_DBG("Initializing minimal GUI: Create log text area");
   log_textarea = lv_textarea_create(main_screen);
   lv_obj_set_size(log_textarea, LV_PCT(90), LV_PCT(60));
   lv_obj_align(log_textarea, LV_ALIGN_BOTTOM_MID, 0, -10);
@@ -49,16 +47,12 @@ bool GUI::init() {
                                    "Log messages will appear here...");
   lv_obj_add_state(log_textarea, LV_STATE_DISABLED); // Make it read-only
 
-  LOG_DBG("Initializing minimal GUI: Configure log text area");
   lv_obj_set_scrollbar_mode(log_textarea, LV_SCROLLBAR_MODE_AUTO);
 
-  LOG_DBG("Initializing minimal GUI: Finalizing LVGL setup");
   lv_timer_handler();
   k_sleep(K_MSEC(20));
-
   display_blanking_off(display_dev);
 
-  LOG_INF("Minimal GUI initialized successfully");
   return true;
 }
 
@@ -155,7 +149,7 @@ void GUI::add_log_line(const char *log_data, size_t length) {
   const char *current_text = lv_textarea_get_text(log_textarea);
 
   // Limit the number of lines to prevent memory issues
-  static const int MAX_LOG_LINES = 10;
+  static const int MAX_LOG_LINES = 3;
 
   // Find text length and count lines by walking backwards
   size_t text_len = strlen(current_text);
@@ -171,14 +165,10 @@ void GUI::add_log_line(const char *log_data, size_t length) {
       p--;
     }
 
-    // If we found enough newlines, trim to keep only the last MAX_LOG_LINES-1
-    // lines
     if (newline_count >= (MAX_LOG_LINES - 1)) {
-      // Move forward to the character after the newline we stopped at
       if (*p == '\n') {
         p++;
       } else {
-        // We stopped at current_text, find the first newline after it
         while (*p && *p != '\n') {
           p++;
         }

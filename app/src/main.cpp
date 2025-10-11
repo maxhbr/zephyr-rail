@@ -161,6 +161,7 @@ int main(void) {
 
   int32_t ret;
 
+  k_sleep(K_MSEC(200));
   LOG_INF("Start Loop ...");
   while (1) {
     LOG_INF("Iter Loop ...");
