@@ -1,12 +1,16 @@
 #include "GUI.h"
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/logging/log_backend.h>
+#include <zephyr/logging/log_ctrl.h>
+#include <zephyr/logging/log_output.h>
 
 LOG_MODULE_REGISTER(gui, LOG_LEVEL_INF);
 
 // Constructor
 GUI::GUI(const StateMachine *sm)
-    : display_dev(nullptr), main_screen(nullptr), status_label(nullptr) {
+    : display_dev(nullptr), main_screen(nullptr), status_label(nullptr),
+      log_textarea(nullptr) {
   this->sm = sm;
 }
 
@@ -30,12 +34,25 @@ bool GUI::init() {
   // Set background color
   // lv_obj_set_style_bg_color(main_screen, lv_color_black(), 0);
 
-  // Create status label at top
+  LOG_DBG("Initializing minimal GUI: Create status label at top");
   status_label = lv_label_create(main_screen);
   lv_label_set_text(status_label, "Zephyr Rail Ready");
   lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 10);
   // lv_obj_set_style_text_color(status_label, lv_color_white(), 0);
 
+  LOG_DBG("Initializing minimal GUI: Create log text area");
+  log_textarea = lv_textarea_create(main_screen);
+  lv_obj_set_size(log_textarea, LV_PCT(90), LV_PCT(60));
+  lv_obj_align(log_textarea, LV_ALIGN_BOTTOM_MID, 0, -10);
+  lv_textarea_set_text(log_textarea, "");
+  lv_textarea_set_placeholder_text(log_textarea,
+                                   "Log messages will appear here...");
+  lv_obj_add_state(log_textarea, LV_STATE_DISABLED); // Make it read-only
+
+  LOG_DBG("Initializing minimal GUI: Configure log text area");
+  lv_obj_set_scrollbar_mode(log_textarea, LV_SCROLLBAR_MODE_AUTO);
+
+  LOG_DBG("Initializing minimal GUI: Finalizing LVGL setup");
   lv_timer_handler();
   k_sleep(K_MSEC(20));
 
@@ -50,6 +67,7 @@ void GUI::deinit() {
   // Objects are automatically cleaned up by LVGL
   main_screen = nullptr;
   status_label = nullptr;
+  log_textarea = nullptr;
 }
 
 // Update GUI with current status
@@ -114,4 +132,49 @@ int GUI::position_as_nm(int pitch_per_rev, int pulses_per_rev, int position) {
   if (pulses_per_rev == 0)
     return 0;
   return (position * pitch_per_rev * 1000000) / pulses_per_rev;
+}
+
+// Add new method to handle log lines
+void GUI::add_log_line(const char *log_data, size_t length) {
+  if (!log_textarea) {
+    return;
+  }
+
+  // Create a null-terminated string
+  char log_line[256];
+  size_t copy_len = MIN(length, sizeof(log_line) - 1);
+  memcpy(log_line, log_data, copy_len);
+  log_line[copy_len] = '\0';
+
+  // Remove trailing newline if present
+  if (copy_len > 0 && log_line[copy_len - 1] == '\n') {
+    log_line[copy_len - 1] = '\0';
+  }
+
+  // Get current text
+  const char *current_text = lv_textarea_get_text(log_textarea);
+
+  // Limit the number of lines to prevent memory issues
+  static const int MAX_LOG_LINES = 10;
+
+  // Count current lines
+  int line_count = 1;
+  for (const char *p = current_text; *p; p++) {
+    if (*p == '\n')
+      line_count++;
+  }
+
+  // If we have too many lines, remove the oldest ones
+  if (line_count >= MAX_LOG_LINES) {
+    const char *second_line = strchr(current_text, '\n');
+    if (second_line) {
+      lv_textarea_set_text(log_textarea, second_line + 1);
+    }
+  }
+
+  // Add new log line
+  lv_textarea_add_text(log_textarea, log_line);
+
+  // Scroll to bottom
+  lv_obj_scroll_to_y(log_textarea, LV_COORD_MAX, LV_ANIM_OFF);
 }

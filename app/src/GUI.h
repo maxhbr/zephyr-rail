@@ -25,6 +25,7 @@ private:
   // Simple UI components
   lv_obj_t *main_screen;
   lv_obj_t *status_label;
+  lv_obj_t *log_textarea;
 
   // Helper methods
   int position_as_nm(int pitch_per_rev, int pulses_per_rev, int position);
@@ -46,4 +47,7 @@ public:
 
   // Task handler for LVGL
   void run_task_handler();
+
+  // Log display method
+  void add_log_line(const char *log_data, size_t length);
 };
