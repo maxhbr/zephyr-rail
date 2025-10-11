@@ -139,7 +139,7 @@ void GUI::add_log_line(const char *log_data, size_t length) {
   log_line[copy_len] = '\0';
 
   const char *current_text = lv_textarea_get_text(log_textarea);
-  static const int MAX_LOG_LINES = 30;
+  static const int MAX_LOG_LINES = 10;
   // Walk backwards from the end, counting newlines
   size_t text_len = strlen(current_text);
   if (text_len > 0) {
