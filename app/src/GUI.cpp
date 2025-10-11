@@ -157,18 +157,36 @@ void GUI::add_log_line(const char *log_data, size_t length) {
   // Limit the number of lines to prevent memory issues
   static const int MAX_LOG_LINES = 10;
 
-  // Count current lines
-  int line_count = 1;
-  for (const char *p = current_text; *p; p++) {
-    if (*p == '\n')
-      line_count++;
-  }
+  // Find text length and count lines by walking backwards
+  size_t text_len = strlen(current_text);
+  if (text_len > 0) {
+    int newline_count = 0;
+    const char *p = current_text + text_len - 1;
 
-  // If we have too many lines, remove the oldest ones
-  if (line_count >= MAX_LOG_LINES) {
-    const char *second_line = strchr(current_text, '\n');
-    if (second_line) {
-      lv_textarea_set_text(log_textarea, second_line + 1);
+    // Walk backwards from the end, counting newlines
+    while (p > current_text && newline_count < (MAX_LOG_LINES - 1)) {
+      if (*p == '\n') {
+        newline_count++;
+      }
+      p--;
+    }
+
+    // If we found enough newlines, trim to keep only the last MAX_LOG_LINES-1
+    // lines
+    if (newline_count >= (MAX_LOG_LINES - 1)) {
+      // Move forward to the character after the newline we stopped at
+      if (*p == '\n') {
+        p++;
+      } else {
+        // We stopped at current_text, find the first newline after it
+        while (*p && *p != '\n') {
+          p++;
+        }
+        if (*p == '\n') {
+          p++;
+        }
+      }
+      lv_textarea_set_text(log_textarea, p);
     }
   }
 
