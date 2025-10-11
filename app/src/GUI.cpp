@@ -165,31 +165,6 @@ void GUI::add_log_line(const char *log_data, size_t length) {
       lv_textarea_set_text(log_textarea, p);
     }
   }
-
-  // for (const char *p = current_text; *p; p++) {
-  //   if (*p == '\n' || *p == '\r') {
-  //     line_count++;
-  //   }
-  // }
-  // line_count++;
-
-  // LOG_DBG("line_count=%d", line_count);
-
-  // if (line_count > MAX_LOG_LINES) {
-  //   int lines_to_remove = line_count - MAX_LOG_LINES;
-  //   const char *new_start = current_text;
-
-  //   for (int i = 0; i < lines_to_remove && *new_start; i++) {
-  //     while (*new_start && (*new_start != '\n' || *new_start != '\r')) {
-  //       new_start++;
-  //     }
-  //     if (*new_start == '\n' || *new_start == '\r') {
-  //       new_start++;
-  //     }
-  //   }
-
-  //   lv_textarea_set_text(log_textarea, new_start);
-  // }
   lv_textarea_add_text(log_textarea, log_line);
   lv_obj_scroll_to_y(log_textarea, LV_COORD_MAX, LV_ANIM_OFF);
 }
