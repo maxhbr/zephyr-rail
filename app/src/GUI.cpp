@@ -128,16 +128,19 @@ int GUI::position_as_nm(int pitch_per_rev, int pulses_per_rev, int position) {
   return (position * pitch_per_rev * 1000000) / pulses_per_rev;
 }
 
-// Add new method to handle log lines
 void GUI::add_log_line(const char *log_data, size_t length) {
   if (!log_textarea) {
     return;
   }
+  LOG_DBG("Adding log line: %.*s\n", (int)length, log_data);
 
   // Create a null-terminated string
   char log_line[256];
-  size_t copy_len = MIN(length, sizeof(log_line) - 1);
+  size_t copy_len = MIN(length, 256 - 2);
   memcpy(log_line, log_data, copy_len);
+  k_sleep(K_MSEC(200));
+
+  log_line[copy_len - 1] = '\n';
   log_line[copy_len] = '\0';
 
   // Remove trailing newline if present
@@ -149,39 +152,42 @@ void GUI::add_log_line(const char *log_data, size_t length) {
   const char *current_text = lv_textarea_get_text(log_textarea);
 
   // Limit the number of lines to prevent memory issues
-  static const int MAX_LOG_LINES = 3;
+  static const int MAX_LOG_LINES = 15;
 
-  // Find text length and count lines by walking backwards
-  size_t text_len = strlen(current_text);
-  if (text_len > 0) {
-    int newline_count = 0;
-    const char *p = current_text + text_len - 1;
+  // // Count total lines in current text
+  // int line_count = 0;
+  // for (const char *p = current_text; *p; p++) {
+  //   if (*p == '\n') {
+  //     line_count++;
+  //   }
+  // }
+  // // Add 1 for the line we're about to add
+  // line_count++;
 
-    // Walk backwards from the end, counting newlines
-    while (p > current_text && newline_count < (MAX_LOG_LINES - 1)) {
-      if (*p == '\n') {
-        newline_count++;
-      }
-      p--;
-    }
+  // // If we exceed the limit, remove lines from the beginning
+  // if (line_count > MAX_LOG_LINES) {
+  //   int lines_to_remove = line_count - MAX_LOG_LINES;
+  //   const char *new_start = current_text;
 
-    if (newline_count >= (MAX_LOG_LINES - 1)) {
-      if (*p == '\n') {
-        p++;
-      } else {
-        while (*p && *p != '\n') {
-          p++;
-        }
-        if (*p == '\n') {
-          p++;
-        }
-      }
-      lv_textarea_set_text(log_textarea, p);
-    }
-  }
+  //   // Find the position after the lines we want to remove
+  //   for (int i = 0; i < lines_to_remove && *new_start; i++) {
+  //     // Find the next newline
+  //     while (*new_start && *new_start != '\n') {
+  //       new_start++;
+  //     }
+  //     // Skip the newline itself
+  //     if (*new_start == '\n') {
+  //       new_start++;
+  //     }
+  //   }
+
+  //   // Set the text to the trimmed version
+  //   lv_textarea_set_text(log_textarea, new_start);
+  // }
 
   // Add new log line
   lv_textarea_add_text(log_textarea, log_line);
+  // lv_textarea_add_text(log_textarea, "\n");
 
   // Scroll to bottom
   lv_obj_scroll_to_y(log_textarea, LV_COORD_MAX, LV_ANIM_OFF);

@@ -46,10 +46,25 @@ LOG_MODULE_REGISTER(rail);
 static GUI *g_gui = nullptr;
 
 #ifdef CONFIG_LOG
+// Message queue for thread-safe log handling
+struct log_msg_item {
+  char data[256];
+  size_t length;
+};
+
+K_MSGQ_DEFINE(log_msgq, sizeof(struct log_msg_item), 10, 4);
+
 // Log output function for GUI backend
 static int gui_log_out(uint8_t *data, size_t length, void *ctx) {
   if (g_gui) {
-    g_gui->add_log_line((const char *)data, length);
+    struct log_msg_item msg;
+    size_t copy_len = MIN(length, sizeof(msg.data) - 1);
+    memcpy(msg.data, data, copy_len);
+    msg.data[copy_len] = '\0';
+    msg.length = copy_len;
+
+    // Try to put message in queue (non-blocking)
+    k_msgq_put(&log_msgq, &msg, K_NO_WAIT);
   }
   return length;
 }
@@ -73,6 +88,7 @@ LOG_BACKEND_DEFINE(gui_log_backend, gui_log_backend_api, false);
 
 // GUI thread function
 static void gui_thread_func(void *arg1, void *arg2, void *arg3) {
+  // LVGL operations must be performed from the main LVGL thread.
   ARG_UNUSED(arg1);
   ARG_UNUSED(arg2);
   ARG_UNUSED(arg3);
@@ -85,12 +101,20 @@ static void gui_thread_func(void *arg1, void *arg2, void *arg3) {
 
 #ifdef CONFIG_LOG
   // Enable log backend from GUI thread context
-  log_backend_enable(&gui_log_backend, NULL, LOG_LEVEL_DBG);
+  log_backend_enable(&gui_log_backend, NULL, LOG_LEVEL_INF);
 #endif
 
   while (1) {
+#ifdef CONFIG_LOG
+    // Process any pending log messages
+    struct log_msg_item msg;
+    while (k_msgq_get(&log_msgq, &msg, K_NO_WAIT) == 0) {
+      g_gui->add_log_line(msg.data, msg.length);
+    }
+#endif
+
     g_gui->run_task_handler();
-    k_sleep(K_MSEC(20)); // Run at ~200Hz
+    k_sleep(K_MSEC(20)); // Run at ~50Hz
   }
 }
 
