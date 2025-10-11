@@ -100,6 +100,34 @@ GUI::GUI(const StateMachine *sm)
 // Destructor
 GUI::~GUI() { deinit(); }
 
+void GUI::init_tabview(lv_obj_t *parent) {
+  tabview = lv_tabview_create(parent);
+  lv_obj_set_size(tabview, LV_HOR_RES, LV_VER_RES - 30);
+  lv_obj_align(tabview, LV_ALIGN_BOTTOM_MID, 0, 0);
+
+  // Create tabs
+  move_tab = lv_tabview_add_tab(tabview, "Move");
+  stack_tab = lv_tabview_add_tab(tabview, "Stack");
+
+  // // Fill each tab with content
+  // fill_move_tab(move_tab);
+  // fill_stack_tab(stack_tab);
+  // fill_status_tab(status_tab);
+}
+
+void GUI::add_log_tab() {
+  lv_obj_t *log_tab = lv_tabview_add_tab(tabview, "Log");
+  log_textarea = lv_textarea_create(log_tab);
+  lv_obj_set_size(log_textarea, LV_PCT(90), LV_PCT(80));
+  lv_obj_align(log_textarea, LV_ALIGN_BOTTOM_MID, 0, -10);
+  lv_textarea_set_text(log_textarea, "");
+  lv_textarea_set_placeholder_text(log_textarea,
+                                   "Log messages will appear here...");
+  lv_obj_add_state(log_textarea, LV_STATE_DISABLED); // Make it read-only
+
+  lv_obj_set_scrollbar_mode(log_textarea, LV_SCROLLBAR_MODE_AUTO);
+}
+
 // Initialize the GUI
 bool GUI::init() {
   LOG_INF("Initializing GUI");
@@ -114,6 +142,9 @@ bool GUI::init() {
   // Get current screen
   main_screen = lv_scr_act();
 
+  init_tabview(main_screen);
+  add_log_tab();
+
   // Set background color
   // lv_obj_set_style_bg_color(main_screen, lv_color_black(), 0);
 
@@ -121,16 +152,6 @@ bool GUI::init() {
   lv_label_set_text(status_label, "Zephyr Rail Ready");
   lv_obj_align(status_label, LV_ALIGN_TOP_MID, 0, 10);
   // lv_obj_set_style_text_color(status_label, lv_color_white(), 0);
-
-  log_textarea = lv_textarea_create(main_screen);
-  lv_obj_set_size(log_textarea, LV_PCT(90), LV_PCT(60));
-  lv_obj_align(log_textarea, LV_ALIGN_BOTTOM_MID, 0, -10);
-  lv_textarea_set_text(log_textarea, "");
-  lv_textarea_set_placeholder_text(log_textarea,
-                                   "Log messages will appear here...");
-  lv_obj_add_state(log_textarea, LV_STATE_DISABLED); // Make it read-only
-
-  lv_obj_set_scrollbar_mode(log_textarea, LV_SCROLLBAR_MODE_AUTO);
 
   lv_timer_handler();
   k_sleep(K_MSEC(20));

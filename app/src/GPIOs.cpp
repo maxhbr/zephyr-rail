@@ -1,6 +1,6 @@
 #include "GPIOs.h"
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(gpios);
+LOG_MODULE_REGISTER(gpios, LOG_LEVEL_ERR);
 
 GPIO::GPIO(const struct gpio_dt_spec *_spec, gpio_flags_t extra_flags)
     : spec{_spec} {

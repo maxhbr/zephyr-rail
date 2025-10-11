@@ -17,14 +17,20 @@
 
 class GUI {
 private:
-  // State machine reference
   const StateMachine *sm;
-  // Display device
   const struct device *display_dev;
 
-  // Simple UI components
   lv_obj_t *main_screen;
   lv_obj_t *status_label;
+
+  lv_obj_t *tabview;
+  void init_tabview(lv_obj_t *parent);
+
+  lv_obj_t *move_tab;
+
+  lv_obj_t *stack_tab;
+
+  void add_log_tab();
   lv_obj_t *log_textarea;
 
   // Helper methods
