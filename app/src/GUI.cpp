@@ -4,38 +4,6 @@
 
 LOG_MODULE_REGISTER(gui, LOG_LEVEL_INF);
 
-// // GUI thread function
-// static void gui_thread_func(void *arg1, void *arg2, void *arg3) {
-//   // LVGL operations must be performed from the main LVGL thread.
-//   ARG_UNUSED(arg1);
-//   ARG_UNUSED(arg2);
-//   ARG_UNUSED(arg3);
-
-//   while (g_gui == nullptr) {
-//     k_sleep(K_MSEC(40));
-//   }
-
-//   LOG_INF("GUI thread started");
-
-//   // Enable log backend from GUI thread context
-//   log_backend_enable(&gui_log_backend, NULL, LOG_LEVEL_INF);
-
-//   while (1) {
-//     // Process any pending log messages
-//     struct log_msg_item msg;
-//     while (k_msgq_get(&log_msgq, &msg, K_NO_WAIT) == 0) {
-//       g_gui->add_log_line(msg.data, msg.length);
-//     }
-
-//     g_gui->run_task_handler();
-//     k_sleep(K_MSEC(20)); // Run at ~50Hz
-//   }
-// }
-
-// // Define GUI thread with 1KB stack, priority 7
-// K_THREAD_DEFINE(logging_gui_thread_id, 1024, logging_gui_thread_func, NULL,
-//                 NULL, NULL, 7, 0, 0);
-
 // Constructor
 GUI::GUI(const StateMachine *sm) : LoggingGUI() { this->sm = sm; }
 
@@ -101,24 +69,6 @@ void GUI::run_task_handler() {
 }
 
 void GUI::start() { LoggingGUI::start(); }
-
-// Static method to initialize the gui
-GUI *GUI::initialize_gui(const StateMachine *sm) {
-#ifdef CONFIG_DISPLAY
-  static GUI gui(sm);
-  if (!gui.init()) {
-    LOG_ERR("Failed to initialize GUI");
-    return nullptr;
-  }
-
-  gui.start();
-
-  LOG_INF("GUI initialized successfully");
-  return &gui;
-#else
-  return nullptr;
-#endif
-}
 
 // Update GUI with current status
 void GUI::update_status(const struct stepper_with_target_status *stepper_status,
