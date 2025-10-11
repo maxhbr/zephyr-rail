@@ -5,12 +5,7 @@
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/logging/log_output.h>
 
-LOG_MODULE_REGISTER(logging_gui, LOG_LEVEL_DBG);
-
-#ifdef CONFIG_DISPLAY
-
-// Global LoggingGUI instance for thread access
-static LoggingGUI *g_logging_gui = nullptr;
+LOG_MODULE_REGISTER(logging_gui, LOG_LEVEL_INF);
 
 #ifdef CONFIG_LOG
 // Message queue for thread-safe log handling
@@ -23,16 +18,14 @@ K_MSGQ_DEFINE(log_msgq, sizeof(struct log_msg_item), 200, 4);
 
 // Log output function for GUI backend
 static int gui_log_out(uint8_t *data, size_t length, void *ctx) {
-  if (g_logging_gui) {
-    struct log_msg_item msg;
-    size_t copy_len = MIN(length, sizeof(msg.data) - 1);
-    memcpy(msg.data, data, copy_len);
-    msg.data[copy_len] = '\0';
-    msg.length = copy_len;
+  struct log_msg_item msg;
+  size_t copy_len = MIN(length, sizeof(msg.data) - 1);
+  memcpy(msg.data, data, copy_len);
+  msg.data[copy_len] = '\0';
+  msg.length = copy_len;
 
-    // Try to put message in queue (non-blocking)
-    k_msgq_put(&log_msgq, &msg, K_NO_WAIT);
-  }
+  // Try to put message in queue (non-blocking)
+  k_msgq_put(&log_msgq, &msg, K_NO_WAIT);
   return length;
 }
 
@@ -51,43 +44,10 @@ static const struct log_backend_api gui_log_backend_api = {
 };
 
 LOG_BACKEND_DEFINE(gui_log_backend, gui_log_backend_api, false);
-
-// GUI thread function
-static void logging_gui_thread_func(void *arg1, void *arg2, void *arg3) {
-  // LVGL operations must be performed from the main LVGL thread.
-  ARG_UNUSED(arg1);
-  ARG_UNUSED(arg2);
-  ARG_UNUSED(arg3);
-
-  while (g_logging_gui == nullptr) {
-    k_sleep(K_MSEC(40));
-  }
-
-  LOG_INF("LoggingGUI thread started");
-
-  // Enable log backend from GUI thread context
-  log_backend_enable(&gui_log_backend, NULL, LOG_LEVEL_INF);
-
-  while (1) {
-    // Process any pending log messages
-    struct log_msg_item msg;
-    while (k_msgq_get(&log_msgq, &msg, K_NO_WAIT) == 0) {
-      g_logging_gui->add_log_line(msg.data, msg.length);
-    }
-
-    g_logging_gui->run_task_handler();
-    k_sleep(K_MSEC(20)); // Run at ~50Hz
-  }
-}
-
-// Define GUI thread with 1KB stack, priority 7
-K_THREAD_DEFINE(logging_gui_thread_id, 1024, logging_gui_thread_func, NULL,
-                NULL, NULL, 7, 0, 0);
 #endif
 
 // Constructor
-LoggingGUI::LoggingGUI(const StateMachine *sm)
-    : BaseGUI(sm), log_textarea(nullptr) {}
+LoggingGUI::LoggingGUI() : BaseGUI(), log_textarea(nullptr) {}
 
 bool LoggingGUI::init() {
   LOG_INF("Initializing LoggingGUI");
@@ -97,12 +57,9 @@ bool LoggingGUI::init() {
     return false;
   }
 
+#ifdef CONFIG_LOG
   // Add logging functionality
   add_log_tab();
-
-#ifdef CONFIG_LOG
-  // Set global logging GUI pointer for thread access
-  g_logging_gui = this;
 #endif
 
   LOG_INF("LoggingGUI initialized successfully");
@@ -110,11 +67,25 @@ bool LoggingGUI::init() {
 }
 
 void LoggingGUI::deinit() {
-#ifdef CONFIG_LOG
-  g_logging_gui = nullptr;
-#endif
   log_textarea = nullptr;
   BaseGUI::deinit();
+}
+
+void LoggingGUI::start() {
+  BaseGUI::start();
+
+  // Enable log backend from GUI thread context
+  log_backend_enable(&gui_log_backend, NULL, LOG_LEVEL_INF);
+}
+
+void LoggingGUI::run_task_handler() {
+  // Process any pending log messages
+  struct log_msg_item msg;
+  while (k_msgq_get(&log_msgq, &msg, K_NO_WAIT) == 0) {
+    add_log_line(msg.data, msg.length);
+  }
+
+  BaseGUI::run_task_handler();
 }
 
 void LoggingGUI::add_log_tab() {
@@ -125,8 +96,8 @@ void LoggingGUI::add_log_tab() {
 
   lv_obj_t *log_tab = lv_tabview_add_tab(tabview, "Log");
   log_textarea = lv_textarea_create(log_tab);
-  lv_obj_set_size(log_textarea, LV_PCT(90), LV_PCT(80));
-  lv_obj_align(log_textarea, LV_ALIGN_BOTTOM_MID, 0, -10);
+  lv_obj_set_size(log_textarea, LV_PCT(100), LV_PCT(100));
+  lv_obj_align(log_textarea, LV_ALIGN_CENTER, 0, 0);
   lv_textarea_set_text(log_textarea, "");
   lv_textarea_set_placeholder_text(log_textarea,
                                    "Log messages will appear here...");
@@ -175,5 +146,3 @@ void LoggingGUI::add_log_line(const char *log_data, size_t length) {
   lv_textarea_add_text(log_textarea, log_line);
   lv_obj_scroll_to_y(log_textarea, LV_COORD_MAX, LV_ANIM_OFF);
 }
-
-#endif
