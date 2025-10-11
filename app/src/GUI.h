@@ -50,4 +50,7 @@ public:
 
   // Log display method
   void add_log_line(const char *log_data, size_t length);
+
+  // Static method to initialize GUI
+  static GUI *initialize_gui(const StateMachine *sm);
 };

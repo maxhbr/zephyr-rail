@@ -7,6 +7,89 @@
 
 LOG_MODULE_REGISTER(gui, LOG_LEVEL_DBG);
 
+#ifdef CONFIG_DISPLAY
+// Global GUI instance for thread access
+static GUI *g_gui = nullptr;
+
+#ifdef CONFIG_LOG
+// Message queue for thread-safe log handling
+struct log_msg_item {
+  char data[256];
+  size_t length;
+};
+
+K_MSGQ_DEFINE(log_msgq, sizeof(struct log_msg_item), 200, 4);
+
+// Log output function for GUI backend
+static int gui_log_out(uint8_t *data, size_t length, void *ctx) {
+  if (g_gui) {
+    struct log_msg_item msg;
+    size_t copy_len = MIN(length, sizeof(msg.data) - 1);
+    memcpy(msg.data, data, copy_len);
+    msg.data[copy_len] = '\0';
+    msg.length = copy_len;
+
+    // Try to put message in queue (non-blocking)
+    k_msgq_put(&log_msgq, &msg, K_NO_WAIT);
+  }
+  return length;
+}
+
+LOG_OUTPUT_DEFINE(gui_log_output, gui_log_out, NULL, 0);
+
+// Log backend process function
+static void gui_log_process(const struct log_backend *const backend,
+                            union log_msg_generic *msg) {
+  log_format_func_t log_output_func = log_format_func_t_get(LOG_OUTPUT_TEXT);
+  log_output_func(&gui_log_output, &msg->log, 0);
+}
+
+// Log backend definition
+static const struct log_backend_api gui_log_backend_api = {
+    .process = gui_log_process,
+};
+
+LOG_BACKEND_DEFINE(gui_log_backend, gui_log_backend_api, false);
+#endif
+
+// GUI thread function
+static void gui_thread_func(void *arg1, void *arg2, void *arg3) {
+  // LVGL operations must be performed from the main LVGL thread.
+  ARG_UNUSED(arg1);
+  ARG_UNUSED(arg2);
+  ARG_UNUSED(arg3);
+
+  while (g_gui == nullptr) {
+    k_sleep(K_MSEC(40));
+  }
+
+  LOG_INF("GUI thread started");
+
+#ifdef CONFIG_LOG
+  // Enable log backend from GUI thread context
+  log_backend_enable(&gui_log_backend, NULL, LOG_LEVEL_INF);
+#endif
+
+  while (1) {
+#ifdef CONFIG_LOG
+    // Process any pending log messages
+    struct log_msg_item msg;
+    while (k_msgq_get(&log_msgq, &msg, K_NO_WAIT) == 0) {
+      g_gui->add_log_line(msg.data, msg.length);
+    }
+#endif
+
+    g_gui->run_task_handler();
+    k_sleep(K_MSEC(20)); // Run at ~50Hz
+  }
+}
+
+// Define GUI thread with 1KB stack, priority 7
+K_THREAD_DEFINE(gui_thread_id, 1024, gui_thread_func, NULL, NULL, NULL, 7, 0,
+                0);
+
+#endif
+
 // Constructor
 GUI::GUI(const StateMachine *sm)
     : display_dev(nullptr), main_screen(nullptr), status_label(nullptr),
@@ -54,6 +137,25 @@ bool GUI::init() {
   display_blanking_off(display_dev);
 
   return true;
+}
+
+// Static method to initialize the gui
+GUI *GUI::initialize_gui(const StateMachine *sm) {
+#ifdef CONFIG_DISPLAY
+  static GUI gui(sm);
+  if (!gui.init()) {
+    LOG_ERR("Failed to initialize GUI");
+    return nullptr;
+  }
+
+  // Set global GUI pointer for thread access
+  g_gui = &gui;
+
+  LOG_INF("GUI initialized successfully");
+  return &gui;
+#else
+  return nullptr;
+#endif
 }
 
 // Deinitialize the GUI
@@ -108,9 +210,7 @@ void GUI::set_status(const char *status) {
   LOG_INF("Status: %s", status);
 }
 
-// Run LVGL task handler
 void GUI::run_task_handler() {
-  /* update GUI */
   struct stepper_with_target_status stepper_status =
       this->sm->get_stepper_status();
   struct stack_status stack_status = this->sm->get_stack_status();
@@ -120,9 +220,7 @@ void GUI::run_task_handler() {
   lv_timer_handler();
 }
 
-// Helper method for position conversion
 int GUI::position_as_nm(int pitch_per_rev, int pulses_per_rev, int position) {
-  // Convert stepper position to nanometers
   if (pulses_per_rev == 0)
     return 0;
   return (position * pitch_per_rev * 1000000) / pulses_per_rev;
