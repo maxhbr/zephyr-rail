@@ -71,18 +71,22 @@ SonyRemote::SonyRemote(const char *target_address) {
   k_work_init_delayable(&discovery_work_, discovery_work_handler);
 
   // Parse the target address string and set has_target_addr_
-  if (target_address &&
-      bt_addr_le_from_str(target_address, "random", &target_addr_) == 0) {
-    has_target_addr_ = true;
-    LOG_INF("Target camera address set to: %s", target_address);
-  } else if (target_address && bt_addr_le_from_str(target_address, "public",
-                                                   &target_addr_) == 0) {
-    has_target_addr_ = true;
-    LOG_INF("Target camera address set to: %s", target_address);
+  if (target_address) {
+    // Try parsing as public address first (most common for cameras)
+    if (bt_addr_le_from_str(target_address, "public", &target_addr_) == 0) {
+      has_target_addr_ = true;
+      LOG_INF("Target camera address set to: %s (public)", target_address);
+    } else if (bt_addr_le_from_str(target_address, "random", &target_addr_) ==
+               0) {
+      has_target_addr_ = true;
+      LOG_INF("Target camera address set to: %s (random)", target_address);
+    } else {
+      has_target_addr_ = false;
+      LOG_ERR("Invalid target address format: %s", target_address);
+    }
   } else {
     has_target_addr_ = false;
-    LOG_ERR("Invalid target address format: %s",
-            target_address ? target_address : "NULL");
+    LOG_ERR("NULL target address provided");
   }
 }
 
@@ -223,10 +227,18 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
     return;
   }
 
-  // If we have a target address, check if this matches
   if (self_->has_target_addr_) {
+    char found_addr_str[BT_ADDR_LE_STR_LEN];
+    char target_addr_str[BT_ADDR_LE_STR_LEN];
+    bt_addr_le_to_str(addr, found_addr_str, sizeof(found_addr_str));
+    bt_addr_le_to_str(&self_->target_addr_, target_addr_str,
+                      sizeof(target_addr_str));
+
+    LOG_DBG("Comparing found: %s vs target: %s", found_addr_str,
+            target_addr_str);
+
     if (!bt_addr_le_eq(addr, &self_->target_addr_)) {
-      // This is not our target device, ignore it
+      LOG_DBG("Ignoring non-target device: %s", found_addr_str);
       return;
     }
   }
