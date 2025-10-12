@@ -14,7 +14,7 @@ struct log_msg_item {
   size_t length;
 };
 
-K_MSGQ_DEFINE(log_msgq, sizeof(struct log_msg_item), 200, 4);
+K_MSGQ_DEFINE(log_msgq, sizeof(struct log_msg_item), 20, 4);
 
 // Log output function for GUI backend
 static int gui_log_out(uint8_t *data, size_t length, void *ctx) {

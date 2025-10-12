@@ -1,5 +1,5 @@
 #include "StateMachine.h"
-LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_DBG);
 
 // ############################################################################
 // initialize ZBus

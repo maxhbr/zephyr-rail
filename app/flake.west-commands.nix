@@ -66,10 +66,14 @@ in
   (mkWestBuildBoardCommand "stm32h747i_disco/stm32h747xx/m7" "" [
     "--shield"
     "st_b_lcd40_dsi1_mb1166_a09"
+    "--shield"
+    "x_nucleo_idb05a1"
   ])
   (mkWestBuildBoardCommand "stm32h747i_disco/stm32h747xx/m7" "-and-flash" [
     "--shield"
     "st_b_lcd40_dsi1_mb1166_a09"
+    "--shield"
+    "x_nucleo_idb05a1"
     "-t"
     "flash"
   ])

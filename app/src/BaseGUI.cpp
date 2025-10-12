@@ -25,7 +25,7 @@ static void gui_thread_func(void *arg1, void *arg2, void *arg3) {
 
   while (1) {
     g_gui->run_task_handler();
-    k_sleep(K_MSEC(20)); // Run at ~50Hz
+    k_sleep(K_MSEC(200)); // Run at ~50Hz
   }
 }
 
