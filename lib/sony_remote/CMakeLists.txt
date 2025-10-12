@@ -1,15 +1,18 @@
 # Sony Remote Library for Zephyr
 
-zephyr_library()
+# Create the library target
+add_library(sony_remote STATIC)
 
-zephyr_library_sources(
+target_sources(sony_remote PRIVATE
     src/sony_remote.cpp
 )
 
-zephyr_library_include_directories(include)
+target_include_directories(sony_remote PUBLIC
+    include
+)
 
 # Compile options for C++17
-zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
+target_compile_options(sony_remote PRIVATE -lstdc++ -std=c++17 -fpermissive)
 
-# Link libraries for Bluetooth support
-zephyr_library_link_libraries(INTERFACE zephyr_interface)
+# Link with Zephyr kernel for access to Zephyr APIs
+target_link_libraries(sony_remote PUBLIC zephyr_interface)
