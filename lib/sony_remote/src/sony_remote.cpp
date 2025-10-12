@@ -15,6 +15,8 @@ constexpr uint8_t FOCUS_DOWN[] = {0x01, 0x07};
 constexpr uint8_t FOCUS_UP[] = {0x01, 0x06};
 constexpr uint8_t SHUTTER_DOWN[] = {0x01, 0x09};
 constexpr uint8_t SHUTTER_UP[] = {0x01, 0x08};
+constexpr uint8_t C1_DOWN[] = {0x01, 0x21};
+constexpr uint8_t C1_UP[] = {0x01, 0x20};
 constexpr uint8_t REC_TOGGLE[] = {0x01, 0x0E};
 constexpr uint8_t ZOOM_T_PRESS[] = {0x02, 0x45, 0x10};
 constexpr uint8_t ZOOM_T_RELEASE[] = {0x02, 0x44, 0x00};
@@ -64,11 +66,13 @@ SonyRemote::SonyRemote() {
   self_ = this;
   k_work_init_delayable(&discovery_work_, discovery_work_handler);
   has_target_addr_ = false;
+  is_paired_ = false;
 }
 
 SonyRemote::SonyRemote(const char *target_address) {
   self_ = this;
   k_work_init_delayable(&discovery_work_, discovery_work_handler);
+  is_paired_ = false;
 
   // Parse the target address string and set has_target_addr_
   if (target_address) {
@@ -110,12 +114,19 @@ void SonyRemote::startScan() {
   }
 }
 
-bool SonyRemote::ready() const { return conn_ != nullptr && ff01_handle_ != 0; }
+bool SonyRemote::ready() const {
+  if (conn_ != nullptr && ff01_handle_ != 0 && !is_paired_) {
+    LOG_DBG("connected but not paired");
+  }
+  return conn_ != nullptr && ff01_handle_ != 0 && is_paired_;
+}
 
 void SonyRemote::focusDown() { send_cmd(FOCUS_DOWN, sizeof(FOCUS_DOWN)); }
 void SonyRemote::focusUp() { send_cmd(FOCUS_UP, sizeof(FOCUS_UP)); }
 void SonyRemote::shutterDown() { send_cmd(SHUTTER_DOWN, sizeof(SHUTTER_DOWN)); }
 void SonyRemote::shutterUp() { send_cmd(SHUTTER_UP, sizeof(SHUTTER_UP)); }
+void SonyRemote::cOneDown() { send_cmd(C1_DOWN, sizeof(C1_DOWN)); }
+void SonyRemote::cOneUp() { send_cmd(C1_UP, sizeof(C1_UP)); }
 void SonyRemote::recToggle() { send_cmd(REC_TOGGLE, sizeof(REC_TOGGLE)); }
 void SonyRemote::zoomTPress() { send_cmd(ZOOM_T_PRESS, sizeof(ZOOM_T_PRESS)); }
 void SonyRemote::zoomTRelease() {
@@ -168,6 +179,7 @@ void SonyRemote::on_disconnected(bt_conn * /*conn*/, uint8_t reason) {
     self_->conn_ = nullptr;
   }
   self_->ff01_handle_ = 0;
+  self_->is_paired_ = false; // Reset pairing status on disconnect
   // resume scanning
   static struct bt_le_scan_param scan_param =
       BT_LE_SCAN_PARAM_INIT(BT_LE_SCAN_TYPE_ACTIVE, BT_LE_SCAN_OPT_NONE,
@@ -196,7 +208,9 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
     if (chrc && chrc->uuid && chrc->uuid->type == BT_UUID_TYPE_16 &&
         BT_UUID_16(chrc->uuid)->val == 0xFF01) {
       self_->ff01_handle_ = chrc->value_handle;
-      LOG_DBG("Found FF01 (handle 0x%04x)", self_->ff01_handle_);
+      self_->is_paired_ = true; // Set paired flag when FF01 is found
+      LOG_INF("Found FF01 (handle 0x%04x) - camera is ready!",
+              self_->ff01_handle_);
       std::memset(params, 0, sizeof(*params));
       return BT_GATT_ITER_STOP;
     }
@@ -205,6 +219,17 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
 }
 
 void SonyRemote::start_discovery() {
+  // Check if we have proper security level before discovering services
+  bt_security_t sec_level = bt_conn_get_security(conn_);
+  LOG_INF("Connection security level: %d", sec_level);
+
+  if (sec_level < BT_SECURITY_L2) {
+    LOG_WRN("Security level too low (%d), retrying after delay...", sec_level);
+    // Retry discovery after a delay if security is not established
+    k_work_schedule(&discovery_work_, K_MSEC(1000));
+    return;
+  }
+
   // Only discover the FF01 characteristic directly
   // Remove the unnecessary primary service discovery to avoid conflicts
   disc_params_ = {};

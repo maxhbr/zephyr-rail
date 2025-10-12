@@ -20,7 +20,7 @@ remote.begin();
 remote.startScan();
 
 // OR: Create with specific camera address (recommended)
-SonyRemote remote("9C:50:D1:AF:76:5F");
+SonyRemote remote("9C:50:D1:AF:76:5F")// ;
 remote.begin();
 remote.startScan();
 

@@ -24,6 +24,8 @@ public:
   void focusUp();
   void shutterDown();
   void shutterUp();
+  void cOneDown();
+  void cOneUp();
   void recToggle();
   void zoomTPress();
   void zoomTRelease();
@@ -58,7 +60,9 @@ private:
   bt_addr_le_t target_addr_;
   bool has_target_addr_ = false;
 
-  // helpers
+  // Pairing status
+  bool is_paired_ = false;
+
   void start_discovery();
   void send_cmd(const uint8_t *buf, size_t len);
 };
