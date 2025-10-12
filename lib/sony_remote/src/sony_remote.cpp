@@ -1,6 +1,6 @@
 // mostly written by GPT5, based on
 // https://gregleeds.com/reverse-engineering-sony-camera-bluetooth/
-#include "sony_remote.h"
+#include "sony_remote/sony_remote.h"
 #include <cstring>
 #include <zephyr/sys/byteorder.h>
 

@@ -35,7 +35,7 @@
 #include "StateMachine.h"
 #include "StepperWithTarget.h"
 #ifdef CONFIG_BT
-#include "sony_remote.h"
+#include "sony_remote/sony_remote.h"
 #endif
 
 #include <zephyr/logging/log.h>
