@@ -36,6 +36,7 @@
               builtins.elem (lib.getName pkg) [
                 "segger-jlink"
                 "STM32CubeProg"
+                "nrfutil"
               ];
             segger-jlink.acceptLicense = true;
           };
@@ -82,6 +83,7 @@
             dfu-util
             pyocd
             bossa
+            nrfutil
           ]);
           postBuild = ''
             wrapProgram "$out/bin/west" \

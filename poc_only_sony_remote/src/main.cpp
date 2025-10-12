@@ -20,8 +20,12 @@ int main(void) {
   // Initialize Sony Remote
   SonyRemote remote;
   remote.begin();
+
+  // Add a small delay before starting scan
+  k_msleep(100);
   remote.startScan();
 
+  k_msleep(100);
   // Simple test loop
   while (true) {
     if (remote.ready()) {

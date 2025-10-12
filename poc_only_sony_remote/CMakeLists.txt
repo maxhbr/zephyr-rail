@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.20.0)
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)
 
+set(BOARD b_l4s5i_iot01a)
+
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(poc_sony_remote)
 

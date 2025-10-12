@@ -2,6 +2,7 @@
 // https://gregleeds.com/reverse-engineering-sony-camera-bluetooth/
 #include "sony_remote/sony_remote.h"
 #include <cstring>
+#include <zephyr/bluetooth/conn.h>
 #include <zephyr/sys/byteorder.h>
 
 LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_DBG);
@@ -32,13 +33,37 @@ static bt_conn_cb kConnCbs = {
     .disconnected = SonyRemote::on_disconnected,
 };
 
-static bool accept_any(bt_data * /*data*/, void * /*user*/) {
-  return true; // make stricter later by parsing Manufacturer ID 0x012D or name
+static bool accept_any(bt_data *data, void * /*user*/) {
+  // Look for Sony devices by checking for Sony manufacturer data or device name
+  if (data->type == BT_DATA_MANUFACTURER_DATA && data->data_len >= 2) {
+    uint16_t company_id = sys_get_le16(data->data);
+    if (company_id == 0x012D) { // Sony's company ID
+      return true;
+    }
+  }
+
+  if (data->type == BT_DATA_NAME_COMPLETE ||
+      data->type == BT_DATA_NAME_SHORTENED) {
+    // Check if device name contains "DSC", "ILCE", "FX", or other Sony camera
+    // prefixes
+    const char *name = (const char *)data->data;
+    if (data->data_len >= 3) {
+      if (strncmp(name, "DSC", 3) == 0 || strncmp(name, "ILCE", 4) == 0 ||
+          strncmp(name, "FX", 2) == 0) {
+        return true;
+      }
+    }
+  }
+
+  return true; // For now, still accept any device for broader compatibility
 }
 
 } // namespace
 
-SonyRemote::SonyRemote() { self_ = this; }
+SonyRemote::SonyRemote() {
+  self_ = this;
+  k_work_init_delayable(&discovery_work_, discovery_work_handler);
+}
 
 void SonyRemote::begin() { bt_conn_cb_register(&kConnCbs); }
 
@@ -71,6 +96,11 @@ void SonyRemote::zoomWRelease() {
 }
 
 void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
+  if (!self_) {
+    LOG_ERR("self_ pointer is NULL in on_connected!");
+    return;
+  }
+
   if (err) {
     LOG_ERR("Connect failed (%u)", err);
     return;
@@ -79,10 +109,28 @@ void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
   if (self_->conn_)
     bt_conn_unref(self_->conn_);
   self_->conn_ = bt_conn_ref(conn);
-  self_->start_discovery();
+
+  // Start pairing process - this will trigger the security procedure
+  LOG_INF("Starting security/pairing...");
+  int pairing_err = bt_conn_set_security(conn, BT_SECURITY_L2);
+  if (pairing_err) {
+    LOG_ERR("Failed to start pairing (%d)", pairing_err);
+    // Still try discovery in case device is already bonded
+    self_->start_discovery();
+  } else {
+    LOG_INF("Pairing initiated successfully");
+    // Discovery will be started after pairing is complete
+    // For now, let's try discovery after a short delay
+    k_work_schedule(&self_->discovery_work_, K_MSEC(2000));
+  }
 }
 
 void SonyRemote::on_disconnected(bt_conn * /*conn*/, uint8_t reason) {
+  if (!self_) {
+    LOG_ERR("self_ pointer is NULL in on_disconnected!");
+    return;
+  }
+
   LOG_INF("Disconnected (0x%02x)", reason);
   if (self_->conn_) {
     bt_conn_unref(self_->conn_);
@@ -100,6 +148,12 @@ void SonyRemote::on_disconnected(bt_conn * /*conn*/, uint8_t reason) {
 
 uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
                                 bt_gatt_discover_params *params) {
+  // Add safety check for self_ pointer
+  if (!self_) {
+    LOG_ERR("self_ pointer is NULL!");
+    return BT_GATT_ITER_STOP;
+  }
+
   if (!attr) {
     LOG_DBG("Discovery complete");
     std::memset(params, 0, sizeof(*params));
@@ -108,7 +162,7 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
 
   if (params->type == BT_GATT_DISCOVER_CHARACTERISTIC) {
     const auto *chrc = static_cast<const bt_gatt_chrc *>(attr->user_data);
-    if (chrc->uuid->type == BT_UUID_TYPE_16 &&
+    if (chrc && chrc->uuid && chrc->uuid->type == BT_UUID_TYPE_16 &&
         BT_UUID_16(chrc->uuid)->val == 0xFF01) {
       self_->ff01_handle_ = chrc->value_handle;
       LOG_DBG("Found FF01 (handle 0x%04x)", self_->ff01_handle_);
@@ -120,30 +174,28 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
 }
 
 void SonyRemote::start_discovery() {
-  // (Optional) discover the vendor service first
-  disc_params_ = {};
-  disc_params_.uuid = &kSonySvcUuid.uuid;
-  disc_params_.type = BT_GATT_DISCOVER_PRIMARY;
-  disc_params_.start_handle = 0x0001;
-  disc_params_.end_handle = 0xffff;
-  int err = bt_gatt_discover(conn_, &disc_params_);
-  if (err)
-    LOG_WRN("Primary svc discover err: %d (continuing)", err);
-
-  // Robust: search the whole DB for 0xFF01 characteristic
+  // Only discover the FF01 characteristic directly
+  // Remove the unnecessary primary service discovery to avoid conflicts
   disc_params_ = {};
   disc_params_.uuid = &kFF01Uuid.uuid;
   disc_params_.type = BT_GATT_DISCOVER_CHARACTERISTIC;
   disc_params_.func = SonyRemote::on_discover;
   disc_params_.start_handle = 0x0001;
   disc_params_.end_handle = 0xffff;
-  err = bt_gatt_discover(conn_, &disc_params_);
-  if (err)
+
+  int err = bt_gatt_discover(conn_, &disc_params_);
+  if (err) {
     LOG_ERR("Char discover err: %d", err);
+  }
 }
 
 void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
                          net_buf_simple *ad) {
+  if (!self_) {
+    LOG_ERR("self_ pointer is NULL in on_scan!");
+    return;
+  }
+
   bt_data_parse(ad, accept_any, nullptr);
 
   if (type == BT_GAP_ADV_TYPE_ADV_IND ||
@@ -181,4 +233,14 @@ void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
       bt_gatt_write_without_response(conn_, ff01_handle_, buf, len, false);
   if (err)
     LOG_ERR("WWR failed: %d", err);
+}
+
+void SonyRemote::discovery_work_handler(struct k_work *work) {
+  if (!self_) {
+    LOG_ERR("self_ pointer is NULL in discovery_work_handler!");
+    return;
+  }
+
+  LOG_INF("Starting delayed service discovery...");
+  self_->start_discovery();
 }

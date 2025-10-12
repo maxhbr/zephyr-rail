@@ -37,6 +37,9 @@ public:
   static void on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
                       struct net_buf_simple *ad);
 
+  // work handler for delayed discovery
+  static void discovery_work_handler(struct k_work *work);
+
 private:
   // singleton-style bridge for C callbacks
   static SonyRemote *self_;
@@ -46,6 +49,8 @@ private:
 
   bt_gatt_discover_params disc_params_{};
   bt_gatt_subscribe_params sub_params_{}; // reserved if you later use 0xFF02
+
+  k_work_delayable discovery_work_;
 
   // helpers
   void start_discovery();
