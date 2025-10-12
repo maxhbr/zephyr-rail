@@ -35,6 +35,9 @@ public:
   // callbacks (public because they need to be accessed from C code)
   static void on_connected(struct bt_conn *conn, uint8_t err);
   static void on_disconnected(struct bt_conn *conn, uint8_t reason);
+  static uint8_t on_discover_service(struct bt_conn *conn,
+                                     const struct bt_gatt_attr *attr,
+                                     struct bt_gatt_discover_params *params);
   static uint8_t on_discover(struct bt_conn *conn,
                              const struct bt_gatt_attr *attr,
                              struct bt_gatt_discover_params *params);

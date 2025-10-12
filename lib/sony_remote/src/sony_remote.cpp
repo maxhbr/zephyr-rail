@@ -232,6 +232,48 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
   return BT_GATT_ITER_CONTINUE;
 }
 
+uint8_t SonyRemote::on_discover_service(bt_conn * /*conn*/,
+                                        const bt_gatt_attr *attr,
+                                        bt_gatt_discover_params *params) {
+  if (!self_) {
+    LOG_ERR("self_ pointer is NULL!");
+    return BT_GATT_ITER_STOP;
+  }
+
+  if (!attr) {
+    LOG_WRN("Sony service not found!");
+    std::memset(params, 0, sizeof(*params));
+    return BT_GATT_ITER_STOP;
+  }
+
+  if (params->type == BT_GATT_DISCOVER_PRIMARY) {
+    const auto *service =
+        static_cast<const bt_gatt_service_val *>(attr->user_data);
+    if (service) {
+      LOG_INF("Found Sony service (handle range: 0x%04x - 0x%04x)",
+              attr->handle, service->end_handle);
+
+      // Now discover characteristics within this service
+      self_->disc_params_ = {};
+      self_->disc_params_.uuid = &kFF01Uuid.uuid;
+      self_->disc_params_.type = BT_GATT_DISCOVER_CHARACTERISTIC;
+      self_->disc_params_.func = SonyRemote::on_discover;
+      self_->disc_params_.start_handle = attr->handle;
+      self_->disc_params_.end_handle = service->end_handle;
+
+      int err = bt_gatt_discover(self_->conn_, &self_->disc_params_);
+      if (err) {
+        LOG_ERR("Characteristic discovery failed: %d", err);
+      }
+
+      std::memset(params, 0, sizeof(*params));
+      return BT_GATT_ITER_STOP;
+    }
+  }
+
+  return BT_GATT_ITER_CONTINUE;
+}
+
 void SonyRemote::start_discovery() {
   // Check if we have proper security level before discovering services
   bt_security_t sec_level = bt_conn_get_security(conn_);
@@ -273,11 +315,11 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
     bt_addr_le_to_str(&self_->target_addr_, target_addr_str,
                       sizeof(target_addr_str));
 
-    LOG_DBG("Comparing found: %s vs target: %s", found_addr_str,
-            target_addr_str);
+    // LOG_DBG("Comparing found: %s vs target: %s", found_addr_str,
+    //         target_addr_str);
 
     if (!bt_addr_le_eq(addr, &self_->target_addr_)) {
-      LOG_DBG("Ignoring non-target device: %s", found_addr_str);
+      // LOG_DBG("Ignoring non-target device: %s", found_addr_str);
       return;
     }
   }
