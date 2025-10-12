@@ -137,6 +137,19 @@ void SonyRemote::zoomWRelease() {
   send_cmd(ZOOM_W_RELEASE, sizeof(ZOOM_W_RELEASE));
 }
 
+void SonyRemote::shoot() {
+  int delay = 50;
+  LOG_DBG("shoot ...");
+  focusDown();
+  k_msleep(delay);
+  shutterDown();
+  k_msleep(delay);
+  shutterUp();
+  k_msleep(delay);
+  focusUp();
+  LOG_DBG("... done shooting");
+}
+
 void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
   if (!self_) {
     LOG_ERR("self_ pointer is NULL in on_connected!");
@@ -219,13 +232,13 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
                 self_->ff01_handle_);
 
         // Log the characteristic properties
-        LOG_INF("FF01 properties: 0x%02x", chrc->properties);
+        LOG_DBG("FF01 properties: 0x%02x", chrc->properties);
         if (chrc->properties & BT_GATT_CHRC_WRITE_WITHOUT_RESP) {
-          LOG_INF("✓ Write Without Response supported");
+          LOG_DBG("Write Without Response supported");
         } else if (chrc->properties & BT_GATT_CHRC_WRITE) {
-          LOG_INF("✓ Write (with Response) supported");
+          LOG_DBG("Write (with Response) supported");
         } else {
-          LOG_WRN("⚠ Neither Write nor Write Without Response supported");
+          LOG_WRN("Neither Write nor Write Without Response supported");
         }
 
         std::memset(params, 0, sizeof(*params));
@@ -375,9 +388,9 @@ void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
   }
 
   // Log the command being sent
-  LOG_INF("Sending command of %d bytes:", len);
+  LOG_DBG("Sending command of %d bytes:", len);
   for (size_t i = 0; i < len; i++) {
-    LOG_INF("  [%d]: 0x%02x", i, buf[i]);
+    LOG_DBG("  [%d]: 0x%02x", i, buf[i]);
   }
 
   // Ensure command fits in our buffer
@@ -412,7 +425,7 @@ void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
   if (err) {
     LOG_ERR("GATT write failed (%d)", err);
   } else {
-    LOG_INF("Command sent successfully to handle 0x%04x", ff01_handle_);
+    LOG_DBG("Command sent successfully to handle 0x%04x", ff01_handle_);
   }
 }
 

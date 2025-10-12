@@ -32,6 +32,9 @@ public:
   void zoomWPress();
   void zoomWRelease();
 
+  // high level functions:
+  void shoot();
+
   // callbacks (public because they need to be accessed from C code)
   static void on_connected(struct bt_conn *conn, uint8_t err);
   static void on_disconnected(struct bt_conn *conn, uint8_t reason);
