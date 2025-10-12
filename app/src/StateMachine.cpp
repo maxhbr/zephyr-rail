@@ -1,5 +1,5 @@
 #include "StateMachine.h"
-LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_DBG);
 
 // ############################################################################
 // initialize ZBus
@@ -254,6 +254,7 @@ static const struct smf_state stack_states[] = {
 };
 
 StateMachine::StateMachine(const StepperWithTarget *stepper) {
+  LOG_INF("%s", __FUNCTION__);
   s0_ptr = &stack_states[S0];
   s_interactive_move_ptr = &stack_states[S_INTERACTIVE_MOVE];
   s_interactive_pre_stacking_ptr = &stack_states[S_INTERACTIVE_PRE_STACKING];

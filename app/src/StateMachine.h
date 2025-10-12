@@ -16,7 +16,7 @@
 #include <zephyr/logging/log.h>
 
 #include "Stack.h"
-#include "StepperWithTarget.h"
+#include "stepper_with_target/StepperWithTarget.h"
 
 /* enum state_action { */
 /*   NOOP_CONTROLLER_ACTION, */

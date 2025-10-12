@@ -12,21 +12,24 @@ static void gui_thread_func(void *arg1, void *arg2, void *arg3) {
   ARG_UNUSED(arg2);
   ARG_UNUSED(arg3);
 
+  LOG_INF("GUI thread waiting...");
+  k_sleep(K_MSEC(100));
+
   while (g_gui == nullptr) {
     k_sleep(K_MSEC(40));
+    LOG_INF("GUI thread still waiting...");
   }
   k_sleep(K_MSEC(100));
 
-  LOG_INF("LoggingGUI thread started");
+  LOG_INF("GUI thread started");
 
   while (1) {
     g_gui->run_task_handler();
-    k_sleep(K_MSEC(20)); // Run at ~50Hz
+    k_sleep(K_MSEC(200)); // Run at ~50Hz
   }
 }
 
-// Define GUI thread with 1KB stack, priority 7
-K_THREAD_DEFINE(logging_gui_thread_id, 1024, gui_thread_func, NULL, NULL, NULL,
+K_THREAD_DEFINE(logging_gui_thread_id, 8096, gui_thread_func, NULL, NULL, NULL,
                 7, 0, 0);
 
 // Constructor

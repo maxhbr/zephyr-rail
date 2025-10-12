@@ -1,4 +1,4 @@
-#include "GPIOs.h"
+#include "stepper_with_target/GPIOs.h"
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(gpios, LOG_LEVEL_ERR);
 

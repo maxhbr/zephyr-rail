@@ -36,6 +36,7 @@
               builtins.elem (lib.getName pkg) [
                 "segger-jlink"
                 "STM32CubeProg"
+                "nrfutil"
               ];
             segger-jlink.acceptLicense = true;
           };
@@ -82,6 +83,7 @@
             dfu-util
             pyocd
             bossa
+            nrfutil
           ]);
           postBuild = ''
             wrapProgram "$out/bin/west" \
@@ -104,7 +106,7 @@
           ]);
           text = builtins.readFile ./scripts/init-and-chores.sh;
         };
-        west-commands = import ./app/flake.west-commands.nix inputs system;
+        west-commands = import ./nix/flake.west-commands.nix inputs system;
       in
       {
         packages = {

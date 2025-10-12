@@ -1,4 +1,4 @@
-#include "StepperWithTarget.h"
+#include "stepper_with_target/StepperWithTarget.h"
 
 void StepperWithTarget::log_state() {
   LOG_MODULE_DECLARE(stepper);
