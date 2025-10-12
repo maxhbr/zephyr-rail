@@ -380,6 +380,12 @@ void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
     LOG_INF("  [%d]: 0x%02x", i, buf[i]);
   }
 
+  // Ensure command fits in our buffer
+  if (len > sizeof(write_buffer_)) {
+    LOG_ERR("Command too large (%d bytes, max %d)", len, sizeof(write_buffer_));
+    return;
+  }
+
   int err;
   if (ff01_properties_ & BT_GATT_CHRC_WRITE_WITHOUT_RESP) {
     LOG_DBG("Using Write Without Response");
@@ -387,15 +393,17 @@ void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
   } else if (ff01_properties_ & BT_GATT_CHRC_WRITE) {
     LOG_DBG("Using Write (with Response)");
 
-    // Set up write parameters for bt_gatt_write
-    static bt_gatt_write_params write_params = {};
-    write_params.func = nullptr; // No callback needed for now
-    write_params.handle = ff01_handle_;
-    write_params.offset = 0;
-    write_params.data = buf;
-    write_params.length = len;
+    // Copy data to our persistent buffer
+    memcpy(write_buffer_, buf, len);
 
-    err = bt_gatt_write(conn_, &write_params);
+    // Set up write parameters for bt_gatt_write using member variable
+    write_params_.func = SonyRemote::on_write_complete;
+    write_params_.handle = ff01_handle_;
+    write_params_.offset = 0;
+    write_params_.data = write_buffer_;
+    write_params_.length = len;
+
+    err = bt_gatt_write(conn_, &write_params_);
   } else {
     LOG_ERR("FF01 characteristic doesn't support write operations");
     return;
@@ -405,6 +413,15 @@ void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
     LOG_ERR("GATT write failed (%d)", err);
   } else {
     LOG_INF("Command sent successfully to handle 0x%04x", ff01_handle_);
+  }
+}
+
+void SonyRemote::on_write_complete(bt_conn *conn, uint8_t err,
+                                   bt_gatt_write_params *params) {
+  if (err) {
+    LOG_ERR("GATT write completed with error (%d)", err);
+  } else {
+    LOG_DBG("GATT write completed successfully");
   }
 }
 

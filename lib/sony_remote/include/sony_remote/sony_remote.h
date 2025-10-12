@@ -47,6 +47,10 @@ public:
   // work handler for delayed discovery
   static void discovery_work_handler(struct k_work *work);
 
+  // write completion callback
+  static void on_write_complete(struct bt_conn *conn, uint8_t err,
+                                struct bt_gatt_write_params *params);
+
 private:
   // singleton-style bridge for C callbacks
   static SonyRemote *self_;
@@ -57,6 +61,8 @@ private:
 
   bt_gatt_discover_params disc_params_{};
   bt_gatt_subscribe_params sub_params_{}; // reserved if you later use 0xFF02
+  bt_gatt_write_params write_params_{};   // Parameters for write operations
+  uint8_t write_buffer_[32]; // Buffer to store command data during write
 
   k_work_delayable discovery_work_;
 
