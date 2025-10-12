@@ -33,7 +33,7 @@
 #include "GUI.h"
 #endif
 #include "StateMachine.h"
-#include "StepperWithTarget.h"
+#include "stepper_with_target/StepperWithTarget.h"
 #ifdef CONFIG_BT
 #include "sony_remote/sony_remote.h"
 #endif

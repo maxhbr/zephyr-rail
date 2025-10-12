@@ -10,7 +10,7 @@
 // Include the status structures
 #include "Stack.h"
 #include "StateMachine.h"
-#include "StepperWithTarget.h"
+#include "stepper_with_target/StepperWithTarget.h"
 
 // Conditional LVGL includes
 #include <lvgl.h>
