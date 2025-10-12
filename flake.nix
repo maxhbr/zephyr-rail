@@ -37,8 +37,12 @@
                 "segger-jlink"
                 "STM32CubeProg"
                 "nrfutil"
+                "segger-jlink"
               ];
             segger-jlink.acceptLicense = true;
+            permittedInsecurePackages = [
+              "segger-jlink-qt4-824"
+            ];
           };
         };
         inherit (pkgs) lib;
@@ -78,7 +82,7 @@
             pkg-config
 
             # openocd
-            # segger-jlink-headless
+            segger-jlink # -headless
             stlink # st-flash, st-info, st-util
             dfu-util
             pyocd

@@ -2,6 +2,7 @@
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/settings/settings.h>
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
@@ -13,6 +14,14 @@ int main(void) {
     LOG_ERR("bt_enable failed (%d)", err);
     return err;
   }
+
+#ifdef CONFIG_SETTINGS
+  // Load Bluetooth settings (bonding info, etc.)
+  if (int err = settings_load(); err) {
+    LOG_ERR("settings_load failed (%d)", err);
+    return err;
+  }
+#endif
 
   LOG_INF("BLE on. Enable 'Bluetooth Rmt Ctrl' on the Sony camera and pair on "
           "first connect.");
@@ -34,7 +43,7 @@ int main(void) {
       remote.shoot();
       return;
     } else {
-      LOG_INF("Waiting for camera connection...");
+      LOG_DBG("Waiting for camera connection...");
       k_sleep(K_SECONDS(1));
     }
   }
