@@ -104,7 +104,7 @@
           ]);
           text = builtins.readFile ./scripts/init-and-chores.sh;
         };
-        west-commands = import ./app/flake.west-commands.nix inputs system;
+        west-commands = import ./nix/flake.west-commands.nix inputs system;
       in
       {
         packages = {

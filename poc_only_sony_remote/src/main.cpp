@@ -6,7 +6,7 @@
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
 int main(void) {
-  LOG_INF("Sony Remote Test Application");
+  LOG_INF("Sony Remote Proof-of-Concept Application");
 
   // Initialize Bluetooth
   if (int err = bt_enable(nullptr); err) {
