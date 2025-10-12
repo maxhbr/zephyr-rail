@@ -17,8 +17,8 @@ int main(void) {
   LOG_INF("BLE on. Enable 'Bluetooth Rmt Ctrl' on the Sony camera and pair on "
           "first connect.");
 
-  // Initialize Sony Remote
-  SonyRemote remote;
+  // Initialize Sony Remote with specific camera address
+  SonyRemote remote("9C:50:D1:AF:76:5F");
   remote.begin();
 
   // Add a small delay before starting scan

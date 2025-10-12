@@ -14,8 +14,13 @@ Basic usage:
 // Initialize Bluetooth first
 bt_enable(nullptr);
 
-// Create and initialize Sony Remote
+// Create and initialize Sony Remote (scans for any camera)
 SonyRemote remote;
+remote.begin();
+remote.startScan();
+
+// OR: Create with specific camera address (recommended)
+SonyRemote remote("9C:50:D1:AF:76:5F");
 remote.begin();
 remote.startScan();
 

@@ -13,9 +13,11 @@
 class SonyRemote {
 public:
   SonyRemote();
-  void begin();       // bt_enable() must be called before this
-  void startScan();   // start scanning for the camera
-  bool ready() const; // connected + FF01 handle found?
+  SonyRemote(
+      const char *target_address); // Constructor with specific BT address
+  void begin();                    // bt_enable() must be called before this
+  void startScan();                // start scanning for the camera
+  bool ready() const;              // connected + FF01 handle found?
 
   // Common actions (write to 0xFF01)
   void focusDown();
@@ -51,6 +53,10 @@ private:
   bt_gatt_subscribe_params sub_params_{}; // reserved if you later use 0xFF02
 
   k_work_delayable discovery_work_;
+
+  // Target camera address (if specified)
+  bt_addr_le_t target_addr_;
+  bool has_target_addr_ = false;
 
   // helpers
   void start_discovery();

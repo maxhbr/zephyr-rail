@@ -72,7 +72,7 @@ int main(void) {
   LOG_INF("BLE on. Enable 'Bluetooth Rmt Ctrl' on the A7R V and pair on first "
           "connect.\n");
 
-  SonyRemote remote;
+  SonyRemote remote("9C:50:D1:AF:76:5F");
   remote.begin();
   remote.startScan();
 
