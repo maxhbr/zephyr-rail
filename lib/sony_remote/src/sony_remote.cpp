@@ -205,14 +205,28 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
 
   if (params->type == BT_GATT_DISCOVER_CHARACTERISTIC) {
     const auto *chrc = static_cast<const bt_gatt_chrc *>(attr->user_data);
-    if (chrc && chrc->uuid && chrc->uuid->type == BT_UUID_TYPE_16 &&
-        BT_UUID_16(chrc->uuid)->val == 0xFF01) {
-      self_->ff01_handle_ = chrc->value_handle;
-      self_->is_paired_ = true; // Set paired flag when FF01 is found
-      LOG_INF("Found FF01 (handle 0x%04x) - camera is ready!",
-              self_->ff01_handle_);
-      std::memset(params, 0, sizeof(*params));
-      return BT_GATT_ITER_STOP;
+    if (chrc && chrc->uuid && chrc->uuid->type == BT_UUID_TYPE_16) {
+      uint16_t uuid_val = BT_UUID_16(chrc->uuid)->val;
+      LOG_DBG("Found characteristic UUID: 0x%04x (handle 0x%04x)", uuid_val,
+              chrc->value_handle);
+
+      if (uuid_val == 0xFF01) {
+        self_->ff01_handle_ = chrc->value_handle;
+        self_->is_paired_ = true; // Set paired flag when FF01 is found
+        LOG_INF("Found FF01 (handle 0x%04x) - camera is ready!",
+                self_->ff01_handle_);
+
+        // Log the characteristic properties
+        LOG_INF("FF01 properties: 0x%02x", chrc->properties);
+        if (chrc->properties & BT_GATT_CHRC_WRITE_WITHOUT_RESP) {
+          LOG_INF("✓ Write Without Response supported");
+        } else {
+          LOG_WRN("⚠ Write Without Response NOT supported");
+        }
+
+        std::memset(params, 0, sizeof(*params));
+        return BT_GATT_ITER_STOP;
+      }
     }
   }
   return BT_GATT_ITER_CONTINUE;
@@ -303,13 +317,30 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
 
 void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
   if (!ready()) {
-    LOG_ERR("Not ready (conn=%p, ff01=0x%04x)", conn_, ff01_handle_);
+    LOG_WRN(
+        "Camera not ready, command ignored (conn=%p, ff01=0x%04x, paired=%d)",
+        conn_, ff01_handle_, is_paired_);
     return;
   }
+
+  if (!conn_ || ff01_handle_ == 0) {
+    LOG_ERR("No connection or handle for sending command");
+    return;
+  }
+
+  // Log the command being sent
+  LOG_INF("Sending command of %d bytes:", len);
+  for (size_t i = 0; i < len; i++) {
+    LOG_INF("  [%d]: 0x%02x", i, buf[i]);
+  }
+
   int err =
       bt_gatt_write_without_response(conn_, ff01_handle_, buf, len, false);
-  if (err)
-    LOG_ERR("WWR failed: %d", err);
+  if (err) {
+    LOG_ERR("GATT write failed (%d)", err);
+  } else {
+    LOG_INF("Command sent successfully to handle 0x%04x", ff01_handle_);
+  }
 }
 
 void SonyRemote::discovery_work_handler(struct k_work *work) {

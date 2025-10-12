@@ -26,21 +26,52 @@ int main(void) {
   remote.startScan();
 
   k_msleep(100);
+
+  int photo_count = 0;
+  bool first_time = true;
+
   // Simple test loop
   while (true) {
     if (remote.ready()) {
-      LOG_INF("Camera connected! Taking a photo...");
+      if (first_time) {
+        LOG_INF("Camera is ready! Testing individual commands first...");
 
-      // Take a photo
+        // Test just focus commands first
+        LOG_INF("Testing Focus Down...");
+        remote.focusDown();
+        k_sleep(K_SECONDS(2));
+
+        LOG_INF("Testing Focus Up...");
+        remote.focusUp();
+        k_sleep(K_SECONDS(2));
+
+        LOG_INF("Individual command test complete. Starting photo sequence...");
+        first_time = false;
+      }
+
+      LOG_INF("=== Taking photo #%d ===", ++photo_count);
+
+      // Follow the exact sequence from the spec:
+      // 1. Focus Down (0x0107)
+      LOG_INF("Step 1: Focus Down");
       remote.focusDown();
-      k_msleep(100);
+      k_msleep(200); // Longer delay
+
+      // 2. Shutter Down (0x0109)
+      LOG_INF("Step 2: Shutter Down");
       remote.shutterDown();
-      k_msleep(100);
+      k_msleep(200);
+
+      // 3. Shutter Up (0x0108)
+      LOG_INF("Step 3: Shutter Up");
       remote.shutterUp();
-      k_msleep(100);
+      k_msleep(200);
+
+      // 4. Focus Up (0x0106)
+      LOG_INF("Step 4: Focus Up");
       remote.focusUp();
 
-      LOG_INF("Photo taken!");
+      LOG_INF("=== Photo sequence complete ===");
       k_sleep(K_SECONDS(5)); // Wait 5 seconds before next photo
     } else {
       LOG_INF("Waiting for camera connection...");
