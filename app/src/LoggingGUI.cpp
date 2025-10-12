@@ -9,7 +9,7 @@ LOG_MODULE_REGISTER(logging_gui, LOG_LEVEL_INF);
 
 #ifdef CONFIG_LOG
 
-const int msg_data_length = 16;
+const int msg_data_length = 128;
 // Message queue for thread-safe log handling
 struct log_msg_item {
   char data[msg_data_length];
