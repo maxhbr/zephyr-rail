@@ -179,7 +179,8 @@ void SonyRemote::on_disconnected(bt_conn * /*conn*/, uint8_t reason) {
     self_->conn_ = nullptr;
   }
   self_->ff01_handle_ = 0;
-  self_->is_paired_ = false; // Reset pairing status on disconnect
+  self_->ff01_properties_ = 0; // Reset properties
+  self_->is_paired_ = false;   // Reset pairing status on disconnect
   // resume scanning
   static struct bt_le_scan_param scan_param =
       BT_LE_SCAN_PARAM_INIT(BT_LE_SCAN_TYPE_ACTIVE, BT_LE_SCAN_OPT_NONE,
@@ -212,6 +213,7 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
 
       if (uuid_val == 0xFF01) {
         self_->ff01_handle_ = chrc->value_handle;
+        self_->ff01_properties_ = chrc->properties; // Store properties
         self_->is_paired_ = true; // Set paired flag when FF01 is found
         LOG_INF("Found FF01 (handle 0x%04x) - camera is ready!",
                 self_->ff01_handle_);
@@ -220,8 +222,10 @@ uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
         LOG_INF("FF01 properties: 0x%02x", chrc->properties);
         if (chrc->properties & BT_GATT_CHRC_WRITE_WITHOUT_RESP) {
           LOG_INF("✓ Write Without Response supported");
+        } else if (chrc->properties & BT_GATT_CHRC_WRITE) {
+          LOG_INF("✓ Write (with Response) supported");
         } else {
-          LOG_WRN("⚠ Write Without Response NOT supported");
+          LOG_WRN("⚠ Neither Write nor Write Without Response supported");
         }
 
         std::memset(params, 0, sizeof(*params));
@@ -376,8 +380,27 @@ void SonyRemote::send_cmd(const uint8_t *buf, size_t len) {
     LOG_INF("  [%d]: 0x%02x", i, buf[i]);
   }
 
-  int err =
-      bt_gatt_write_without_response(conn_, ff01_handle_, buf, len, false);
+  int err;
+  if (ff01_properties_ & BT_GATT_CHRC_WRITE_WITHOUT_RESP) {
+    LOG_DBG("Using Write Without Response");
+    err = bt_gatt_write_without_response(conn_, ff01_handle_, buf, len, false);
+  } else if (ff01_properties_ & BT_GATT_CHRC_WRITE) {
+    LOG_DBG("Using Write (with Response)");
+
+    // Set up write parameters for bt_gatt_write
+    static bt_gatt_write_params write_params = {};
+    write_params.func = nullptr; // No callback needed for now
+    write_params.handle = ff01_handle_;
+    write_params.offset = 0;
+    write_params.data = buf;
+    write_params.length = len;
+
+    err = bt_gatt_write(conn_, &write_params);
+  } else {
+    LOG_ERR("FF01 characteristic doesn't support write operations");
+    return;
+  }
+
   if (err) {
     LOG_ERR("GATT write failed (%d)", err);
   } else {

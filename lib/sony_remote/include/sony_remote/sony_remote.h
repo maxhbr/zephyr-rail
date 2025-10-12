@@ -53,6 +53,7 @@ private:
 
   bt_conn *conn_ = nullptr;
   uint16_t ff01_handle_ = 0;
+  uint8_t ff01_properties_ = 0; // Store FF01 characteristic properties
 
   bt_gatt_discover_params disc_params_{};
   bt_gatt_subscribe_params sub_params_{}; // reserved if you later use 0xFF02
