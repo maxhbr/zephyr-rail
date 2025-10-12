@@ -8,13 +8,15 @@
 LOG_MODULE_REGISTER(logging_gui, LOG_LEVEL_INF);
 
 #ifdef CONFIG_LOG
+
+const int msg_data_length = 16;
 // Message queue for thread-safe log handling
 struct log_msg_item {
-  char data[256];
+  char data[msg_data_length];
   size_t length;
 };
 
-K_MSGQ_DEFINE(log_msgq, sizeof(struct log_msg_item), 20, 4);
+K_MSGQ_DEFINE(log_msgq, sizeof(struct log_msg_item), 1024, 4);
 
 // Log output function for GUI backend
 static int gui_log_out(uint8_t *data, size_t length, void *ctx) {
@@ -114,8 +116,8 @@ void LoggingGUI::add_log_line(const char *log_data, size_t length) {
   if (!log_textarea) {
     return;
   }
-  char log_line[256];
-  size_t copy_len = MIN(length, 256 - 1);
+  char log_line[msg_data_length];
+  size_t copy_len = MIN(length, msg_data_length - 1);
   memcpy(log_line, log_data, copy_len);
 
   log_line[copy_len] = '\0';
