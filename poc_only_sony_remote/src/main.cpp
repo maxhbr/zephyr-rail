@@ -2,7 +2,9 @@
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#ifdef CONFIG_BT_SETTINGS
 #include <zephyr/settings/settings.h>
+#endif
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
@@ -15,7 +17,7 @@ int main(void) {
     return err;
   }
 
-#ifdef CONFIG_SETTINGS
+#ifdef CONFIG_BT_SETTINGS
   // Load Bluetooth settings (bonding info, etc.)
   if (int err = settings_load(); err) {
     LOG_ERR("settings_load failed (%d)", err);
