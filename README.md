@@ -5,7 +5,7 @@ The firmware is written with zephyr. The code is in [./app](./app).
 
 The environment can be bootstrapped via `nix run .#init` and west is either available via `nix run .#west -- ...` or in `nix develop`.
 
-It runs on [STM32H7B3I-DK](https://www.st.com/en/evaluation-tools/stm32h7b3i-dk.html) (in Zephyr: [stm32h7b3i_dk](https://docs.zephyrproject.org/latest/boards/st/stm32h7b3i_dk/doc/index.html)). Bluetooth is added with the dev board X-NUCLEO-IDB05AI.
+~~It runs on [STM32H7B3I-DK](https://www.st.com/en/evaluation-tools/stm32h7b3i-dk.html) (in Zephyr: [stm32h7b3i_dk](https://docs.zephyrproject.org/latest/boards/st/stm32h7b3i_dk/doc/index.html)). Bluetooth is added with the dev board X-NUCLEO-IDB05AI.~~
 
 ### State and State Machine
 - The rail knows its absolute position and the current target position.
