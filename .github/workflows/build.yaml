@@ -75,7 +75,7 @@ jobs:
       - name: Test SCAD files
         run: |
           cd 3d-print.scad
-          nix run .#scad-build -- --test
+          nix run .#scad-build -- test
 
   # build-container:
   #   runs-on: ubuntu-latest
