@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    pr440671.url = "github:h7x4/nixpkgs/pkgs-nrfutil-package-all-installables"; # https://github.com/NixOS/nixpkgs/pull/440671
+
     # Customize the version of Zephyr used by the flake here
     zephyr.url = "github:zephyrproject-rtos/zephyr/v4.2.0";
     zephyr.flake = false;
@@ -28,23 +30,56 @@
       system:
       let
         # allow unfree in nixpkgs
-        pkgs = import nixpkgs {
-          inherit system;
-          config = {
-            allowUnfreePredicate =
-              pkg:
-              builtins.elem (lib.getName pkg) [
-                "segger-jlink"
-                "STM32CubeProg"
-                "nrfutil"
-                "segger-jlink"
+        pkgs =
+          let
+            config = {
+              allowUnfreePredicate =
+                pkg:
+                builtins.elem (lib.getName pkg) [
+                  "segger-jlink"
+                  "STM32CubeProg"
+                  "segger-jlink"
+                  "nrfutil"
+                  "nrfutil-device"
+                  "nrfutil-trace"
+                  "nrfutil-ble-sniffer"
+                  "nrfutil-completion"
+                  "nrfutil-mcu-manager"
+                  "nrfutil-npm"
+                  "nrfutil-nrf5sdk-tools"
+                  "nrfutil-sdk-manager"
+                  "nrfutil-suit"
+                  "nrfutil-toolchain-manager"
+                ];
+              segger-jlink.acceptLicense = true;
+              permittedInsecurePackages = [
+                "segger-jlink-qt4-824"
               ];
-            segger-jlink.acceptLicense = true;
-            permittedInsecurePackages = [
-              "segger-jlink-qt4-824"
+            };
+          in
+          import nixpkgs {
+            inherit config system;
+            overlays = [
+              (_: _: {
+                nrfutil =
+                  (import inputs.pr440671 {
+                    inherit config system;
+                  }).nrfutil.withExtensions
+                    [
+                      "nrfutil-device"
+                      "nrfutil-trace"
+                      "nrfutil-ble-sniffer"
+                      "nrfutil-completion"
+                      "nrfutil-mcu-manager"
+                      "nrfutil-npm"
+                      "nrfutil-nrf5sdk-tools"
+                      "nrfutil-sdk-manager"
+                      "nrfutil-suit"
+                      "nrfutil-toolchain-manager"
+                    ];
+              })
             ];
           };
-        };
         inherit (pkgs) lib;
         inherit (pkgs.pkgsi686Linux) SDL2; # for 32-bit libs needed by native_sim
         STM32CubeProg = pkgs.callPackage ./nix/STM32CubeProg.nix { };

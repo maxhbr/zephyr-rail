@@ -128,6 +128,22 @@
         "type": "github"
       }
     },
+    "pr440671": {
+      "locked": {
+        "lastModified": 1760158422,
+        "narHash": "sha256-6zj8xdip16WaqMfSKMUp4Y4J8wftTMvlos8iJm3Ji9E=",
+        "owner": "h7x4",
+        "repo": "nixpkgs",
+        "rev": "c25b6280b4b027102f848f344299c0d3d1941fe1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "h7x4",
+        "ref": "pkgs-nrfutil-package-all-installables",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "pyproject-nix": {
       "inputs": {
         "nixpkgs": [
@@ -154,6 +170,7 @@
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
         "nixpkgs": "nixpkgs_2",
+        "pr440671": "pr440671",
         "zephyr": "zephyr",
         "zephyr-nix": "zephyr-nix"
       }
