@@ -1,0 +1,15 @@
+/*
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	stepper_motor: stepper_motor {
+		compatible = "ti,drv84xx";
+		status = "okay";
+		step-gpios = <&gpio1 8 GPIO_ACTIVE_HIGH>;   /* P1.08 - pulse/step pin */
+		dir-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;    /* P1.09 - direction pin */
+		en-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;    /* P1.10 - enable pin */
+		micro-step-res = <16>;
+	};
+};
