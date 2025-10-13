@@ -1,0 +1,17 @@
+/*
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+/ {
+	stepper: stepper {
+		compatible = "maxhbr,stepper";
+		status = "okay";
+		gpios = <&gpioh 10 GPIO_ACTIVE_HIGH>, /* D6 */
+				<&gpioh 11 GPIO_ACTIVE_HIGH>; /* D5 */
+		// pitch = <2>;
+		// pulses_per_rev = <50000>;
+	};
+};
+
