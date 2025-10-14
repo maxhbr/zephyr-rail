@@ -7,9 +7,10 @@
 	stepper_motor: stepper_motor {
 		compatible = "ti,drv84xx";
 		status = "okay";
-		step-gpios = <&gpio1 8 GPIO_ACTIVE_HIGH>;   /* P1.08 - pulse/step pin */
-		dir-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;    /* P1.09 - direction pin */
-		en-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;    /* P1.10 - enable pin */
+		/* X-NUCLEO-IHM14A1 pin mapping */
+		step-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;    /* CN9-4 (D3) - STCK1 step pin */
+		dir-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;    /* CN9-8 (D7) - DIR1 direction pin */
+		en-gpios = <&gpio0 31 GPIO_ACTIVE_LOW>;      /* CN5-1 (D8) - STBY standby pin (active low) */
 		micro-step-res = <16>;
 	};
 };
