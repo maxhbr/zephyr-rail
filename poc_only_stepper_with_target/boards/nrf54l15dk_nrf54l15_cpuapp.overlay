@@ -1,0 +1,15 @@
+/*
+ * nRF54L15DK overlay
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	stepper_motor: stepper_motor {
+		compatible = "ti,drv84xx";
+		status = "okay";
+		step-gpios = <&gpio1 5 GPIO_ACTIVE_HIGH>;    /* Step/Clock signal (STCK1) */
+		dir-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;     /* Direction signal (DIR1) */
+		en-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;       /* Enable/Standby signal (STBY) - active low */
+		micro-step-res = <16>;
+	};
+};

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20.0)
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)
 
-set(BOARD nrf5340dk/nrf5340/cpuapp)
+set(BOARD nrf54l15dk/nrf54l15/cpuapp)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(poc_stepper_with_target)

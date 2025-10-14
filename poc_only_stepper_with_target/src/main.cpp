@@ -1,13 +1,3 @@
-/*
- * Stepper motor control using X-NUCLEO-IHM14A1 expansion board
- * Based on STSPIN820 stepper motor driver
- *
- * Pin mapping:
- * - STCK1 (Step): CN9-4 (D3) -> P0.04
- * - DIR1 (Direction): CN9-8 (D7) -> P0.29
- * - STBY (Standby/Enable): CN5-1 (D8) -> P0.31 (active low)
- */
-
 #include <zephyr/device.h>
 #include <zephyr/drivers/stepper.h>
 #include <zephyr/kernel.h>
