@@ -13,15 +13,12 @@ flowchart LR;
     end
     subgraph ControlBoard
       MAX3485_Left@{ label: "MAX3485, TTL -> RS485" };
-      MCU_Left --->|TTL| MAX3485_Left
+      MCU_Left --->|UART via TTL| MAX3485_Left
     end
     stm32h747i_disco -->|Arduino UNO R3| ControlBoard
     DISPLAY@{ label: "st_b_lcd40_dsi1_mb1166_a09" }
     stm32h747i_disco ---> DISPLAY
   end
-
-  PC([PC])
-  PC ==>|USB| ST-Link
 
   subgraph RailAssembly
     subgraph RailBoard
@@ -30,7 +27,7 @@ flowchart LR;
       MCU_Right@{ label: "XIAO nRF54L15 (Sense)" }
       IMU@{label: "LSM6DSO"}
       MCU_Right -->|I2C| IMU
-      MAX3485_Right -->|TTL| MCU_Right
+      MAX3485_Right -->|UART via TTL| MCU_Right
       ULN2003A
       MCU_Right    -->|ENA+| ULN2003A
       MCU_Right    -->|DIR+| ULN2003A
@@ -56,7 +53,7 @@ flowchart LR;
   MAX3485_Left -->|A & B| cable
   cable -->|A & B| MAX3485_Right
 
-  cable ===|5V & GND| RailBoard
+  cable ====|5V & GND, with jumper| MCU_Right
   ControlBoard ===|5V & GND| cable
 
   24V@{ shape: bolt }

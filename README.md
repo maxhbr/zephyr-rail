@@ -58,3 +58,7 @@ As a second MCU it might use an nRF52840 on a XIAO form factor. This can control
 ![sketch.with_rs485.svg](./electronics/sketch.with_rs485.svg)
 
 CAN might be an alternative to RS485.
+
+### Or maybe go completely wireless and without a display
+
+![sketch.wireless.svg](./electronics/sketch.wireless.svg)
