@@ -8,6 +8,8 @@ flowchart LR;
     subgraph stm32h747i_disco
       MCU_Left@{ label: "stm32h747" }
       ST-Link --> MCU_Left
+      Joystick
+      CAN-FD
     end
     subgraph ControlBoard
       MAX3485_Left@{ label: "MAX3485, TTL -> RS485" };
@@ -24,24 +26,29 @@ flowchart LR;
   subgraph RailAssembly
     subgraph RailBoard
       direction TB 
-      24Vto5V
       MAX3485_Right@{ label: "MAX3485, RS485 -> TTL" }
-      MCU_Right@{ label: "XIAO nRF52840 Sense" }
+      MCU_Right@{ label: "XIAO nRF54L15 (Sense)" }
       IMU@{label: "LSM6DSO"}
       MCU_Right -->|I2C| IMU
       MAX3485_Right -->|TTL| MCU_Right
-      24Vto5V ===|5V| MCU_Right
+      ULN2003A
+      MCU_Right    -->|ENA+| ULN2003A
+      MCU_Right    -->|DIR+| ULN2003A
+      MCU_Right    -->|PUL+| ULN2003A
     end
     subgraph Rail
       StepperMotor
       PositioningSensor
+      MCU_Right -..-> PositioningSensor
       Camera@{label: "A7Rv"}
     end
 
-    24Vto5V =====|24V| StepperMotor
-    MCU_Right    -->|ENA+| StepperMotor
-    MCU_Right    -->|DIR+| StepperMotor
-    MCU_Right    -->|PUL+| StepperMotor
+    24Vto5V
+    MCU_Right ===|5V via USB| 24Vto5V
+    24Vto5V ===|24V| StepperMotor
+    ULN2003A    -->|ENA+| StepperMotor
+    ULN2003A    -->|DIR+| StepperMotor
+    ULN2003A    -->|PUL+| StepperMotor
   end
 
   cable@{ shape: das, label: ".... cable ...." }
@@ -49,11 +56,12 @@ flowchart LR;
   MAX3485_Left -->|A & B| cable
   cable -->|A & B| MAX3485_Right
 
-  cable ===|5V & GND| 24Vto5V
+  cable ===|5V & GND| RailBoard
   ControlBoard ===|5V & GND| cable
 
   24V@{ shape: bolt }
   24V ======|24V| StepperMotor
   MCU_Right-. bluetooth .->Camera
 
+  style CAN-FD stroke-dasharray: 5 5
   style PositioningSensor stroke-dasharray: 5 5
