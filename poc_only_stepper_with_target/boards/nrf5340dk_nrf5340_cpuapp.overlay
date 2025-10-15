@@ -5,7 +5,7 @@
 
 / {
 	stepper_motor: stepper_motor {
-		compatible = "ti,drv84xx";
+		compatible = "simple-stepper";
 		status = "okay";
 		/* X-NUCLEO-IHM14A1 pin mapping */
 		step-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;    /* CN9-4 (D3) - STCK1 step pin */

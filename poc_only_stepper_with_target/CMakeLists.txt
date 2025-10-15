@@ -8,6 +8,9 @@ set(BOARD nrf54l15dk/nrf54l15/cpuapp)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(poc_stepper_with_target)
 
+# Add custom drivers subdirectory
+add_subdirectory(drivers)
+
 #zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
 
 #add_subdirectory(../lib/stepper_with_target ${CMAKE_CURRENT_BINARY_DIR}/stepper_with_target)

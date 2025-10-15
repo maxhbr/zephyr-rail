@@ -5,7 +5,7 @@
 
 / {
 	stepper_motor: stepper_motor {
-		compatible = "ti,drv84xx";
+		compatible = "simple-stepper";
 		status = "okay";
 		/* Mock pins for native simulation */
 		step-gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
