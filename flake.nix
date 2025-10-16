@@ -7,7 +7,8 @@
     pr440671.url = "github:h7x4/nixpkgs/pkgs-nrfutil-package-all-installables"; # https://github.com/NixOS/nixpkgs/pull/440671
 
     # Customize the version of Zephyr used by the flake here
-    zephyr.url = "github:zephyrproject-rtos/zephyr/v4.2.0";
+    # zephyr.url = "github:zephyrproject-rtos/zephyr/v4.2.0";
+    zephyr.url = "github:zephyrproject-rtos/zephyr/9421b826994788e717e7010a46d38b3722bf2c6f"; # commit before gitlint -> gitlint-core change
     zephyr.flake = false;
 
     zephyr-nix.url = "github:nix-community/zephyr-nix";
@@ -61,6 +62,11 @@
           import nixpkgs {
             inherit config system;
             overlays = [
+              (self: super: {
+                pythonPackages = super.pythonPackages // {
+                  gitlint-core = super.pythonPackages.gitlint;
+                };
+              })
               (_: _: {
                 nrfutil =
                   (import inputs.pr440671 {

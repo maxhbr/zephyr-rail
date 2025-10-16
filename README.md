@@ -15,6 +15,9 @@ The environment can be bootstrapped via `nix run .#init` and west is either avai
 It internally has a state machine:
 ![State Machine](./app/mermaid.StateMachine.svg)
 
+### Version of Zephyr
+The version of zephyr is pinned via the `./flake.nix` and the script `./scripts/init-and-chores.sh` updates the `app/west.yml` from that.
+
 ### UI
 It has a GUI with LVGL.
 

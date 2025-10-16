@@ -29,7 +29,12 @@ get_zephyr() {
 }
 
 get_zephyr_ref() {
-    get_zephyr "ref"
+    ref="$(get_zephyr "ref")"
+    if [[ "$ref" == "null" ]]; then
+        get_zephyr "rev"
+    else
+        echo "$ref"
+    fi
 }
 
 get_zephyr_remote() {
@@ -72,7 +77,7 @@ manifest:
   projects:
     - name: ${name}
       remote: ${remote}
-      revision: ${ref}
+      revision: ${ref} # generated from flake.nix
       clone-depth: 1
       import: true
   self:
@@ -91,10 +96,12 @@ west_init_once() {
 }
 
 west_update_if_was_not_updated_already_today() {
-    local stamp_file
+    local caching_key="$1"
+    local stamp_file stamp_file_key
     stamp_file=".west/last_update_stamp"
     if [ -f "$stamp_file" ]; then
-        if [ "$(date -r "$stamp_file" +%Y-%m-%d)" = "$(date +%Y-%m-%d)" ]; then
+        stamp_file_key=$(cat "$stamp_file")
+        if [[ "$stamp_file_key" == "$caching_key" && "$(date -r "$stamp_file" +%Y-%m-%d)" = "$(date +%Y-%m-%d)" ]]; then
             echo "INFO: West was already updated today"
             return
         fi
@@ -102,6 +109,7 @@ west_update_if_was_not_updated_already_today() {
     echo "INFO: Updating west"
     west update --narrow
     touch "$stamp_file"
+    echo "$caching_key" > "$stamp_file"
 }
 
 main() {
@@ -137,7 +145,7 @@ main() {
     fi
 
     west_init_once
-    west_update_if_was_not_updated_already_today
+    west_update_if_was_not_updated_already_today "$remote/$name/$ref"
 }
 
 main "$@"
