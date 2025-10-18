@@ -86,7 +86,7 @@ int main(void) {
     LOG_INF("Moving 200 steps clockwise");
     gpio_pin_set_dt(&led, 1); // Turn LED on for forward direction
     movement_complete = false;
-    ret = stepper_move_by(stepper_dev, 200);
+    ret = stepper_move_by(stepper_dev, 20000);
     if (ret < 0) {
       LOG_ERR("Failed to move stepper: %d", ret);
       k_sleep(K_SECONDS(1));
@@ -105,7 +105,7 @@ int main(void) {
     LOG_INF("Moving 200 steps counter-clockwise");
     gpio_pin_set_dt(&led, 0); // Turn LED off for reverse direction
     movement_complete = false;
-    ret = stepper_move_by(stepper_dev, -200);
+    ret = stepper_move_by(stepper_dev, -20000);
     if (ret < 0) {
       LOG_ERR("Failed to move stepper: %d", ret);
       k_sleep(K_SECONDS(1));

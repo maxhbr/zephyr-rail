@@ -11,5 +11,6 @@
 		dir-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
 		en-gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
 		micro-step-res = <16>;
+		invert-pins;
 	};
 };

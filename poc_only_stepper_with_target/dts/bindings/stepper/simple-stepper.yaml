@@ -9,7 +9,7 @@ description: |
   - dir: direction control (high=positive, low=negative)
   - en: enable pin (active low by default, configurable via GPIO flags)
   
-  Example:
+  Example (normal mode, active-low enable):
     stepper: stepper {
       compatible = "simple-stepper";
       status = "okay";
@@ -18,8 +18,28 @@ description: |
       en-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
       micro-step-res = <16>;
     };
+  
+  Example (inverted mode for ULN2003A driver):
+    stepper: stepper {
+      compatible = "simple-stepper";
+      status = "okay";
+      step-gpios = <&gpio1 5 GPIO_ACTIVE_HIGH>;
+      dir-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+      en-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
+      micro-step-res = <16>;
+      invert-pins;
+    };
 
 compatible: "simple-stepper"
 
 include:
   - name: stepper-controller.yaml
+
+properties:
+  invert-pins:
+    type: boolean
+    description: |
+      Invert the logic of the enable pin.
+      Set this to true when using drivers like ULN2003A or transistors that invert the signal.
+      When true: low=disable, high=enable
+      When false (default): low=enable, high=disable

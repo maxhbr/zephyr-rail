@@ -22,6 +22,7 @@ LOG_MODULE_REGISTER(simple_stepper, CONFIG_STEPPER_LOG_LEVEL);
 struct simple_stepper_config {
   struct step_dir_stepper_common_config common;
   struct gpio_dt_spec en_pin;
+  bool invert_pins;
 };
 
 /**
@@ -46,8 +47,11 @@ static int simple_stepper_enable(const struct device *dev) {
     return -ENOTSUP;
   }
 
-  /* Active low by default (set to 0 to enable) */
-  ret = gpio_pin_set_dt(&config->en_pin, 0);
+  /* Set enable pin based on invert_pins flag */
+  /* Normal mode (active low): set to 0 to enable */
+  /* Inverted mode (active high): set to 1 to enable */
+  int enable_value = config->invert_pins ? 1 : 0;
+  ret = gpio_pin_set_dt(&config->en_pin, enable_value);
   if (ret != 0) {
     LOG_ERR("Failed to enable stepper (error: %d)", ret);
     return ret;
@@ -72,8 +76,11 @@ static int simple_stepper_disable(const struct device *dev) {
     return -ENOTSUP;
   }
 
-  /* Active low by default (set to 1 to disable) */
-  ret = gpio_pin_set_dt(&config->en_pin, 1);
+  /* Set disable pin based on invert_pins flag */
+  /* Normal mode (active low): set to 1 to disable */
+  /* Inverted mode (active high): set to 0 to disable */
+  int disable_value = config->invert_pins ? 0 : 1;
+  ret = gpio_pin_set_dt(&config->en_pin, disable_value);
   if (ret != 0) {
     LOG_ERR("Failed to disable stepper (error: %d)", ret);
     return ret;
@@ -183,8 +190,11 @@ static int simple_stepper_init(const struct device *dev) {
       return ret;
     }
 
-    /* Start with stepper disabled (en pin high for active-low) */
-    ret = gpio_pin_set_dt(&config->en_pin, 1);
+    /* Start with stepper disabled */
+    /* Normal mode (active low): set to 1 to disable */
+    /* Inverted mode (active high): set to 0 to disable */
+    int disable_value = config->invert_pins ? 0 : 1;
+    ret = gpio_pin_set_dt(&config->en_pin, disable_value);
     if (ret < 0) {
       LOG_ERR("Failed to set enable pin: %d", ret);
       return ret;
@@ -224,6 +234,7 @@ static const struct stepper_driver_api simple_stepper_api = {
   static const struct simple_stepper_config simple_stepper_config_##inst = {   \
       .common = STEP_DIR_STEPPER_DT_INST_COMMON_CONFIG_INIT(inst),             \
       .en_pin = GPIO_DT_SPEC_INST_GET_OR(inst, en_gpios, {0}),                 \
+      .invert_pins = DT_INST_PROP(inst, invert_pins),                          \
   };                                                                           \
                                                                                \
   DEVICE_DT_INST_DEFINE(inst, simple_stepper_init, NULL,                       \
