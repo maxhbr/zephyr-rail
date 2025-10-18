@@ -1,6 +1,7 @@
 {
   "cmake.configureOnOpen": false,
   "files.associations": {
+    "flake.lock": "json",
     "optional": "cpp",
     "log_backend.h": "c",
     "iterable_sections.h": "c",
@@ -9,6 +10,7 @@
     "kernel.h": "c",
     "log_output.h": "c",
     "log_msg.h": "c",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "step_dir_stepper_common.h": "c"
   }
 }

@@ -73,7 +73,11 @@ int main(void) {
   // Set step interval to 5ms (5000 microseconds) = 200 steps/second
   // Previous value of 20000000 (20 seconds!) was way too slow
   ret =
-      stepper_set_microstep_interval(stepper_dev, 5000000); // 5ms between steps
+      // stepper_set_microstep_interval(stepper_dev, 5000000); // 5ms between
+      // steps stepper_set_microstep_interval(stepper_dev, 234375); // ~234 µs ,
+      // for 5 RPM
+      stepper_set_microstep_interval(stepper_dev,
+                                     117188); // ~117 µs , for 10 RPM
   if (ret < 0) {
     LOG_WRN("Failed to set step interval: %d", ret);
     return ret;
