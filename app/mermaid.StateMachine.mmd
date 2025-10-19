@@ -14,12 +14,12 @@ flowchart LR;
       S_STACK_IMG;
     end
 
-    S0 --> S_WAIT_FOR_CAMERA;
-    S_WAIT_FOR_CAMERA -->|sleep 2 sek| S_WAIT_FOR_CAMERA;
-    S_WAIT_FOR_CAMERA ---> S_INTERACTIVE;
+    S0 --> S_INTERACTIVE;
     S_INTERACTIVE -->|process command| S_INTERACTIVE;
-    S_INTERACTIVE -->|start stack| S_STACK;
-    S_STACK --->|done| S_INTERACTIVE;
+    S_INTERACTIVE -->|start stack| S_WAIT_FOR_CAMERA;
+    S_WAIT_FOR_CAMERA -->|sleep 2 sek| S_WAIT_FOR_CAMERA;
+    S_WAIT_FOR_CAMERA -->|stacking mode| S_STACK;
+    S_INTERACTIVE <-----|done| S_STACK;
     S_STACK_MOVE --> S_STACK_SETTLE;
     S_STACK_SETTLE --> S_STACK_IMG;
     S_STACK_IMG --> S_STACK;
