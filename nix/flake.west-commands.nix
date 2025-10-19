@@ -53,31 +53,21 @@ in
       --build-dir "builds/$(echo "$board" | sed 's%/%_%g')" \
       -b "$board" "$@"
   '')
-  (mkWestBuildBoardCommand "stm32h7b3i_dk" "" [
-    "--shield"
-    "x_nucleo_idb05a1"
-  ])
-  (mkWestBuildBoardCommand "stm32h7b3i_dk" "-and-flash" [
-    "--shield"
-    "x_nucleo_idb05a1"
+  (mkWestBuildBoardCommand "xiao_nrf54l15/nrf54l15/cpuapp" "" [ ])
+  (mkWestBuildBoardCommand "xiao_nrf54l15/nrf54l15/cpuapp" "-and-flash" [
     "-t"
     "flash"
   ])
-  (mkWestBuildBoardCommand "stm32h747i_disco/stm32h747xx/m7" "" [
-    "--shield"
-    "st_b_lcd40_dsi1_mb1166_a09"
-    "--shield"
-    "x_nucleo_idb05a1"
-  ])
-  (mkWestBuildBoardCommand "stm32h747i_disco/stm32h747xx/m7" "-and-flash" [
-    "--shield"
-    "st_b_lcd40_dsi1_mb1166_a09"
-    "--shield"
-    "x_nucleo_idb05a1"
+  (mkWestBuildBoardCommand "xiao_ble" "" [ ])
+  (mkWestBuildBoardCommand "xiao_ble" "-and-flash" [
     "-t"
     "flash"
   ])
-  (mkWestBuildBoardCommand "wio_terminal" "" [ ])
+  (mkWestBuildBoardCommand "nrf54l15dk/nrf54l15/cpuapp" "" [ ])
+  (mkWestBuildBoardCommand "nrf54l15dk/nrf54l15/cpuapp" "-and-flash" [
+    "-t"
+    "flash"
+  ])
   (mkWestBuildBoardCommand "native_sim" "" [ ])
   (pkgs.writeShellScriptBin "west-native_sim-build-and-run" ''
     set -x
