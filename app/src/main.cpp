@@ -83,12 +83,12 @@ int main(void) {
 
 #ifdef CONFIG_BT
   LOG_DBG("main: initialize Sony Remote");
-  SonyRemote remote("9C:50:D1:AF:76:5F");
+  static SonyRemote remote("9C:50:D1:AF:76:5F");
   remote.begin();
-  k_msleep(100);
+  k_msleep(500);
   LOG_DBG("main: start Sony Remote scan");
   remote.startScan();
-  k_msleep(100);
+  k_msleep(500);
 #endif
 
   while (1) {
