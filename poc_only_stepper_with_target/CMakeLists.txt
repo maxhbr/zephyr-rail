@@ -1,9 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.20.0)
 
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)
 
-set(BOARD nrf54l15dk/nrf54l15/cpuapp)
+set(BOARD xiao_nrf54l15/nrf54l15/cpuapp)
 
 # Add DTS bindings path BEFORE find_package(Zephyr)
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../lib/stepper_with_target)
