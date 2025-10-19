@@ -37,6 +37,88 @@ struct simple_stepper_data {
 STEP_DIR_STEPPER_STRUCT_CHECK(struct simple_stepper_config,
                               struct simple_stepper_data);
 
+/* Override step generation to include pulse width delay */
+static inline int simple_stepper_perform_step(const struct device *dev) {
+  const struct simple_stepper_config *config = dev->config;
+  int ret;
+
+  ret = gpio_pin_toggle_dt(&config->common.step_pin);
+  if (ret < 0) {
+    LOG_ERR("Failed to toggle step pin: %d", ret);
+    return ret;
+  }
+
+  if (!config->common.dual_edge) {
+    uint32_t pulse_width_us = 2;
+    if (pulse_width_us > 0) {
+      k_busy_wait(pulse_width_us);
+    }
+    ret = gpio_pin_toggle_dt(&config->common.step_pin);
+    if (ret < 0) {
+      LOG_ERR("Failed to toggle step pin: %d", ret);
+      return ret;
+    }
+  }
+
+  return 0;
+}
+
+/* Custom timing signal handler that uses our step function with delay */
+static void simple_stepper_handle_timing_signal(const struct device *dev) {
+  struct simple_stepper_data *data = dev->data;
+
+  /* Use our custom step function instead of the default one */
+  (void)simple_stepper_perform_step(dev);
+
+  /* Update position */
+  if (data->common.direction == STEPPER_DIRECTION_POSITIVE) {
+    atomic_inc(&data->common.actual_position);
+  } else {
+    atomic_dec(&data->common.actual_position);
+  }
+
+  /* Decrement step count if in position mode */
+  if (data->common.run_mode == STEPPER_RUN_MODE_POSITION) {
+    if (atomic_get(&data->common.step_count) > 0) {
+      atomic_dec(&data->common.step_count);
+    } else if (atomic_get(&data->common.step_count) < 0) {
+      atomic_inc(&data->common.step_count);
+    }
+  }
+
+  /* Handle continuation or completion */
+  const struct simple_stepper_config *config = dev->config;
+
+  switch (data->common.run_mode) {
+  case STEPPER_RUN_MODE_POSITION:
+    if (config->common.timing_source->needs_reschedule(dev) &&
+        atomic_get(&data->common.step_count) != 0) {
+      (void)config->common.timing_source->start(dev);
+    } else if (atomic_get(&data->common.step_count) == 0) {
+      stepper_trigger_callback(dev, STEPPER_EVENT_STEPS_COMPLETED);
+      config->common.timing_source->stop(dev);
+    }
+    break;
+  case STEPPER_RUN_MODE_VELOCITY:
+    if (config->common.timing_source->needs_reschedule(dev)) {
+      (void)config->common.timing_source->start(dev);
+    }
+    break;
+  default:
+    LOG_WRN("Unsupported run mode: %d", data->common.run_mode);
+    break;
+  }
+}
+
+/* Work handler that dispatches to our custom timing signal handler */
+static void simple_stepper_work_handler(struct k_work *work) {
+  struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+  struct simple_stepper_data *data =
+      CONTAINER_OF(dwork, struct simple_stepper_data, common.stepper_dwork);
+
+  simple_stepper_handle_timing_signal(data->common.dev);
+}
+
 static int simple_stepper_enable(const struct device *dev) {
   const struct simple_stepper_config *config = dev->config;
   struct simple_stepper_data *data = dev->data;
@@ -176,6 +258,10 @@ static int simple_stepper_init(const struct device *dev) {
     LOG_ERR("Failed to initialize step_dir common: %d", ret);
     return ret;
   }
+
+  /* Override the work handler to use our custom timing signal handler */
+  k_work_init_delayable(&data->common.stepper_dwork,
+                        simple_stepper_work_handler);
 
   /* Configure enable pin if present */
   if (config->en_pin.port) {
