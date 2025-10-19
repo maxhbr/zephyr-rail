@@ -13,7 +13,6 @@ list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../lib/stepper_with_target)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(zephyr-rail)
 
-# zephyr_library_compile_options(-lstdc++ -std=c++17 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-variable -Wno-comment)
 zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
 
 # Add the sony_remote library

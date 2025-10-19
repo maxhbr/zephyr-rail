@@ -59,13 +59,7 @@ static StepperWithTarget *init_stepper(void) {
 #endif
 
 int main(void) {
-#ifdef CONFIG_STEPPER
-  LOG_DBG("main: initialize stepper");
-  StepperWithTarget *stepper = init_stepper();
-  if (stepper == nullptr) {
-    LOG_ERR("Failed to initialize stepper");
-    return -1;
-  }
+#ifdef CONFIG_BT
   LOG_DBG("main: initialize Bluetooth");
   if (int err = bt_enable(nullptr); err) {
     LOG_ERR("bt_enable failed (%d)", err);
@@ -73,6 +67,7 @@ int main(void) {
   }
 #endif
 
+#ifdef CONFIG_BT
 #ifdef CONFIG_BT_SETTINGS
   // Load Bluetooth settings (bonding info, etc.)
   if (int err = settings_load(); err) {
@@ -80,16 +75,21 @@ int main(void) {
     return err;
   }
 #endif
-
-#ifdef CONFIG_BT
   LOG_DBG("main: initialize Sony Remote");
-  static SonyRemote remote("9C:50:D1:AF:76:5F");
-  LOG_DBG("main: initialize Sony Remote");
+  SonyRemote remote("9C:50:D1:AF:76:5F");
+  k_msleep(100); // Match POC timing
   remote.begin();
-  k_msleep(500);
-  LOG_DBG("main: start Sony Remote scan");
+  k_msleep(100); // Match POC timing
   remote.startScan();
-  k_msleep(500);
+#endif
+
+#ifdef CONFIG_STEPPER
+  LOG_DBG("main: initialize stepper");
+  StepperWithTarget *stepper = init_stepper();
+  if (stepper == nullptr) {
+    LOG_ERR("Failed to initialize stepper");
+    return -1;
+  }
 #endif
 
   while (1) {

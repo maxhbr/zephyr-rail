@@ -39,6 +39,8 @@ public:
   // callbacks (public because they need to be accessed from C code)
   static void on_connected(struct bt_conn *conn, uint8_t err);
   static void on_disconnected(struct bt_conn *conn, uint8_t reason);
+  static void on_security_changed(struct bt_conn *conn, bt_security_t level,
+                                  enum bt_security_err err);
   static uint8_t on_discover_service(struct bt_conn *conn,
                                      const struct bt_gatt_attr *attr,
                                      struct bt_gatt_discover_params *params);
@@ -47,6 +49,13 @@ public:
                              struct bt_gatt_discover_params *params);
   static void on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
                       struct net_buf_simple *ad);
+
+  // Security callbacks
+  static void auth_cancel(struct bt_conn *conn);
+  static void auth_passkey_display(struct bt_conn *conn, unsigned int passkey);
+  static void auth_passkey_confirm(struct bt_conn *conn, unsigned int passkey);
+  static void auth_passkey_entry(struct bt_conn *conn);
+  static enum bt_security_err auth_pairing_confirm(struct bt_conn *conn);
 
   // work handler for delayed discovery
   static void discovery_work_handler(struct k_work *work);

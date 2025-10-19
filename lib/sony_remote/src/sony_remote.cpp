@@ -33,6 +33,15 @@ static bt_uuid_16 kFF01Uuid = BT_UUID_INIT_16(0xFF01);
 static bt_conn_cb kConnCbs = {
     .connected = SonyRemote::on_connected,
     .disconnected = SonyRemote::on_disconnected,
+    .security_changed = SonyRemote::on_security_changed,
+};
+
+static bt_conn_auth_cb kAuthCbs = {
+    .passkey_display = SonyRemote::auth_passkey_display,
+    .passkey_entry = SonyRemote::auth_passkey_entry,
+    .passkey_confirm = SonyRemote::auth_passkey_confirm,
+    .cancel = SonyRemote::auth_cancel,
+    .pairing_confirm = SonyRemote::auth_pairing_confirm,
 };
 
 static bool accept_any(bt_data *data, void * /*user*/) {
@@ -94,7 +103,10 @@ SonyRemote::SonyRemote(const char *target_address) {
   }
 }
 
-void SonyRemote::begin() { bt_conn_cb_register(&kConnCbs); }
+void SonyRemote::begin() {
+  bt_conn_cb_register(&kConnCbs);
+  bt_conn_auth_cb_register(&kAuthCbs);
+}
 
 void SonyRemote::end() {
   if (conn_) {
@@ -169,23 +181,34 @@ void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
     LOG_ERR("Connect failed (%u)", err);
     return;
   }
-  LOG_INF("Connected");
+
+  char addr_str[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr_str, sizeof(addr_str));
+  LOG_INF("Connected to %s", addr_str);
+
   if (self_->conn_)
     bt_conn_unref(self_->conn_);
   self_->conn_ = bt_conn_ref(conn);
 
-  // Start pairing process - this will trigger the security procedure
-  LOG_INF("Starting security/pairing...");
-  int pairing_err = bt_conn_set_security(conn, BT_SECURITY_L2);
-  if (pairing_err) {
-    LOG_ERR("Failed to start pairing (%d)", pairing_err);
-    // Still try discovery in case device is already bonded
-    self_->start_discovery();
+  // Check current security level
+  bt_security_t sec_level = bt_conn_get_security(conn);
+  LOG_INF("Current security level: %d", sec_level);
+
+  if (sec_level < BT_SECURITY_L2) {
+    // Start pairing process - security_changed callback will handle discovery
+    LOG_INF("Starting security/pairing...");
+    int pairing_err = bt_conn_set_security(conn, BT_SECURITY_L2);
+    if (pairing_err) {
+      LOG_ERR("Failed to start pairing (%d)", pairing_err);
+      // Try discovery anyway in case device is already bonded
+      k_work_schedule(&self_->discovery_work_, K_MSEC(1000));
+    }
   } else {
-    LOG_INF("Pairing initiated successfully");
-    // Discovery will be started after pairing is complete
-    // For now, let's try discovery after a short delay
-    k_work_schedule(&self_->discovery_work_, K_MSEC(2000));
+    // Already paired, start discovery immediately
+    LOG_INF("Already paired (security level %d), starting discovery...",
+            sec_level);
+    self_->is_paired_ = true;
+    self_->start_discovery();
   }
 }
 
@@ -455,4 +478,65 @@ void SonyRemote::discovery_work_handler(struct k_work *work) {
 
   LOG_INF("Starting delayed service discovery...");
   self_->start_discovery();
+}
+
+void SonyRemote::on_security_changed(bt_conn *conn, bt_security_t level,
+                                     enum bt_security_err err) {
+  if (!self_) {
+    LOG_ERR("self_ pointer is NULL in on_security_changed!");
+    return;
+  }
+
+  char addr_str[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr_str, sizeof(addr_str));
+
+  if (err) {
+    LOG_ERR("Security failed: %s level %u err %d", addr_str, level, err);
+    self_->is_paired_ = false;
+  } else {
+    LOG_INF("Security changed: %s level %u", addr_str, level);
+    if (level >= BT_SECURITY_L2) {
+      LOG_INF("Pairing successful! Starting service discovery...");
+      self_->is_paired_ = true;
+      // Start discovery now that we're paired
+      self_->start_discovery();
+    }
+  }
+}
+
+void SonyRemote::auth_cancel(struct bt_conn *conn) {
+  char addr[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+  LOG_WRN("Pairing cancelled: %s", addr);
+}
+
+void SonyRemote::auth_passkey_display(struct bt_conn *conn,
+                                      unsigned int passkey) {
+  char addr[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+  LOG_INF("Passkey for %s: %06u", addr, passkey);
+}
+
+void SonyRemote::auth_passkey_confirm(struct bt_conn *conn,
+                                      unsigned int passkey) {
+  char addr[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+  LOG_INF("Confirm passkey for %s: %06u", addr, passkey);
+  // Auto-confirm the passkey
+  bt_conn_auth_passkey_confirm(conn);
+}
+
+void SonyRemote::auth_passkey_entry(struct bt_conn *conn) {
+  char addr[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+  LOG_INF("Enter passkey for %s", addr);
+  // Sony cameras typically don't require passkey entry
+}
+
+enum bt_security_err SonyRemote::auth_pairing_confirm(struct bt_conn *conn) {
+  char addr[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+  LOG_INF("Confirm pairing for %s", addr);
+  // Auto-accept pairing
+  return BT_SECURITY_ERR_SUCCESS;
 }
