@@ -16,7 +16,7 @@
 #include <zephyr/logging/log.h>
 
 #include "Stack.h"
-#include "sony_remote/SonyRemote.h"
+#include "sony_remote/sony_remote.h"
 #include "stepper_with_target/StepperWithTarget.h"
 
 /* enum state_action { */
@@ -55,13 +55,15 @@ void input_cb(struct input_event *evt, void *user_data);
 enum stack_state {
   S0,
 
+  S_WAIT_FOR_CAMERA,
+
   S_PARENT_INTERACTIVE,
-  S_INTERACTIVE_MOVE,
-  S_INTERACTIVE_PRE_STACKING,
+  S_INTERACTIVE,
 
   S_PARENT_STACKING,
   S_STACK,
   S_STACK_MOVE,
+  S_STACK_SETTLE,
   S_STACK_IMG
 };
 

@@ -66,14 +66,28 @@ static void input_cb(struct input_event *evt, void *user_data) {
 // initialize StateMachine
 
 struct smf_state *s0_ptr;
-struct smf_state *s_interactive_move_ptr;
-struct smf_state *s_interactive_pre_stacking_ptr;
+struct smf_state *s_wait_for_camera_ptr;
+struct smf_state *s_interactive_ptr;
 struct smf_state *s_stack_ptr;
 struct smf_state *s_stack_move_ptr;
+struct smf_state *s_stack_settle_ptr;
 struct smf_state *s_stack_img_ptr;
 
 static enum smf_state_result s0_run(void *o) {
-  smf_set_state(SMF_CTX(o), s_interactive_move_ptr);
+  smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+  return SMF_EVENT_HANDLED;
+}
+
+static enum smf_state_result s_wait_for_camera_run(void *o) {
+  struct s_object *s = (struct s_object *)o;
+  if (s->remote->ready()) {
+    smf_set_state(SMF_CTX(o), s_interactive_ptr);
+  } else {
+    LOG_INF("%s, sleeping for 2 seconds...", __FUNCTION__);
+    k_sleep(K_SECONDS(2));
+    smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+  }
+
   return SMF_EVENT_HANDLED;
 }
 
@@ -86,7 +100,7 @@ static void s_parent_interactive_entry(void *o) { LOG_INF("%s", __FUNCTION__); }
 
 static void s_parent_interactive_exit(void *o) { LOG_INF("%s", __FUNCTION__); }
 
-static enum smf_state_result s_interactive_move_run(void *o) {
+static enum smf_state_result s_interactive_run(void *o) {
   struct s_object *s = (struct s_object *)o;
 
   const struct zbus_channel *chan;
@@ -103,8 +117,10 @@ static enum smf_state_result s_interactive_move_run(void *o) {
       }
 
       switch (msg.evt.value()) {
-      case EVENT_INPUT_KEY_RIGHT:
-        smf_set_state(SMF_CTX(o), s_interactive_pre_stacking_ptr);
+      case EVENT_INPUT_KEY_ENTER:
+        // Start stack
+        LOG_INF("Starting stack...");
+        smf_set_state(SMF_CTX(o), s_stack_ptr);
         break;
       case EVENT_INPUT_KEY_0:
         LOG_INF("go_right");
@@ -113,36 +129,6 @@ static enum smf_state_result s_interactive_move_run(void *o) {
       case EVENT_INPUT_KEY_2:
         LOG_INF("go_left");
         s->stepper->go_relative(-100);
-        break;
-      default:
-        LOG_INF("unsupported event: %d", msg.evt.value());
-      }
-    }
-  } else {
-    LOG_ERR("failed to wait for zbus");
-  }
-  return SMF_EVENT_HANDLED;
-}
-
-static enum smf_state_result s_interactive_pre_stacking_run(void *o) {
-  struct s_object *s = (struct s_object *)o;
-
-  const struct zbus_channel *chan;
-
-  LOG_INF("%s, wait for input...", __FUNCTION__);
-  if (!zbus_sub_wait(&event_sub, &chan, K_FOREVER)) {
-    if (&event_msg_chan == chan) {
-      struct event_msg msg;
-      zbus_chan_read(&event_msg_chan, &msg, K_MSEC(100));
-
-      if (!msg.evt.has_value()) {
-        LOG_INF("no value in event_msg");
-        return SMF_EVENT_HANDLED;
-      }
-
-      switch (msg.evt.value()) {
-      case EVENT_INPUT_KEY_LEFT:
-        smf_set_state(SMF_CTX(o), s_interactive_move_ptr);
         break;
       default:
         LOG_INF("unsupported event: %d", msg.evt.value());
@@ -167,18 +153,28 @@ static enum smf_state_result s_stack_run(void *o) {
   if (s->stack.stack_in_progress()) {
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
-    smf_set_state(SMF_CTX(o), s_interactive_move_ptr);
+    smf_set_state(SMF_CTX(o), s_interactive_ptr);
   }
   return SMF_EVENT_HANDLED;
 }
 
 static enum smf_state_result s_stack_move_run(void *o) {
+  LOG_INF("%s", __FUNCTION__);
+  // Move to next position
+  smf_set_state(SMF_CTX(o), s_stack_settle_ptr);
+  return SMF_EVENT_HANDLED;
+}
+
+static enum smf_state_result s_stack_settle_run(void *o) {
+  LOG_INF("%s", __FUNCTION__);
+  // Allow time for vibrations to settle
   smf_set_state(SMF_CTX(o), s_stack_img_ptr);
   return SMF_EVENT_HANDLED;
 }
 
 static enum smf_state_result s_stack_img_run(void *o) {
   struct s_object *s = (struct s_object *)o;
+  LOG_INF("%s", __FUNCTION__);
   s->stack.increment_step();
   smf_set_state(SMF_CTX(o), s_stack_ptr);
   return SMF_EVENT_HANDLED;
@@ -187,14 +183,14 @@ static enum smf_state_result s_stack_img_run(void *o) {
 static const struct smf_state stack_states[] = {
     [S0] = SMF_CREATE_STATE(NULL, s0_run, NULL, NULL, NULL),
 
+    [S_WAIT_FOR_CAMERA] =
+        SMF_CREATE_STATE(NULL, s_wait_for_camera_run, NULL, NULL, NULL),
+
     [S_PARENT_INTERACTIVE] =
         SMF_CREATE_STATE(s_parent_interactive_entry, NULL,
                          s_parent_interactive_exit, NULL, NULL),
-    [S_INTERACTIVE_MOVE] =
-        SMF_CREATE_STATE(s_log_state, s_interactive_move_run, NULL,
-                         &stack_states[S_PARENT_INTERACTIVE], NULL),
-    [S_INTERACTIVE_PRE_STACKING] =
-        SMF_CREATE_STATE(s_log_state, s_interactive_pre_stacking_run, NULL,
+    [S_INTERACTIVE] =
+        SMF_CREATE_STATE(s_log_state, s_interactive_run, NULL,
                          &stack_states[S_PARENT_INTERACTIVE], NULL),
 
     [S_PARENT_STACKING] = SMF_CREATE_STATE(s_parent_stacking_entry, NULL,
@@ -203,6 +199,8 @@ static const struct smf_state stack_states[] = {
                                  &stack_states[S_PARENT_STACKING], NULL),
     [S_STACK_MOVE] = SMF_CREATE_STATE(NULL, s_stack_move_run, NULL,
                                       &stack_states[S_PARENT_STACKING], NULL),
+    [S_STACK_SETTLE] = SMF_CREATE_STATE(NULL, s_stack_settle_run, NULL,
+                                        &stack_states[S_PARENT_STACKING], NULL),
     [S_STACK_IMG] = SMF_CREATE_STATE(NULL, s_stack_img_run, NULL,
                                      &stack_states[S_PARENT_STACKING], NULL),
 };
@@ -211,10 +209,11 @@ StateMachine::StateMachine(const StepperWithTarget *stepper,
                            const SonyRemote *remote) {
   LOG_INF("%s", __FUNCTION__);
   s0_ptr = &stack_states[S0];
-  s_interactive_move_ptr = &stack_states[S_INTERACTIVE_MOVE];
-  s_interactive_pre_stacking_ptr = &stack_states[S_INTERACTIVE_PRE_STACKING];
+  s_wait_for_camera_ptr = &stack_states[S_WAIT_FOR_CAMERA];
+  s_interactive_ptr = &stack_states[S_INTERACTIVE];
   s_stack_ptr = &stack_states[S_STACK];
   s_stack_move_ptr = &stack_states[S_STACK_MOVE];
+  s_stack_settle_ptr = &stack_states[S_STACK_SETTLE];
   s_stack_img_ptr = &stack_states[S_STACK_IMG];
 
   s_obj.stepper = stepper;

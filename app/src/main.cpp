@@ -80,11 +80,6 @@ int main(void) {
   int32_t ret;
   while (1) {
     LOG_DBG("loop...");
-    // if (remote.ready()) {
-    //   LOG_INF("Connected to camera...");
-    // } else {
-    //   LOG_DBG("Waiting for camera connection...");
-    // }
     ret = sm.run_state_machine();
     if (ret) {
       break;
