@@ -1,120 +1,129 @@
-/*
- * Copyright (c) 2018 Google LLC.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <zephyr/types.h>
-
-#ifdef CONFIG_BT
-#include <zephyr/bluetooth/bluetooth.h>
-#endif
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/init.h>
-#include <zephyr/input/input.h>
+#include <zephyr/drivers/stepper.h>
 #include <zephyr/kernel.h>
-#include <zephyr/logging/log_backend.h>
-#include <zephyr/logging/log_ctrl.h>
-#include <zephyr/logging/log_output.h>
-#include <zephyr/smf.h>
-#include <zephyr/sys/byteorder.h>
-#include <zephyr/sys/crc.h>
-#include <zephyr/sys/printk.h>
-#include <zephyr/zbus/zbus.h>
-
-#include <zephyr/console/console.h>
-
-#ifdef CONFIG_DISPLAY
-#include "GUI.h"
-#endif
-#include "StateMachine.h"
-#include "stepper_with_target/StepperWithTarget.h"
-#ifdef CONFIG_BT
-#include "sony_remote/sony_remote.h"
-#endif
-
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(rail, LOG_LEVEL_DBG);
 
-static const struct gpio_dt_spec stepper_pulse =
-    GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 0);
-static const struct gpio_dt_spec stepper_dir =
-    GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(stepper), gpios, 1);
+LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
-INPUT_CALLBACK_DEFINE(NULL, input_cb, NULL);
+#define STEPPER_NODE DT_NODELABEL(stepper_motor)
+#define LED0_NODE DT_ALIAS(led0)
+
+// Callback for stepper events
+static volatile bool movement_complete = false;
+
+static void stepper_event_callback(const struct device *dev,
+                                   const enum stepper_event event,
+                                   void *user_data) {
+  switch (event) {
+  case STEPPER_EVENT_STEPS_COMPLETED:
+    LOG_INF("Movement completed!");
+    movement_complete = true;
+    break;
+  case STEPPER_EVENT_STALL_DETECTED:
+    LOG_WRN("Stall detected!");
+    break;
+  case STEPPER_EVENT_STOPPED:
+    LOG_INF("Stepper stopped");
+    break;
+  default:
+    LOG_DBG("Stepper event: %d", event);
+    break;
+  }
+}
 
 int main(void) {
+  const struct device *stepper_dev = DEVICE_DT_GET(STEPPER_NODE);
 
-  LOG_INF("CONFIG_BOARD=%s", CONFIG_BOARD);
-  StepperWithTarget stepper(&stepper_pulse, &stepper_dir);
-  StateMachine sm(&stepper);
-
-#ifdef CONFIG_DISPLAY
-  GUI gui(&sm);
-  if (gui.init()) {
-    gui.start();
-  } else {
-    LOG_ERR("Failed to initialize GUI");
-  }
-#endif
-
-#ifdef CONFIG_BT
-  if (int err = bt_enable(nullptr); err) {
-    LOG_ERR("bt_enable failed (%d)\n", err);
-    return err;
+  if (!device_is_ready(stepper_dev)) {
+    LOG_ERR("Stepper device is not ready");
+    return -1;
   }
 
-  LOG_INF("BLE on. Enable 'Bluetooth Rmt Ctrl' on the A7R V and pair on first "
-          "connect.\n");
+  LOG_INF("Stepper device is ready");
 
-  SonyRemote remote("9C:50:D1:AF:76:5F");
-  remote.begin();
-  remote.startScan();
+  // Set up LED
+  static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
-  // bool shot_once = false;
+  if (!gpio_is_ready_dt(&led)) {
+    LOG_ERR("LED device is not ready");
+    return -1;
+  }
 
-  // while (true) {
-  //   if (!shot_once && remote.ready()) {
-  //     k_sleep(K_SECONDS(2));
-  //     remote.focusDown();
-  //     k_msleep(80);
-  //     remote.shutterDown();
-  //     k_msleep(80);
-  //     remote.shutterUp();
-  //     k_msleep(50);
-  //     remote.focusUp();
-  //     printk("One still shot triggered.\n");
-  //     shot_once = true;
-  //   }
-  //   k_sleep(K_MSEC(200));
-  // }
-#endif
+  int ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+  if (ret < 0) {
+    LOG_ERR("Failed to configure LED: %d", ret);
+    return ret;
+  }
 
-  start_stepper(&stepper);
+  LOG_INF("LED is ready");
 
-  int32_t ret;
+  // Set up event callback
+  ret = stepper_set_event_callback(stepper_dev, stepper_event_callback, NULL);
+  if (ret < 0) {
+    LOG_WRN("Failed to set event callback: %d", ret);
+  }
 
-  k_sleep(K_MSEC(200));
-  LOG_INF("Start Loop ...");
+  ret = stepper_enable(stepper_dev);
+  if (ret < 0) {
+    LOG_ERR("Failed to enable stepper: %d", ret);
+    return ret;
+  }
+
+  // Set step interval to 5ms (5000 microseconds) = 200 steps/second
+  // Previous value of 20000000 (20 seconds!) was way too slow
+  ret =
+      // stepper_set_microstep_interval(stepper_dev, 5000000); // 5ms between
+      // steps stepper_set_microstep_interval(stepper_dev, 234375); // ~234 µs ,
+      // for 5 RPM
+      stepper_set_microstep_interval(stepper_dev,
+                                     117188); // ~117 µs , for 10 RPM
+  if (ret < 0) {
+    LOG_WRN("Failed to set step interval: %d", ret);
+    return ret;
+  }
+
+  LOG_INF("Testing stepper motor movements...");
+
   while (1) {
-    LOG_INF("Iter Loop ...");
-    ret = sm.run_state_machine();
-    if (ret) {
-      break;
+    // Move clockwise (forward direction - LED ON)
+    LOG_INF("Moving 200 steps clockwise");
+    gpio_pin_set_dt(&led, 1); // Turn LED on for forward direction
+    movement_complete = false;
+    ret = stepper_move_by(stepper_dev, 20000);
+    if (ret < 0) {
+      LOG_ERR("Failed to move stepper: %d", ret);
+      k_sleep(K_SECONDS(1));
+      continue;
     }
+
+    // Wait for movement to complete
+    while (!movement_complete) {
+      k_sleep(K_MSEC(100));
+    }
+
+    LOG_INF("Clockwise movement finished, pausing...");
+    k_sleep(K_SECONDS(1));
+
+    // Move counter-clockwise (reverse direction - LED OFF)
+    LOG_INF("Moving 200 steps counter-clockwise");
+    gpio_pin_set_dt(&led, 0); // Turn LED off for reverse direction
+    movement_complete = false;
+    ret = stepper_move_by(stepper_dev, -20000);
+    if (ret < 0) {
+      LOG_ERR("Failed to move stepper: %d", ret);
+      k_sleep(K_SECONDS(1));
+      continue;
+    }
+
+    // Wait for movement to complete
+    while (!movement_complete) {
+      k_sleep(K_MSEC(100));
+    }
+
+    LOG_INF("Counter-clockwise movement finished, pausing...");
+    k_sleep(K_SECONDS(1));
   }
 
-  LOG_ERR("Exited the infinite loop...");
-
-#ifdef CONFIG_DISPLAY
-  // Clear global GUI pointer on exit
-  gui.deinit();
-#endif
-
-  return ret;
+  return 0;
 }

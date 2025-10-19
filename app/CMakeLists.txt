@@ -1,18 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
-# set(BOARD stm32h7b3i_dk)
-# set(SHIELD x_nucleo_idb05a1)
+cmake_minimum_required(VERSION 3.20.0)
 
 set(CMAKE_C_FLAGS -lstdc++)
 set(CMAKE_CXX_FLAGS -lstdc++)
 
-cmake_minimum_required(VERSION 3.20.0)
+set(BOARD xiao_nrf54l15/nrf54l15/cpuapp)
 
-# Add DTS bindings from libraries
-list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../lib/stepper_with_target)
+## Add DTS bindings from libraries
+#list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../lib/stepper_with_target)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(zephyr-rail)
+
+# Add custom drivers subdirectory
+add_subdirectory(drivers)
 
 # zephyr_library_compile_options(-lstdc++ -std=c++17 -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-variable -Wno-comment)
 zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
