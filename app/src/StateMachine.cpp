@@ -56,6 +56,8 @@ static enum smf_state_result s0_run(void *o) {
 static void s_log_state(void *o) {
   struct s_object *s = (struct s_object *)o;
   s->stepper->log_state();
+  s->remote->log_state();
+  s->stack.log_state();
 }
 
 static void s_parent_interactive_entry(void *o) { LOG_INF("%s", __FUNCTION__); }
@@ -80,6 +82,10 @@ static enum smf_state_result s_interactive_run(void *o) {
 
       switch (msg.evt.value()) {
       case EVENT_NOOP:
+        s->stepper->log_state();
+        s->remote->log_state();
+        s->stack.log_state();
+
         break;
       case EVENT_GO:
         LOG_INF("go to position %d", msg.value);
@@ -138,6 +144,7 @@ static void s_parent_stacking_entry(void *o) {
     LOG_INF("Waiting for camera to be ready...");
     k_sleep(K_SECONDS(1));
   }
+  LOG_DBG("Camera is ready, starting stack");
 
   s->stack.start_stack();
 }
@@ -146,10 +153,13 @@ static void s_parent_stacking_exit(void *o) {}
 
 static enum smf_state_result s_stack_run(void *o) {
   struct s_object *s = (struct s_object *)o;
-  s->stack.log_state();
   if (s->stack.stack_in_progress()) {
+    LOG_INF("Stacking IN PROGRESS");
+    int current_step = s->stack.get_current_step().value();
+    s->stepper->set_target_position(current_step);
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
+    LOG_INF("Stacking DONE");
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
   }
   return SMF_EVENT_HANDLED;
@@ -157,14 +167,16 @@ static enum smf_state_result s_stack_run(void *o) {
 
 static enum smf_state_result s_stack_move_run(void *o) {
   LOG_INF("%s", __FUNCTION__);
-  // Move to next position
+  struct s_object *s = (struct s_object *)o;
+  s->stepper->step_towards_target();
+  s->stepper->wait_and_pause();
   smf_set_state(SMF_CTX(o), s_stack_settle_ptr);
   return SMF_EVENT_HANDLED;
 }
 
 static enum smf_state_result s_stack_settle_run(void *o) {
   LOG_INF("%s", __FUNCTION__);
-  // Allow time for vibrations to settle
+  k_sleep(K_MSEC(1000));
   smf_set_state(SMF_CTX(o), s_stack_img_ptr);
   return SMF_EVENT_HANDLED;
 }
@@ -172,6 +184,8 @@ static enum smf_state_result s_stack_settle_run(void *o) {
 static enum smf_state_result s_stack_img_run(void *o) {
   struct s_object *s = (struct s_object *)o;
   LOG_INF("%s", __FUNCTION__);
+  s->remote->shoot();
+  k_sleep(K_MSEC(500));
   s->stack.increment_step();
   smf_set_state(SMF_CTX(o), s_stack_ptr);
   return SMF_EVENT_HANDLED;

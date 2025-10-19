@@ -73,10 +73,4 @@ public:
 
   const struct stepper_with_target_status get_stepper_status() const;
   const struct stack_status get_stack_status() const;
-
-  void log_state() const {
-    s_obj.stepper->log_state();
-    s_obj.remote->log_state();
-    s_obj.stack.log_state();
-  }
 };

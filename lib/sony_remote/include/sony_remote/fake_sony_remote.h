@@ -15,6 +15,8 @@ public:
   void end();         // no-op
   bool ready() const; // always returns true
 
+  void log_state() const; // no-op
+
   // Common actions (all no-ops)
   void focusDown();
   void focusUp();

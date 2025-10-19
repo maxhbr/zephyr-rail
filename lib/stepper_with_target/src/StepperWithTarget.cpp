@@ -120,6 +120,7 @@ void StepperWithTarget::pause() {
 
 void StepperWithTarget::wait_and_pause() {
   LOG_INF("wait...");
+  LOG_INF(" %d -> %d", get_position(), get_target_position());
   while (!is_in_target_position() && is_moving) {
     k_sleep(K_MSEC(100));
   }

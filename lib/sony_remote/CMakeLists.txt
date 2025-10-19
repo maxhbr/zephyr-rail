@@ -3,10 +3,16 @@
 # Create the library target
 add_library(sony_remote STATIC)
 
-target_sources(sony_remote PRIVATE
-    src/sony_remote.cpp
-    src/fake_sony_remote.cpp
-)
+# Conditionally compile based on CONFIG_BT
+if(CONFIG_BT)
+    target_sources(sony_remote PRIVATE
+        src/sony_remote.cpp
+    )
+else()
+    target_sources(sony_remote PRIVATE
+        src/fake_sony_remote.cpp
+    )
+endif()
 
 target_include_directories(sony_remote PUBLIC
     include

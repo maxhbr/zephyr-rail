@@ -94,7 +94,6 @@ int main(void) {
   int32_t ret;
   while (1) {
     LOG_DBG("loop...");
-    sm.log_state();
     ret = sm.run_state_machine();
     if (ret) {
       break;
@@ -166,9 +165,8 @@ static int cmd_rail_startStack(const struct shell *sh, size_t argc,
   if (argc > 2) {
     shell_print(sh, "Usage: rail startStack <expected_length_of_stack>");
     return -EINVAL;
-  } else if (argc == 1) {
+  } else if (argc == 2) {
     int expected_length_of_stack = atoi(argv[1]);
-
     event_pub(EVENT_START_STACK, expected_length_of_stack);
   } else {
     event_pub(EVENT_START_STACK, 100);
