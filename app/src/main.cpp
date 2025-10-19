@@ -106,15 +106,21 @@ int main(void) {
 }
 
 #ifdef CONFIG_SHELL
-static int cmd_demo_ping(const struct shell *sh, size_t argc, char **argv) {
-  ARG_UNUSED(argc);
-  ARG_UNUSED(argv);
+static int cmd_rail_go(const struct shell *sh, size_t argc, char **argv) {
 
-  shell_print(sh, "pong");
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail go <distance>");
+    return -EINVAL;
+  }
+
+  int distance = atoi(argv[1]);
+
+  event_pub(EVENT_GO, distance);
+
   return 0;
 }
 
-static int cmd_demo_params(const struct shell *sh, size_t argc, char **argv) {
+static int cmd_rail_params(const struct shell *sh, size_t argc, char **argv) {
   int cnt;
 
   shell_print(sh, "argc = %d", argc);
@@ -124,11 +130,10 @@ static int cmd_demo_params(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
-/* Creating subcommands (level 1 command) array for command "demo". */
+/* Creating subcommands (level 1 command) array for command "rail". */
 SHELL_STATIC_SUBCMD_SET_CREATE(
-    sub_demo, SHELL_CMD(params, NULL, "Print params command.", cmd_demo_params),
-    SHELL_CMD(ping, NULL, "Ping command.", cmd_demo_ping),
-    SHELL_SUBCMD_SET_END);
-/* Creating root (level 0) command "demo" without a handler */
-SHELL_CMD_REGISTER(demo, &sub_demo, "Demo commands", NULL);
+    sub_rail, SHELL_CMD(params, NULL, "Print params command.", cmd_rail_params),
+    SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go), SHELL_SUBCMD_SET_END);
+/* Creating root (level 0) command "rail" without a handler */
+SHELL_CMD_REGISTER(rail, &sub_rail, "rail commands", NULL);
 #endif

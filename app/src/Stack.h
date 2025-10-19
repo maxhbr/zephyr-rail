@@ -50,6 +50,7 @@ public:
   // configuring stack
   void set_lower_bound(int _lower_bound);
   void set_upper_bound(int _upper_bound);
+  void set_expected_length_of_stack(int _expected_length_of_stack);
 
   const struct stack_status get_status() {
     return {

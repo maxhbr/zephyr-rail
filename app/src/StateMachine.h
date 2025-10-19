@@ -23,38 +23,30 @@
 #endif
 #include "stepper_with_target/StepperWithTarget.h"
 
-/* enum state_action { */
-/*   NOOP_CONTROLLER_ACTION, */
-/*   GO_CONTROLLER_ACTION, */
-/*   GO_TO_CONTROLLER_ACTION, */
-/*   SET_NEW_LOWER_BOUND_ACTION, */
-/*   SET_NEW_UPPER_BOUND_ACTION, */
-/*   // Stacking */
-/*   START_STACK */
-/* }; */
-
-/* struct state_msg */
-/* { */
-/*   state_action action; */
-/*   int value; */
-/* }; */
-/* int state_action_pub(state_msg *msg); */
-
-enum event { EVENT_GO };
+enum event {
+  EVENT_GO,
+  EVENT_GO_TO,
+  EVENT_SET_LOWER_BOUND,
+  EVENT_SET_UPPER_BOUND,
+  EVENT_SET_LOWER_BOUND_TO,
+  EVENT_SET_UPPER_BOUND_TO,
+  EVENT_START_STACK
+};
 struct event_msg {
   std::optional<event> evt;
   int value;
 };
 int event_pub(event event);
+int event_pub(event event, int value);
 void input_cb(struct input_event *evt, void *user_data);
 
 enum stack_state {
   S0,
 
-  S_WAIT_FOR_CAMERA,
-
   S_PARENT_INTERACTIVE,
   S_INTERACTIVE,
+
+  S_WAIT_FOR_CAMERA,
 
   S_PARENT_STACKING,
   S_STACK,
