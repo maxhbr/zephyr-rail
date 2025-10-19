@@ -1,23 +1,26 @@
 flowchart LR;
     S0((S0));
-    S1((S1));
-    S0 -->|pair| S1;
+
+    S_WAIT_FOR_CAMERA;
 
     subgraph S_PARENT_INTERACTIVE
-      direction TB 
       S_INTERACTIVE{S_INTERACTIVE}
-      queue-. read .->S_INTERACTIVE
     end
-    S1 --> S_INTERACTIVE;
     
-
     subgraph S_PARENT_STACKING;
-      direction TB
       S_STACK{S_STACK}
-      S_STACK_MOVE --> S_STACK_SETTLE;
-      S_STACK_SETTLE --> S_STACK_IMG;
-      S_STACK_IMG --> S_STACK;
-      S_STACK --> S_STACK_MOVE;
+      S_STACK_MOVE;
+      S_STACK_SETTLE;
+      S_STACK_IMG;
     end
+
+    S0 --> S_WAIT_FOR_CAMERA;
+    S_WAIT_FOR_CAMERA -->|sleep 2 sek| S_WAIT_FOR_CAMERA;
+    S_WAIT_FOR_CAMERA ---> S_INTERACTIVE;
+    S_INTERACTIVE -->|process command| S_INTERACTIVE;
+    S_INTERACTIVE -->|start stack| S_STACK;
     S_STACK --->|done| S_INTERACTIVE;
-    S_INTERACTIVE ---> S_STACK;
+    S_STACK_MOVE --> S_STACK_SETTLE;
+    S_STACK_SETTLE --> S_STACK_IMG;
+    S_STACK_IMG --> S_STACK;
+    S_STACK --> S_STACK_MOVE;
