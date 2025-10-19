@@ -79,6 +79,8 @@ static enum smf_state_result s_interactive_run(void *o) {
       }
 
       switch (msg.evt.value()) {
+      case EVENT_NOOP:
+        break;
       case EVENT_GO:
         LOG_INF("go to position %d", msg.value);
         s->stepper->go_relative(msg.value);
@@ -112,6 +114,10 @@ static enum smf_state_result s_interactive_run(void *o) {
         LOG_INF("Starting stack..., %d images", msg.value);
         s->stack.set_expected_length_of_stack(msg.value);
         smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+        break;
+      case EVENT_SHOOT:
+        LOG_INF("Triggering camera shoot");
+        s->remote->shoot();
         break;
       default:
         LOG_INF("unsupported event: %d", msg.evt.value());

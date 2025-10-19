@@ -24,13 +24,15 @@
 #include "stepper_with_target/StepperWithTarget.h"
 
 enum event {
+  EVENT_NOOP,
   EVENT_GO,
   EVENT_GO_TO,
   EVENT_SET_LOWER_BOUND,
   EVENT_SET_UPPER_BOUND,
   EVENT_SET_LOWER_BOUND_TO,
   EVENT_SET_UPPER_BOUND_TO,
-  EVENT_START_STACK
+  EVENT_START_STACK,
+  EVENT_SHOOT
 };
 struct event_msg {
   std::optional<event> evt;
@@ -73,4 +75,10 @@ public:
 
   const struct stepper_with_target_status get_stepper_status() const;
   const struct stack_status get_stack_status() const;
+
+  void log_state() const {
+    s_obj.stepper->log_state();
+    s_obj.remote->log_state();
+    s_obj.stack.log_state();
+  }
 };

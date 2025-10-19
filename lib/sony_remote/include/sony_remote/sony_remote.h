@@ -20,6 +20,8 @@ public:
   void end();                      // disconnect and cleanup
   bool ready() const;              // connected + FF01 handle found?
 
+  void log_state();
+
   // Common actions (write to 0xFF01)
   void focusDown();
   void focusUp();

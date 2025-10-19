@@ -142,6 +142,12 @@ bool SonyRemote::ready() const {
   return conn_ != nullptr && ff01_handle_ != 0 && is_paired_;
 }
 
+void SonyRemote::log_state() {
+  LOG_INF("SonyRemote state: connected=%s, paired=%s, ff01_handle=0x%04x",
+          conn_ ? "true" : "false", is_paired_ ? "true" : "false",
+          ff01_handle_);
+}
+
 void SonyRemote::focusDown() { send_cmd(FOCUS_DOWN, sizeof(FOCUS_DOWN)); }
 void SonyRemote::focusUp() { send_cmd(FOCUS_UP, sizeof(FOCUS_UP)); }
 void SonyRemote::shutterDown() { send_cmd(SHUTTER_DOWN, sizeof(SHUTTER_DOWN)); }
