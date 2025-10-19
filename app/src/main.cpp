@@ -3,6 +3,9 @@
 #include <zephyr/drivers/stepper.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#ifdef CONFIG_SHELL
+#include <zephyr/shell/shell.h>
+#endif
 #ifdef CONFIG_BT
 #include <zephyr/bluetooth/bluetooth.h>
 #ifdef CONFIG_BT_SETTINGS
@@ -95,22 +98,37 @@ int main(void) {
     if (ret) {
       break;
     }
-    // stepper->go_relative(20000);
-    // stepper->log_state();
-    // stepper->step_towards_target();
-    // stepper->wait_and_pause();
-
-    // k_sleep(K_SECONDS(1));
-
-    // stepper->go_relative(-20000);
-    // stepper->log_state();
-    // stepper->step_towards_target();
-    // stepper->wait_and_pause();
-
-    k_sleep(K_SECONDS(1));
   }
 
   remote.end();
 
   return 0;
 }
+
+#ifdef CONFIG_SHELL
+static int cmd_demo_ping(const struct shell *sh, size_t argc, char **argv) {
+  ARG_UNUSED(argc);
+  ARG_UNUSED(argv);
+
+  shell_print(sh, "pong");
+  return 0;
+}
+
+static int cmd_demo_params(const struct shell *sh, size_t argc, char **argv) {
+  int cnt;
+
+  shell_print(sh, "argc = %d", argc);
+  for (cnt = 0; cnt < argc; cnt++) {
+    shell_print(sh, "  argv[%d] = %s", cnt, argv[cnt]);
+  }
+  return 0;
+}
+
+/* Creating subcommands (level 1 command) array for command "demo". */
+SHELL_STATIC_SUBCMD_SET_CREATE(
+    sub_demo, SHELL_CMD(params, NULL, "Print params command.", cmd_demo_params),
+    SHELL_CMD(ping, NULL, "Ping command.", cmd_demo_ping),
+    SHELL_SUBCMD_SET_END);
+/* Creating root (level 0) command "demo" without a handler */
+SHELL_CMD_REGISTER(demo, &sub_demo, "Demo commands", NULL);
+#endif

@@ -17,51 +17,6 @@ static int event_pub(event event) {
 
 ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 
-static void input_cb(struct input_event *evt, void *user_data) {
-  LOG_DBG("type: %d, code: %d, value: %d", evt->type, evt->code, evt->value);
-
-  if (evt->type != INPUT_EV_KEY) {
-    return;
-  }
-  if (evt->value == 0) {
-    return;
-  }
-  int err;
-
-  switch (evt->code) {
-  case INPUT_KEY_0:
-    err = event_pub(EVENT_INPUT_KEY_0);
-    break;
-  case INPUT_KEY_1:
-    err = event_pub(EVENT_INPUT_KEY_1);
-    break;
-  case INPUT_KEY_2:
-    err = event_pub(EVENT_INPUT_KEY_2);
-    break;
-  case INPUT_KEY_ENTER:
-    err = event_pub(EVENT_INPUT_KEY_ENTER);
-    break;
-  case INPUT_KEY_DOWN:
-    err = event_pub(EVENT_INPUT_KEY_DOWN);
-    break;
-  case INPUT_KEY_UP:
-    err = event_pub(EVENT_INPUT_KEY_UP);
-    break;
-  case INPUT_KEY_LEFT:
-    err = event_pub(EVENT_INPUT_KEY_LEFT);
-    break;
-  case INPUT_KEY_RIGHT:
-    err = event_pub(EVENT_INPUT_KEY_RIGHT);
-    break;
-  default:
-    LOG_DBG("Unrecognized input code %u value %d", evt->code, evt->value);
-    return;
-  }
-  if (err == -ENOMSG) {
-    LOG_INF("Pub an invalid value to a channel with validator successfully.");
-  }
-}
-
 // ############################################################################
 // initialize StateMachine
 
@@ -117,19 +72,23 @@ static enum smf_state_result s_interactive_run(void *o) {
       }
 
       switch (msg.evt.value()) {
-      case EVENT_INPUT_KEY_ENTER:
-        // Start stack
-        LOG_INF("Starting stack...");
-        smf_set_state(SMF_CTX(o), s_stack_ptr);
+      case EVENT_GO:
+        LOG_INF("go to position %d", msg.value);
+        s->stepper->go_relative(msg.value);
         break;
-      case EVENT_INPUT_KEY_0:
-        LOG_INF("go_right");
-        s->stepper->go_relative(100);
-        break;
-      case EVENT_INPUT_KEY_2:
-        LOG_INF("go_left");
-        s->stepper->go_relative(-100);
-        break;
+      // case EVENT_INPUT_KEY_ENTER:
+      //   // Start stack
+      //   LOG_INF("Starting stack...");
+      //   smf_set_state(SMF_CTX(o), s_stack_ptr);
+      //   break;
+      // case EVENT_INPUT_KEY_0:
+      //   LOG_INF("go_right");
+      //   s->stepper->go_relative(100);
+      //   break;
+      // case EVENT_INPUT_KEY_2:
+      //   LOG_INF("go_left");
+      //   s->stepper->go_relative(-100);
+      //   break;
       default:
         LOG_INF("unsupported event: %d", msg.evt.value());
       }

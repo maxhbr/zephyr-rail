@@ -40,18 +40,10 @@
 /* }; */
 /* int state_action_pub(state_msg *msg); */
 
-enum event {
-  EVENT_INPUT_KEY_0,
-  EVENT_INPUT_KEY_1,
-  EVENT_INPUT_KEY_2,
-  EVENT_INPUT_KEY_ENTER,
-  EVENT_INPUT_KEY_DOWN,
-  EVENT_INPUT_KEY_UP,
-  EVENT_INPUT_KEY_LEFT,
-  EVENT_INPUT_KEY_RIGHT
-};
+enum event { EVENT_GO };
 struct event_msg {
   std::optional<event> evt;
+  int value;
 };
 int event_pub(event event);
 void input_cb(struct input_event *evt, void *user_data);
