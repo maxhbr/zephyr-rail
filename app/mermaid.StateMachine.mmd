@@ -1,23 +1,23 @@
 flowchart LR;
     S0((S0));
+    S1((S1));
+    S0 -->|pair| S1;
 
     subgraph S_PARENT_INTERACTIVE
       direction TB 
       S_INTERACTIVE{S_INTERACTIVE}
-      S_INTERACTIVE_EVENT([S_INTERACTIVE_EVENT])
-      S_INTERACTIVE --> S_INTERACTIVE_EVENT;
-      S_INTERACTIVE_EVENT --> S_INTERACTIVE;
-      S_INTERACTIVE_MOVE;
+      queue-. read .->S_INTERACTIVE
     end
-    S0 --> S_INTERACTIVE;
+    S1 --> S_INTERACTIVE;
+    
 
     subgraph S_PARENT_STACKING;
       direction TB
       S_STACK{S_STACK}
-      S_STACK_MOVE --> S_STACK;
-      S_STACK --> S_STACK_SETTLE;
+      S_STACK_MOVE --> S_STACK_SETTLE;
       S_STACK_SETTLE --> S_STACK_IMG;
-      S_STACK_IMG --> S_STACK_MOVE;
+      S_STACK_IMG --> S_STACK;
+      S_STACK --> S_STACK_MOVE;
     end
-    S_STACK --->|done| S0;
-    S_INTERACTIVE ---> S_STACK_MOVE;
+    S_STACK --->|done| S_INTERACTIVE;
+    S_INTERACTIVE ---> S_STACK;
