@@ -21,9 +21,6 @@ int main(void) {
 
   LOG_INF("Stepper device is ready");
 
-  // Create StepperWithTarget instance
-  StepperWithTarget stepper(stepper_dev);
-
   // Set up LED
   static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
@@ -40,6 +37,9 @@ int main(void) {
 
   LOG_INF("LED is ready");
 
+  // Create StepperWithTarget instance
+  StepperWithTarget stepper(stepper_dev);
+
   // Enable the stepper
   ret = stepper.enable();
   if (ret < 0) {
@@ -47,8 +47,6 @@ int main(void) {
     return ret;
   }
 
-  // Set step interval to 5ms (5000 microseconds) = 200 steps/second
-  // Previous value of 20000000 (20 seconds!) was way too slow
   ret = stepper_set_microstep_interval(stepper_dev,
                                        117188); // ~117 µs , for 10 RPM
   if (ret < 0) {

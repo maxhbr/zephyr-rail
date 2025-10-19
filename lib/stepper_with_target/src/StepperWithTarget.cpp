@@ -23,6 +23,12 @@ StepperWithTarget::StepperWithTarget(const struct device *dev) {
   if (ret == 0) {
     target_position = pos;
   }
+
+  ret = stepper_set_microstep_interval(stepper_dev,
+                                       117188); // ~117 µs , for 10 RPM
+  if (ret < 0) {
+    LOG_WRN("Failed to set step interval: %d", ret);
+  }
 }
 
 void StepperWithTarget::event_callback_wrapper(const struct device *dev,
