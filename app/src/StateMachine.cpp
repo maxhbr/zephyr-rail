@@ -87,16 +87,18 @@ static enum smf_state_result s_interactive_run(void *o) {
         LOG_INF("go to absolute position %d", msg.value);
         s->stepper->set_target_position(msg.value);
         break;
-      case EVENT_SET_LOWER_BOUND:
+      case EVENT_SET_LOWER_BOUND: {
         int lower_bound = s->stepper->get_target_position();
         LOG_INF("set lower bound to %d", lower_bound);
         s->stack.set_lower_bound(lower_bound);
         break;
-      case EVENT_SET_UPPER_BOUND:
+      }
+      case EVENT_SET_UPPER_BOUND: {
         int upper_bound = s->stepper->get_target_position();
         LOG_INF("set upper bound to %d", upper_bound);
         s->stack.set_upper_bound(upper_bound);
         break;
+      }
       case EVENT_SET_LOWER_BOUND_TO:
         LOG_INF("set lower bound to %d", msg.value);
         s->stack.set_lower_bound(msg.value);

@@ -120,6 +120,55 @@ static int cmd_rail_go(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
+static int cmd_rail_go_to(const struct shell *sh, size_t argc, char **argv) {
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail go_to <absolute_position>");
+    return -EINVAL;
+  }
+
+  int position = atoi(argv[1]);
+
+  event_pub(EVENT_GO_TO, position);
+
+  return 0;
+}
+
+static int cmd_rail_go_setLowerBound(const struct shell *sh, size_t argc,
+                                     char **argv) {
+  if (argc == 2) {
+    int position = atoi(argv[1]);
+    event_pub(EVENT_SET_LOWER_BOUND_TO, position);
+  } else {
+    event_pub(EVENT_SET_LOWER_BOUND);
+  }
+  return 0;
+}
+
+static int cmd_rail_go_setUpperBound(const struct shell *sh, size_t argc,
+                                     char **argv) {
+  if (argc == 2) {
+    int position = atoi(argv[1]);
+    event_pub(EVENT_SET_UPPER_BOUND_TO, position);
+  } else {
+    event_pub(EVENT_SET_UPPER_BOUND);
+  }
+  return 0;
+}
+
+static int cmd_rail_go_startStack(const struct shell *sh, size_t argc,
+                                  char **argv) {
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail startStack <expected_length_of_stack>");
+    return -EINVAL;
+  }
+
+  int expected_length_of_stack = atoi(argv[1]);
+
+  event_pub(EVENT_START_STACK, expected_length_of_stack);
+
+  return 0;
+}
+
 static int cmd_rail_params(const struct shell *sh, size_t argc, char **argv) {
   int cnt;
 
@@ -132,8 +181,12 @@ static int cmd_rail_params(const struct shell *sh, size_t argc, char **argv) {
 
 /* Creating subcommands (level 1 command) array for command "rail". */
 SHELL_STATIC_SUBCMD_SET_CREATE(
-    sub_rail, SHELL_CMD(params, NULL, "Print params command.", cmd_rail_params),
-    SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go), SHELL_SUBCMD_SET_END);
+    sub_rail, SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go),
+    SHELL_CMD(go_to, NULL, "Go to absolute position.", cmd_rail_go_to),
+    SHELL_CMD(lower, NULL, "Set lower bound.", cmd_rail_go_setLowerBound),
+    SHELL_CMD(upper, NULL, "Set upper bound.", cmd_rail_go_setUpperBound),
+    SHELL_CMD(stack, NULL, "Start stacking.", cmd_rail_go_startStack),
+    SHELL_SUBCMD_SET_END);
 /* Creating root (level 0) command "rail" without a handler */
 SHELL_CMD_REGISTER(rail, &sub_rail, "rail commands", NULL);
 #endif
