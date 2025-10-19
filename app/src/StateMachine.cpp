@@ -35,23 +35,23 @@ static enum smf_state_result s0_run(void *o) {
   return SMF_EVENT_HANDLED;
 }
 
-static enum smf_state_result s_wait_for_camera_run(void *o) {
-  struct s_object *s = (struct s_object *)o;
-  if (s->remote->ready()) {
-    // If we're in stacking mode, go to stack, otherwise go to interactive
-    if (s->stack.stack_in_progress()) {
-      smf_set_state(SMF_CTX(o), s_stack_ptr);
-    } else {
-      smf_set_state(SMF_CTX(o), s_interactive_ptr);
-    }
-  } else {
-    LOG_INF("%s, sleeping for 2 seconds...", __FUNCTION__);
-    k_sleep(K_SECONDS(2));
-    smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
-  }
+// static enum smf_state_result s_wait_for_camera_run(void *o) {
+//   struct s_object *s = (struct s_object *)o;
+//   if (s->remote->ready()) {
+//     // If we're in stacking mode, go to stack, otherwise go to interactive
+//     if (s->stack.stack_in_progress()) {
+//       smf_set_state(SMF_CTX(o), s_stack_ptr);
+//     } else {
+//       smf_set_state(SMF_CTX(o), s_interactive_ptr);
+//     }
+//   } else {
+//     LOG_INF("%s, sleeping for 2 seconds...", __FUNCTION__);
+//     k_sleep(K_SECONDS(2));
+//     smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+//   }
 
-  return SMF_EVENT_HANDLED;
-}
+//   return SMF_EVENT_HANDLED;
+// }
 
 static void s_log_state(void *o) {
   struct s_object *s = (struct s_object *)o;
@@ -84,10 +84,12 @@ static enum smf_state_result s_interactive_run(void *o) {
       case EVENT_GO:
         LOG_INF("go to position %d", msg.value);
         s->stepper->go_relative(msg.value);
+        s->stepper->step_towards_target();
         break;
       case EVENT_GO_TO:
         LOG_INF("go to absolute position %d", msg.value);
         s->stepper->set_target_position(msg.value);
+        s->stepper->step_towards_target();
         break;
       case EVENT_SET_LOWER_BOUND: {
         int lower_bound = s->stepper->get_target_position();
@@ -110,10 +112,9 @@ static enum smf_state_result s_interactive_run(void *o) {
         s->stack.set_upper_bound(msg.value);
         break;
       case EVENT_START_STACK:
-        // Start stack
         LOG_INF("Starting stack..., %d images", msg.value);
         s->stack.set_expected_length_of_stack(msg.value);
-        smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+        smf_set_state(SMF_CTX(o), s_stack_ptr);
         break;
       case EVENT_SHOOT:
         LOG_INF("Triggering camera shoot");
@@ -131,6 +132,13 @@ static enum smf_state_result s_interactive_run(void *o) {
 
 static void s_parent_stacking_entry(void *o) {
   struct s_object *s = (struct s_object *)o;
+
+  // wait for camera to be ready
+  while (!s->remote->ready()) {
+    LOG_INF("Waiting for camera to be ready...");
+    k_sleep(K_SECONDS(1));
+  }
+
   s->stack.start_stack();
 }
 
@@ -172,8 +180,6 @@ static enum smf_state_result s_stack_img_run(void *o) {
 // Note: Array order must match enum stack_state order
 static struct smf_state stack_states[] = {
     SMF_CREATE_STATE(NULL, s0_run, NULL, NULL, NULL), // S0
-    SMF_CREATE_STATE(NULL, s_wait_for_camera_run, NULL, NULL,
-                     NULL), // S_WAIT_FOR_CAMERA
     SMF_CREATE_STATE(s_parent_interactive_entry, NULL,
                      s_parent_interactive_exit, NULL,
                      NULL), // S_PARENT_INTERACTIVE
@@ -200,7 +206,6 @@ StateMachine::StateMachine(const StepperWithTarget *stepper,
   stack_states[S_STACK_IMG].parent = &stack_states[S_PARENT_STACKING];
 
   s0_ptr = &stack_states[S0];
-  s_wait_for_camera_ptr = &stack_states[S_WAIT_FOR_CAMERA];
   s_interactive_ptr = &stack_states[S_INTERACTIVE];
   s_stack_ptr = &stack_states[S_STACK];
   s_stack_move_ptr = &stack_states[S_STACK_MOVE];
