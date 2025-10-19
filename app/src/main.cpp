@@ -11,78 +11,59 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 #define STEPPER_NODE DT_NODELABEL(stepper_motor)
 #define LED0_NODE DT_ALIAS(led0)
 
-int main(void) {
+static StepperWithTarget *init_stepper(void) {
+  int ret;
   const struct device *stepper_dev = DEVICE_DT_GET(STEPPER_NODE);
 
   if (!device_is_ready(stepper_dev)) {
     LOG_ERR("Stepper device is not ready");
-    return -1;
+    return nullptr;
   }
 
   LOG_INF("Stepper device is ready");
 
-  // Set up LED
   static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+  const struct device *led_dev = nullptr;
 
-  if (!gpio_is_ready_dt(&led)) {
-    LOG_ERR("LED device is not ready");
-    return -1;
+  if (gpio_is_ready_dt(&led)) {
+    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+    if (ret >= 0) {
+      led_dev = led.port;
+    }
   }
 
-  int ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
-  if (ret < 0) {
-    LOG_ERR("Failed to configure LED: %d", ret);
-    return ret;
-  }
+  static StepperWithTarget stepper(stepper_dev, led_dev);
 
-  LOG_INF("LED is ready");
-
-  // Create StepperWithTarget instance
-  StepperWithTarget stepper(stepper_dev);
-
-  // Enable the stepper
   ret = stepper.enable();
   if (ret < 0) {
     LOG_ERR("Failed to enable stepper: %d", ret);
-    return ret;
+    return nullptr;
   }
 
-  ret = stepper_set_microstep_interval(stepper_dev,
-                                       117188); // ~117 µs , for 10 RPM
-  if (ret < 0) {
-    LOG_WRN("Failed to set step interval: %d", ret);
-    return ret;
-  }
+  return &stepper;
+}
 
-  LOG_INF("Testing stepper motor movements with StepperWithTarget...");
+int main(void) {
+  StepperWithTarget *stepper = init_stepper();
+
+  if (stepper == nullptr) {
+    LOG_ERR("Failed to initialize stepper");
+    return -1;
+  }
 
   while (1) {
-    // Move clockwise (forward direction - LED ON)
-    LOG_INF("Moving 20000 steps clockwise");
-    gpio_pin_set_dt(&led, 1); // Turn LED on for forward direction
+    stepper->go_relative(20000);
+    stepper->log_state();
+    stepper->step_towards_target();
+    stepper->wait_and_pause();
 
-    stepper.go_relative(20000);
-    stepper.log_state();
-    stepper.step_towards_target();
-
-    // Wait for movement to complete
-    stepper.wait_and_pause();
-
-    LOG_INF("Clockwise movement finished, pausing...");
     k_sleep(K_SECONDS(1));
 
-    // Move counter-clockwise (reverse direction - LED OFF)
-    LOG_INF("Moving 20000 steps counter-clockwise");
-    gpio_pin_set_dt(&led, 0); // Turn LED off for reverse direction
+    stepper->go_relative(-20000);
+    stepper->log_state();
+    stepper->step_towards_target();
+    stepper->wait_and_pause();
 
-    stepper.go_relative(-20000);
-    stepper.log_state();
-    stepper.step_towards_target();
-
-    // Wait for movement to complete
-    stepper.wait_and_pause();
-
-    LOG_INF("Counter-clockwise movement finished, pausing...");
     k_sleep(K_SECONDS(1));
   }
 

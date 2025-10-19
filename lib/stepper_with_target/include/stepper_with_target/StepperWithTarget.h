@@ -12,6 +12,7 @@
 
 #include <soc.h>
 #include <zephyr/arch/cpu.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/stepper.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/printk.h>
@@ -26,16 +27,20 @@ struct stepper_with_target_status {
 
 class StepperWithTarget {
   const struct device *stepper_dev;
+  const struct device *led_dev;
   bool is_moving = false;
   int32_t target_position = 0;
   bool enabled = false;
+
+  void update_led();
 
   static void event_callback_wrapper(const struct device *dev,
                                      const enum stepper_event event,
                                      void *user_data);
 
 public:
-  StepperWithTarget(const struct device *dev);
+  StepperWithTarget(const struct device *dev,
+                    const struct device *led_dev = nullptr);
 
   void log_state();
 

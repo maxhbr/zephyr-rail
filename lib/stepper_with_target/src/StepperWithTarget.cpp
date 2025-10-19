@@ -2,12 +2,22 @@
 
 LOG_MODULE_REGISTER(stepper_with_target, LOG_LEVEL_DBG);
 
-StepperWithTarget::StepperWithTarget(const struct device *dev) {
+StepperWithTarget::StepperWithTarget(const struct device *dev,
+                                     const struct device *led_dev) {
   stepper_dev = dev;
+  this->led_dev = led_dev;
 
   if (!device_is_ready(stepper_dev)) {
     LOG_ERR("Stepper device is not ready");
     return;
+  }
+
+  // Check if LED device is provided and ready
+  if (led_dev != nullptr) {
+    if (!device_is_ready(led_dev)) {
+      LOG_WRN("LED device is not ready, disabling LED support");
+      this->led_dev = nullptr;
+    }
   }
 
   // Set up event callback
@@ -29,6 +39,21 @@ StepperWithTarget::StepperWithTarget(const struct device *dev) {
   if (ret < 0) {
     LOG_WRN("Failed to set step interval: %d", ret);
   }
+
+  // Initialize LED to off (not moving)
+  update_led();
+}
+
+void StepperWithTarget::update_led() {
+  if (led_dev == nullptr) {
+    return;
+  }
+
+  // LED on when moving, off when at target
+  int ret = gpio_pin_set(led_dev, 0, is_moving ? 1 : 0);
+  if (ret < 0) {
+    LOG_ERR("Failed to set LED state: %d", ret);
+  }
 }
 
 void StepperWithTarget::event_callback_wrapper(const struct device *dev,
@@ -40,14 +65,17 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
   case STEPPER_EVENT_STEPS_COMPLETED:
     LOG_DBG("Movement completed!");
     instance->is_moving = false;
+    instance->update_led();
     break;
   case STEPPER_EVENT_STALL_DETECTED:
     LOG_WRN("Stall detected!");
     instance->is_moving = false;
+    instance->update_led();
     break;
   case STEPPER_EVENT_STOPPED:
     LOG_DBG("Stepper stopped");
     instance->is_moving = false;
+    instance->update_led();
     break;
   default:
     LOG_DBG("Stepper event: %d", event);
@@ -86,6 +114,7 @@ void StepperWithTarget::start() {
 void StepperWithTarget::pause() {
   stepper_stop(stepper_dev);
   is_moving = false;
+  update_led();
 }
 
 void StepperWithTarget::wait_and_pause() {
@@ -129,6 +158,7 @@ bool StepperWithTarget::step_towards_target() {
 
   if (steps_to_move == 0) {
     is_moving = false;
+    update_led();
     return true; // Already at target
   }
 
@@ -136,10 +166,12 @@ bool StepperWithTarget::step_towards_target() {
           target_position, steps_to_move);
 
   is_moving = true;
+  update_led();
   int ret = stepper_move_by(stepper_dev, steps_to_move);
   if (ret < 0) {
     LOG_ERR("Failed to move stepper: %d", ret);
     is_moving = false;
+    update_led();
     return false;
   }
 
