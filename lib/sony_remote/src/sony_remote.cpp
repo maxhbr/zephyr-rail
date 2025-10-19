@@ -96,6 +96,15 @@ SonyRemote::SonyRemote(const char *target_address) {
 
 void SonyRemote::begin() { bt_conn_cb_register(&kConnCbs); }
 
+void SonyRemote::end() {
+  if (conn_) {
+    bt_conn_unref(conn_);
+    conn_ = nullptr;
+  }
+  ff01_handle_ = 0;
+  k_work_cancel_delayable(&discovery_work_);
+}
+
 void SonyRemote::startScan() {
   static struct bt_le_scan_param scan_param =
       BT_LE_SCAN_PARAM_INIT(BT_LE_SCAN_TYPE_ACTIVE, BT_LE_SCAN_OPT_NONE,

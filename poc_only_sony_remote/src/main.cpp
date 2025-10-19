@@ -43,7 +43,8 @@ int main(void) {
     if (remote.ready()) {
       LOG_INF("Connected to camera, take one picture...");
       remote.shoot();
-      return;
+      remote.end();
+      return 0;
     } else {
       LOG_DBG("Waiting for camera connection...");
       k_sleep(K_SECONDS(1));
