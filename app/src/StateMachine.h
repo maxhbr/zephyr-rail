@@ -16,7 +16,11 @@
 #include <zephyr/logging/log.h>
 
 #include "Stack.h"
+#ifdef CONFIG_BT
 #include "sony_remote/sony_remote.h"
+#else
+#include "sony_remote/fake_sony_remote.h"
+#endif
 #include "stepper_with_target/StepperWithTarget.h"
 
 /* enum state_action { */

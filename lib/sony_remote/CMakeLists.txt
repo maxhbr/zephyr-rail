@@ -5,6 +5,7 @@ add_library(sony_remote STATIC)
 
 target_sources(sony_remote PRIVATE
     src/sony_remote.cpp
+    src/fake_sony_remote.cpp
 )
 
 target_include_directories(sony_remote PUBLIC

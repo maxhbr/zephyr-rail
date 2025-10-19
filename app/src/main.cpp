@@ -1,15 +1,21 @@
-#include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/stepper.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#ifdef CONFIG_BT
+#include <zephyr/bluetooth/bluetooth.h>
 #ifdef CONFIG_BT_SETTINGS
 #include <zephyr/settings/settings.h>
 #endif
+#endif
 
 #include "StateMachine.h"
+#ifdef CONFIG_BT
 #include "sony_remote/sony_remote.h"
+#else
+#include "sony_remote/fake_sony_remote.h"
+#endif
 #include "stepper_with_target/StepperWithTarget.h"
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
@@ -50,6 +56,7 @@ static StepperWithTarget *init_stepper(void) {
 }
 
 int main(void) {
+#ifdef CONFIG_BT
   LOG_DBG("main: initialize Bluetooth");
   if (int err = bt_enable(nullptr); err) {
     LOG_ERR("bt_enable failed (%d)", err);
@@ -64,6 +71,10 @@ int main(void) {
 #endif
   LOG_DBG("main: initialize Sony Remote");
   SonyRemote remote("9C:50:D1:AF:76:5F");
+#else
+  LOG_DBG("main: initialize Dummy Sony Remote");
+  SonyRemote remote;
+#endif
   k_msleep(100); // Match POC timing
   remote.begin();
   k_msleep(100); // Match POC timing
