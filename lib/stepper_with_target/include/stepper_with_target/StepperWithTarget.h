@@ -12,53 +12,50 @@
 
 #include <soc.h>
 #include <zephyr/arch/cpu.h>
-#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/stepper.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/sys/printk.h>
 
 #include <optional>
 
-#include "Stepper.h"
-
 struct stepper_with_target_status {
-  struct stepper_status stepper_status;
+  int32_t actual_position;
   bool is_moving;
-  int target_position;
+  int32_t target_position;
 };
 
-class StepperWithTarget : private Stepper {
+class StepperWithTarget {
+  const struct device *stepper_dev;
   bool is_moving = false;
-  int target_position;
+  int32_t target_position = 0;
+  bool enabled = false;
+
+  static void event_callback_wrapper(const struct device *dev,
+                                     const enum stepper_event event,
+                                     void *user_data);
 
 public:
-  StepperWithTarget(const struct gpio_dt_spec *stepper_pulse,
-                    const struct gpio_dt_spec *stepper_dir)
-      : Stepper(stepper_pulse, stepper_dir) {
-    target_position = Stepper::get_position();
-  }
+  StepperWithTarget(const struct device *dev);
 
   void log_state();
 
+  int enable();
+  int disable();
   void start();
   void pause();
   void wait_and_pause();
 
   int get_position();
 
-  int go_relative(int dist);
-  void set_target_position(int _target_position);
-  int get_target_position();
+  int go_relative(int32_t dist);
+  void set_target_position(int32_t _target_position);
+  int32_t get_target_position();
 
   bool step_towards_target();
 
   bool is_in_target_position();
 
-  const struct stepper_with_target_status get_status() {
-    return {
-        .stepper_status = Stepper::get_status(),
-        .is_moving = is_moving,
-        .target_position = target_position,
-    };
-  }
+  const struct stepper_with_target_status get_status();
 };
 
 void start_stepper(StepperWithTarget *_started_stepper_ptr);

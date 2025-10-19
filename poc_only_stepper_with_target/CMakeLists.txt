@@ -5,16 +5,15 @@ set(CMAKE_CXX_FLAGS -lstdc++)
 
 set(BOARD nrf54l15dk/nrf54l15/cpuapp)
 
+# Add DTS bindings path BEFORE find_package(Zephyr)
+list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../lib/stepper_with_target)
+
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(poc_stepper_with_target)
 
-# Add custom drivers subdirectory
-add_subdirectory(drivers)
-
-#zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
-
-#add_subdirectory(../lib/stepper_with_target ${CMAKE_CURRENT_BINARY_DIR}/stepper_with_target)
+# Add stepper_with_target library (includes the driver)
+add_subdirectory(../lib/stepper_with_target ${CMAKE_CURRENT_BINARY_DIR}/stepper_with_target)
 
 target_sources(app PRIVATE src/main.cpp)
 
-#target_link_libraries(app PRIVATE stepper_with_target)
+target_link_libraries(app PRIVATE stepper_with_target)

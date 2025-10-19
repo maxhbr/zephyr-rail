@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config STEPPER_WITH_TARGET
+	bool "Stepper with Target Library"
+	default y
+	depends on STEPPER
+	help
+	  Enable the stepper with target library which provides a high-level
+	  interface for controlling stepper motors with target position tracking.
+
+if STEPPER_WITH_TARGET
+
+rsource "drivers/Kconfig"
+
+endif # STEPPER_WITH_TARGET

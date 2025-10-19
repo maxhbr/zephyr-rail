@@ -2,4 +2,4 @@
 
 source "Kconfig.zephyr"
 
-rsource "drivers/Kconfig"
+rsource "../lib/stepper_with_target/Kconfig"
