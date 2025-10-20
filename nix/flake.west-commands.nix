@@ -79,6 +79,11 @@ in
     "-t"
     "flash"
   ])
+  (mkWestBuildBoardCommand "xiao_esp32c6/esp32c6/hpcore" "" [ ])
+  (mkWestBuildBoardCommand "xiao_esp32c6/esp32c6/hpcore" "-and-flash" [
+    "-t"
+    "flash"
+  ])
   (mkWestCommand "espressif-monitor" [
     "espressif"
     "monitor"

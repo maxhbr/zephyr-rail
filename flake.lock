@@ -41,11 +41,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1760392170,
-        "narHash": "sha256-WftxJgr2MeDDFK47fQKywzC72L2jRc/PWcyGdjaDzkw=",
+        "lastModified": 1760663237,
+        "narHash": "sha256-BflA6U4AM1bzuRMR8QqzPXqh8sWVCNDzOdsxXEguJIc=",
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "46d55f0aeb1d567a78223e69729734f3dca25a85",
+        "rev": "ca5b894d3e3e151ffc1db040b6ce4dcc75d31c37",
         "type": "github"
       },
       "original": {
@@ -114,32 +114,16 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1760524057,
-        "narHash": "sha256-EVAqOteLBFmd7pKkb0+FIUyzTF61VKi7YmvP1tw4nEw=",
+        "lastModified": 1760878510,
+        "narHash": "sha256-K5Osef2qexezUfs0alLvZ7nQFTGS9DL2oTVsIXsqLgs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "544961dfcce86422ba200ed9a0b00dd4b1486ec5",
+        "rev": "5e2a59a5b1a82f89f2c7e598302a9cacebb72a67",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
         "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "pr440671": {
-      "locked": {
-        "lastModified": 1760453675,
-        "narHash": "sha256-as6nGX6QeTUHgm4otTiLBhdxOWOb52ePxwcKfWpfY4I=",
-        "owner": "h7x4",
-        "repo": "nixpkgs",
-        "rev": "b3b62509bd2757f9aaf89cd314d687b509164609",
-        "type": "github"
-      },
-      "original": {
-        "owner": "h7x4",
-        "ref": "pkgs-nrfutil-package-all-installables",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -170,7 +154,6 @@
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
         "nixpkgs": "nixpkgs_2",
-        "pr440671": "pr440671",
         "zephyr": "zephyr",
         "zephyr-nix": "zephyr-nix"
       }

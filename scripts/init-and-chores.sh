@@ -110,6 +110,10 @@ west_update_if_was_not_updated_already_today() {
     west update --narrow
     touch "$stamp_file"
     echo "$caching_key" > "$stamp_file"
+
+    west blobs fetch hal_espressif
+    # west blobs fetch hal_silabs
+    # west blobs fetch hal_stm32
 }
 
 main() {

@@ -4,8 +4,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    pr440671.url = "github:h7x4/nixpkgs/pkgs-nrfutil-package-all-installables"; # https://github.com/NixOS/nixpkgs/pull/440671
-
     # Customize the version of Zephyr used by the flake here
     # zephyr.url = "github:zephyrproject-rtos/zephyr/v4.2.0";
     zephyr.url = "github:zephyrproject-rtos/zephyr/9421b826994788e717e7010a46d38b3722bf2c6f"; # commit before gitlint -> gitlint-core change
@@ -67,24 +65,6 @@
                   gitlint-core = super.pythonPackages.gitlint;
                 };
               })
-              (_: _: {
-                nrfutil =
-                  (import inputs.pr440671 {
-                    inherit config system;
-                  }).nrfutil.withExtensions
-                    [
-                      "nrfutil-device"
-                      "nrfutil-trace"
-                      "nrfutil-ble-sniffer"
-                      "nrfutil-completion"
-                      "nrfutil-mcu-manager"
-                      "nrfutil-npm"
-                      "nrfutil-nrf5sdk-tools"
-                      "nrfutil-sdk-manager"
-                      "nrfutil-suit"
-                      "nrfutil-toolchain-manager"
-                    ];
-              })
             ];
           };
         inherit (pkgs) lib;
@@ -95,6 +75,7 @@
           targets = [
             "arm-zephyr-eabi"
             "xtensa-espressif_esp32s3_zephyr-elf"
+            "riscv64-zephyr-elf"
           ];
         };
         zephyr-python-env = zephyr-packages.pythonEnv.override {
@@ -130,6 +111,7 @@
             pyocd
             bossa
             nrfutil
+            esptool
           ]);
           postBuild = ''
             wrapProgram "$out/bin/west" \
