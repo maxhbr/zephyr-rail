@@ -37,17 +37,9 @@ static StepperWithTarget *init_stepper(void) {
 
   LOG_INF("Stepper device is ready");
 
-  static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-  const struct device *led_dev = nullptr;
+  uint32_t micro_step_res = DT_PROP(STEPPER_NODE, micro_step_res);
 
-  if (gpio_is_ready_dt(&led)) {
-    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
-    if (ret >= 0) {
-      led_dev = led.port;
-    }
-  }
-
-  static StepperWithTarget stepper(stepper_dev, led_dev);
+  static StepperWithTarget stepper(stepper_dev, 1, 200 * micro_step_res);
 
   ret = stepper.enable();
   if (ret < 0) {
@@ -59,6 +51,7 @@ static StepperWithTarget *init_stepper(void) {
 }
 
 int main(void) {
+  int32_t ret;
 #ifdef CONFIG_BT
   LOG_DBG("main: initialize Bluetooth");
   if (int err = bt_enable(nullptr); err) {
@@ -89,9 +82,18 @@ int main(void) {
     LOG_ERR("Failed to initialize stepper");
     return -1;
   }
-  StateMachine sm(stepper, &remote);
 
-  int32_t ret;
+  static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+  const struct device *led_dev = nullptr;
+
+  if (gpio_is_ready_dt(&led)) {
+    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+    if (ret >= 0) {
+      led_dev = led.port;
+    }
+  }
+
+  StateMachine sm(stepper, &remote);
   while (1) {
     LOG_DBG("loop...");
     ret = sm.run_state_machine();

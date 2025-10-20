@@ -146,10 +146,16 @@ static void s_parent_stacking_entry(void *o) {
   }
   LOG_DBG("Camera is ready, starting stack");
 
+  s->stepper->set_speed(StepperSpeed::SLOW);
+
   s->stack.start_stack();
 }
 
-static void s_parent_stacking_exit(void *o) {}
+static void s_parent_stacking_exit(void *o) {
+  struct s_object *s = (struct s_object *)o;
+
+  s->stepper->set_speed(StepperSpeed::MEDIUM);
+}
 
 static enum smf_state_result s_stack_run(void *o) {
   struct s_object *s = (struct s_object *)o;

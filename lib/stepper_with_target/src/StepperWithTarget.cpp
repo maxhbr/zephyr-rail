@@ -3,21 +3,12 @@
 LOG_MODULE_REGISTER(stepper_with_target, LOG_LEVEL_DBG);
 
 StepperWithTarget::StepperWithTarget(const struct device *dev,
-                                     const struct device *led_dev) {
+                                     int _pitch_per_rev, int _pulses_per_rev) {
   stepper_dev = dev;
-  this->led_dev = led_dev;
 
   if (!device_is_ready(stepper_dev)) {
     LOG_ERR("Stepper device is not ready");
     return;
-  }
-
-  // Check if LED device is provided and ready
-  if (led_dev != nullptr) {
-    if (!device_is_ready(led_dev)) {
-      LOG_WRN("LED device is not ready, disabling LED support");
-      this->led_dev = nullptr;
-    }
   }
 
   // Set up event callback
@@ -34,26 +25,40 @@ StepperWithTarget::StepperWithTarget(const struct device *dev,
     target_position = pos;
   }
 
-  ret = stepper_set_microstep_interval(stepper_dev,
-                                       117188); // ~117 µs , for 10 RPM
+  ret = set_speed(StepperSpeed::MEDIUM);
   if (ret < 0) {
     LOG_WRN("Failed to set step interval: %d", ret);
   }
 
-  // Initialize LED to off (not moving)
-  update_led();
+  pitch_per_rev = _pitch_per_rev;
+  pulses_per_rev = _pulses_per_rev;
 }
 
-void StepperWithTarget::update_led() {
-  if (led_dev == nullptr) {
-    return;
+int StepperWithTarget::set_speed(StepperSpeed speed) {
+  uint64_t interval_ns;
+  switch (speed) {
+  case StepperSpeed::FAST:
+    interval_ns = 78125; // ~78 µs , for 15 RPM
+    break;
+  case StepperSpeed::MEDIUM:
+    interval_ns = 117188; // ~117 µs , for 10 RPM
+    break;
+  case StepperSpeed::SLOW:
+    interval_ns = 234375; // ~234 µs , for 5 RPM
+    break;
+  default:
+    interval_ns = 117188; // Default to medium
+    break;
   }
 
-  // LED on when moving, off when at target
-  int ret = gpio_pin_set(led_dev, 0, is_moving ? 1 : 0);
+  int ret = stepper_set_microstep_interval(stepper_dev, interval_ns);
   if (ret < 0) {
-    LOG_ERR("Failed to set LED state: %d", ret);
+    LOG_WRN("Failed to set step interval: %d", ret);
+  } else {
+    LOG_DBG("Stepper speed set to %d (interval %llu ns)",
+            static_cast<int>(speed), interval_ns);
   }
+  return ret;
 }
 
 void StepperWithTarget::event_callback_wrapper(const struct device *dev,
@@ -65,17 +70,14 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
   case STEPPER_EVENT_STEPS_COMPLETED:
     LOG_DBG("Movement completed!");
     instance->is_moving = false;
-    instance->update_led();
     break;
   case STEPPER_EVENT_STALL_DETECTED:
     LOG_WRN("Stall detected!");
     instance->is_moving = false;
-    instance->update_led();
     break;
   case STEPPER_EVENT_STOPPED:
     LOG_DBG("Stepper stopped");
     instance->is_moving = false;
-    instance->update_led();
     break;
   default:
     LOG_DBG("Stepper event: %d", event);
@@ -115,17 +117,16 @@ void StepperWithTarget::start() {
 void StepperWithTarget::pause() {
   stepper_stop(stepper_dev);
   is_moving = false;
-  update_led();
 }
 
 void StepperWithTarget::wait_and_pause() {
-  LOG_INF("wait...");
-  LOG_INF(" %d -> %d", get_position(), get_target_position());
+  LOG_DBG("wait..., currently at %d -> %d", get_position(),
+          get_target_position());
   while (!is_in_target_position() && is_moving) {
     k_sleep(K_MSEC(100));
   }
   pause();
-  LOG_INF("...pause");
+  LOG_DBG("...pause");
 }
 
 int StepperWithTarget::get_position() {
@@ -160,7 +161,6 @@ bool StepperWithTarget::step_towards_target() {
 
   if (steps_to_move == 0) {
     is_moving = false;
-    update_led();
     return true; // Already at target
   }
 
@@ -168,12 +168,10 @@ bool StepperWithTarget::step_towards_target() {
           target_position, steps_to_move);
 
   is_moving = true;
-  update_led();
   int ret = stepper_move_by(stepper_dev, steps_to_move);
   if (ret < 0) {
     LOG_ERR("Failed to move stepper: %d", ret);
     is_moving = false;
-    update_led();
     return false;
   }
 
@@ -182,6 +180,14 @@ bool StepperWithTarget::step_towards_target() {
 
 bool StepperWithTarget::is_in_target_position() {
   return get_position() == get_target_position();
+}
+
+// Helper method for position conversion
+int StepperWithTarget::position_as_nm(int position) {
+  // Convert stepper position to nanometers
+  if (pulses_per_rev == 0)
+    return 0;
+  return (position * pitch_per_rev * 1000000) / pulses_per_rev;
 }
 
 const struct stepper_with_target_status StepperWithTarget::get_status() {

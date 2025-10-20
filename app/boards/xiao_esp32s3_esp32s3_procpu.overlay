@@ -7,9 +7,9 @@
 	stepper_motor: stepper_motor {
 		compatible = "simple-stepper";
 		status = "okay";
-		step-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
-		dir-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
-		en-gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+        step-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+        dir-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+        en-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
 		micro-step-res = <256>;
 		invert-pins;
 	};
