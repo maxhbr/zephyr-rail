@@ -162,6 +162,30 @@ static int cmd_rail_setUpperBound(const struct shell *sh, size_t argc,
   return 0;
 }
 
+static int cmd_rail_setWaitBefore(const struct shell *sh, size_t argc,
+                                  char **argv) {
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail wait_before <milliseconds>");
+    return -EINVAL;
+  }
+
+  int wait_ms = atoi(argv[1]);
+  event_pub(EVENT_SET_WAIT_BEFORE_MS, wait_ms);
+  return 0;
+}
+
+static int cmd_rail_setWaitAfter(const struct shell *sh, size_t argc,
+                                 char **argv) {
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail wait_after <milliseconds>");
+    return -EINVAL;
+  }
+
+  int wait_ms = atoi(argv[1]);
+  event_pub(EVENT_SET_WAIT_AFTER_MS, wait_ms);
+  return 0;
+}
+
 static int cmd_rail_startStack(const struct shell *sh, size_t argc,
                                char **argv) {
   if (argc > 2) {
@@ -169,6 +193,13 @@ static int cmd_rail_startStack(const struct shell *sh, size_t argc,
     return -EINVAL;
   } else if (argc == 2) {
     int expected_length_of_stack = atoi(argv[1]);
+    event_pub(EVENT_START_STACK, expected_length_of_stack);
+  } else if (argc == 4) {
+    int expected_length_of_stack = atoi(argv[1]);
+    int lower = atoi(argv[2]);
+    int upper = atoi(argv[3]);
+    event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
+    event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
     event_pub(EVENT_START_STACK, expected_length_of_stack);
   } else {
     event_pub(EVENT_START_STACK, 100);
@@ -188,6 +219,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(go_to, NULL, "Go to absolute position.", cmd_rail_go_to),
     SHELL_CMD(lower, NULL, "Set lower bound.", cmd_rail_setLowerBound),
     SHELL_CMD(upper, NULL, "Set upper bound.", cmd_rail_setUpperBound),
+    SHELL_CMD(wait_before, NULL, "Set wait before ms.", cmd_rail_setWaitBefore),
+    SHELL_CMD(wait_after, NULL, "Set wait after ms.", cmd_rail_setWaitAfter),
     SHELL_CMD(stack, NULL, "Start stacking.", cmd_rail_startStack),
     SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_rail_shoot),
     SHELL_SUBCMD_SET_END);

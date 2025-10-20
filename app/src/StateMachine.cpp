@@ -117,6 +117,14 @@ static enum smf_state_result s_interactive_run(void *o) {
         LOG_INF("set upper bound to %d", msg.value);
         s->stack.set_upper_bound(msg.value);
         break;
+      case EVENT_SET_WAIT_BEFORE_MS:
+        LOG_INF("set wait before ms to %d", msg.value);
+        s->wait_before_ms = msg.value;
+        break;
+      case EVENT_SET_WAIT_AFTER_MS:
+        LOG_INF("set wait after ms to %d", msg.value);
+        s->wait_after_ms = msg.value;
+        break;
       case EVENT_START_STACK:
         LOG_INF("Starting stack..., %d images", msg.value);
         s->stack.set_expected_length_of_stack(msg.value);
@@ -182,7 +190,7 @@ static enum smf_state_result s_stack_move_run(void *o) {
 
 static enum smf_state_result s_stack_settle_run(void *o) {
   LOG_INF("%s", __FUNCTION__);
-  k_sleep(K_MSEC(1000));
+  k_sleep(K_MSEC(s->wait_before));
   smf_set_state(SMF_CTX(o), s_stack_img_ptr);
   return SMF_EVENT_HANDLED;
 }
@@ -191,7 +199,7 @@ static enum smf_state_result s_stack_img_run(void *o) {
   struct s_object *s = (struct s_object *)o;
   LOG_INF("%s", __FUNCTION__);
   s->remote->shoot();
-  k_sleep(K_MSEC(500));
+  k_sleep(K_MSEC(s->wait_after_ms));
   s->stack.increment_step();
   smf_set_state(SMF_CTX(o), s_stack_ptr);
   return SMF_EVENT_HANDLED;

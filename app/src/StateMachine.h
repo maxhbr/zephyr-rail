@@ -31,6 +31,8 @@ enum event {
   EVENT_SET_UPPER_BOUND,
   EVENT_SET_LOWER_BOUND_TO,
   EVENT_SET_UPPER_BOUND_TO,
+  EVENT_SET_WAIT_BEFORE_MS,
+  EVENT_SET_WAIT_AFTER_MS,
   EVENT_START_STACK,
   EVENT_SHOOT
 };
@@ -61,6 +63,8 @@ struct s_object {
   const StepperWithTarget *stepper;
   const SonyRemote *remote;
   const Stack stack;
+  int wait_before_ms = 1000;
+  int wait_after_ms = 500;
 };
 
 class StateMachine {
