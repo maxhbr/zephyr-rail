@@ -164,7 +164,7 @@ bool StepperWithTarget::step_towards_target() {
     return true; // Already at target
   }
 
-  LOG_DBG("step_towards_target: current=%d, target=%d, steps=%d", current_pos,
+  LOG_DBG("step_towards_target: current=%d, target=%d, delta=%d", current_pos,
           target_position, steps_to_move);
 
   is_moving = true;

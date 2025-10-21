@@ -188,10 +188,7 @@ static int cmd_rail_setWaitAfter(const struct shell *sh, size_t argc,
 
 static int cmd_rail_startStack(const struct shell *sh, size_t argc,
                                char **argv) {
-  if (argc > 2) {
-    shell_print(sh, "Usage: rail startStack <expected_length_of_stack>");
-    return -EINVAL;
-  } else if (argc == 2) {
+  if (argc == 2) {
     int expected_length_of_stack = atoi(argv[1]);
     event_pub(EVENT_START_STACK, expected_length_of_stack);
   } else if (argc == 4) {
@@ -201,6 +198,9 @@ static int cmd_rail_startStack(const struct shell *sh, size_t argc,
     event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
     event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
     event_pub(EVENT_START_STACK, expected_length_of_stack);
+  } else if (argc > 2) {
+    shell_print(sh, "Usage: rail startStack <expected_length_of_stack>");
+    return -EINVAL;
   } else {
     event_pub(EVENT_START_STACK, 100);
   }

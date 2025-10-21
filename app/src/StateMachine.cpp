@@ -190,7 +190,8 @@ static enum smf_state_result s_stack_move_run(void *o) {
 
 static enum smf_state_result s_stack_settle_run(void *o) {
   LOG_INF("%s", __FUNCTION__);
-  k_sleep(K_MSEC(s->wait_before));
+  struct s_object *s = (struct s_object *)o;
+  k_sleep(K_MSEC(s->wait_before_ms));
   smf_set_state(SMF_CTX(o), s_stack_img_ptr);
   return SMF_EVENT_HANDLED;
 }

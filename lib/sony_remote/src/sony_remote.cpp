@@ -5,7 +5,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/sys/byteorder.h>
 
-LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_INF);
 
 SonyRemote *SonyRemote::self_ = nullptr;
 
