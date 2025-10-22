@@ -39,38 +39,8 @@ jobs:
       - name: Create deployment directory
         run: |
           mkdir -p _site
-          
-          # Copy the main app web interface (focus stacking control)
           cp app/web_interface.html _site/index.html
-          
-          # Copy the landing page
           cp .github/workflows/landing.html _site/landing.html
-          
-          # Create a README for the deployment
-          cat > _site/README.md << 'EOF'
-          # ZephyrRail Web Bluetooth Interface
-          
-          This directory contains the Progressive Web App (PWA) interfaces for controlling the ZephyrRail focus stacking system via Web Bluetooth.
-          
-          ## Available Interfaces
-          
-          - **index.html** - Focus Stacking Control (main app)
-          - **landing.html** - Landing page with links to both interfaces
-          
-          ## Usage
-          
-          1. Open one of the HTML files in a Web Bluetooth-compatible browser (Chrome, Edge, Opera)
-          2. Click "Connect to ZephyrRail"
-          3. Select your device from the Bluetooth pairing dialog
-          4. Control your device wirelessly!
-          
-          ## More Information
-          
-          See the main repository: https://github.com/maxhbr/zephyr-rail
-          EOF
-          
-          echo "✅ Deployment directory created with all files"
-          ls -la _site/
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
