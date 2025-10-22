@@ -92,6 +92,8 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 #endif
 
 int main(void) {
+  // sleep for 10 seconds to allow debugger to attach
+  k_sleep(K_SECONDS(10));
   int32_t ret;
 #ifdef CONFIG_BT
   LOG_DBG("main: initialize Bluetooth");
@@ -106,16 +108,7 @@ int main(void) {
     return err;
   }
 #endif
-  LOG_DBG("main: initialize Sony Remote");
-  SonyRemote remote("9C:50:D1:AF:76:5F");
-#else
-  LOG_DBG("main: initialize Dummy Sony Remote");
-  SonyRemote remote;
-#endif
-  k_msleep(100); // Match POC timing
-  remote.begin();
 
-#ifdef CONFIG_BT
   // Initialize PWA service
   LOG_DBG("main: initialize PWA service");
   PwaService::init();
@@ -126,7 +119,15 @@ int main(void) {
     return err;
   }
   LOG_INF("PWA service ready - Web Bluetooth interface available");
+
+  LOG_DBG("main: initialize Sony Remote");
+  SonyRemote remote("9C:50:D1:AF:76:5F");
+#else
+  LOG_DBG("main: initialize Dummy Sony Remote");
+  SonyRemote remote;
 #endif
+  k_msleep(100); // Match POC timing
+  remote.begin();
 
   k_msleep(100); // Match POC timing
   remote.startScan();

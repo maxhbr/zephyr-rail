@@ -11,8 +11,6 @@
  * This service exposes two characteristics:
  * - Command (write): Receives commands from the PWA
  * - Status (read + notify): Sends status updates to the PWA
- *
- * Commands are translated to StateMachine events (rail commands)
  */
 class PwaService {
 public:

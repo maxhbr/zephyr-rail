@@ -1,11 +1,13 @@
 #include "pwa_service.h"
-#include "StateMachine.h"
+#include <cstdlib>
 #include <cstring>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/logging/log.h>
+
+#include "StateMachine.h"
 
 LOG_MODULE_REGISTER(pwa_service, LOG_LEVEL_INF);
 
@@ -34,10 +36,6 @@ uint8_t PwaService::status_buffer_[256] = {0};
 void PwaService::cccChanged(const struct bt_gatt_attr *attr, uint16_t value) {
   notify_enabled_ = (value == BT_GATT_CCC_NOTIFY);
   LOG_INF("PWA notifications %s", notify_enabled_ ? "enabled" : "disabled");
-
-  if (notify_enabled_) {
-    notifyStatus("READY");
-  }
 }
 
 ssize_t PwaService::cmdWrite(struct bt_conn *conn,
@@ -47,136 +45,85 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
   ARG_UNUSED(offset);
   ARG_UNUSED(flags);
 
-  // Require encryption for writes
-  if (bt_conn_get_security(conn) < BT_SECURITY_L2) {
-    LOG_WRN("Rejecting write: insufficient security");
-    return BT_GATT_ERR(BT_ATT_ERR_INSUFFICIENT_ENCRYPTION);
+  if (len == 0 || len >= 256) {
+    LOG_WRN("Invalid command length: %u", len);
+    notifyStatus("ERR:INVALID_LENGTH");
+    return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
   }
 
-  // Parse command
-  char cmd[128] = {0};
-  size_t cmd_len = len < sizeof(cmd) - 1 ? len : sizeof(cmd) - 1;
-  memcpy(cmd, buf, cmd_len);
-  cmd[cmd_len] = '\0';
+  char cmd[256];
+  memcpy(cmd, buf, len);
+  cmd[len] = '\0';
 
-  LOG_INF("PWA Command: %s", cmd);
+  LOG_DBG("PWA Command Received: '%s'", cmd);
 
-  // Parse command and arguments
-  char *saveptr = nullptr;
+  char response[128];
+  char *saveptr;
   char *token = strtok_r(cmd, " ", &saveptr);
+
   if (!token) {
+    LOG_WRN("Empty command received");
     notifyStatus("ERR:EMPTY_COMMAND");
     return len;
   }
 
-  // Special commands
-  if (strcmp(token, "PING") == 0) {
-    notifyStatus("PONG");
-    return len;
-  }
-
-  if (strcmp(token, "STATUS") == 0) {
-    notifyStatus("ACK:STATUS");
-    return len;
-  }
-
-  // Rail control commands - map to StateMachine events
-  char response[128];
-
-  if (strcmp(token, "NOOP") == 0) {
-    event_pub(EVENT_NOOP);
-    snprintf(response, sizeof(response), "ACK:NOOP");
-
-  } else if (strcmp(token, "GO") == 0) {
-    // Command format: "GO <distance>"
+  // Parse command with parameters
+  if (strcmp(token, "GO") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {
+      LOG_WRN("→ Command: GO (missing distance)");
       notifyStatus("ERR:GO_MISSING_DISTANCE");
       return len;
     }
     int distance = atoi(token);
-    event_pub(EVENT_GO, distance);
+    LOG_INF("→ Command: GO distance=%d", distance);
     snprintf(response, sizeof(response), "ACK:GO %d", distance);
 
   } else if (strcmp(token, "GO_TO") == 0) {
-    // Command format: "GO_TO <position>"
     token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {
+      LOG_WRN("→ Command: GO_TO (missing position)");
       notifyStatus("ERR:GO_TO_MISSING_POSITION");
       return len;
     }
     int position = atoi(token);
-    event_pub(EVENT_GO_TO, position);
+    LOG_INF("→ Command: GO_TO position=%d", position);
     snprintf(response, sizeof(response), "ACK:GO_TO %d", position);
 
   } else if (strcmp(token, "SET_LOWER_BOUND") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
-    if (token) {
-      int position = atoi(token);
-      event_pub(EVENT_SET_LOWER_BOUND_TO, position);
-      snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND %d", position);
-    } else {
-      event_pub(EVENT_SET_LOWER_BOUND);
-      snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND");
+    if (!token) {
+      LOG_WRN("→ Command: SET_LOWER_BOUND (missing position)");
+      notifyStatus("ERR:SET_LOWER_BOUND_MISSING_POSITION");
+      return len;
     }
+    int position = atoi(token);
+    LOG_INF("→ Command: SET_LOWER_BOUND position=%d", position);
+    snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND %d", position);
 
   } else if (strcmp(token, "SET_UPPER_BOUND") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
-    if (token) {
-      int position = atoi(token);
-      event_pub(EVENT_SET_UPPER_BOUND_TO, position);
-      snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND %d", position);
-    } else {
-      event_pub(EVENT_SET_UPPER_BOUND);
-      snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND");
-    }
-
-  } else if (strcmp(token, "SET_WAIT_BEFORE") == 0) {
-    // Command format: "SET_WAIT_BEFORE <milliseconds>"
-    token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {
-      notifyStatus("ERR:SET_WAIT_BEFORE_MISSING_VALUE");
+      LOG_WRN("→ Command: SET_UPPER_BOUND (missing position)");
+      notifyStatus("ERR:SET_UPPER_BOUND_MISSING_POSITION");
       return len;
     }
-    int wait_ms = atoi(token);
-    event_pub(EVENT_SET_WAIT_BEFORE_MS, wait_ms);
-    snprintf(response, sizeof(response), "ACK:SET_WAIT_BEFORE %d", wait_ms);
-
-  } else if (strcmp(token, "SET_WAIT_AFTER") == 0) {
-    // Command format: "SET_WAIT_AFTER <milliseconds>"
-    token = strtok_r(nullptr, " ", &saveptr);
-    if (!token) {
-      notifyStatus("ERR:SET_WAIT_AFTER_MISSING_VALUE");
-      return len;
-    }
-    int wait_ms = atoi(token);
-    event_pub(EVENT_SET_WAIT_AFTER_MS, wait_ms);
-    snprintf(response, sizeof(response), "ACK:SET_WAIT_AFTER %d", wait_ms);
+    int position = atoi(token);
+    LOG_INF("→ Command: SET_UPPER_BOUND position=%d", position);
+    snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND %d", position);
 
   } else if (strcmp(token, "START_STACK") == 0) {
-    // Command format: "START_STACK <expected_length>"
-    // or "START_STACK <expected_length> <lower> <upper>"
     token = strtok_r(nullptr, " ", &saveptr);
     int expected_length = token ? atoi(token) : 100;
-
-    char *lower_str = strtok_r(nullptr, " ", &saveptr);
-    char *upper_str = strtok_r(nullptr, " ", &saveptr);
-
-    if (lower_str && upper_str) {
-      int lower = atoi(lower_str);
-      int upper = atoi(upper_str);
-      event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
-      event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
-    }
-
-    event_pub(EVENT_START_STACK, expected_length);
+    LOG_INF("→ Command: START_STACK length=%d", expected_length);
     snprintf(response, sizeof(response), "ACK:START_STACK %d", expected_length);
 
   } else if (strcmp(token, "SHOOT") == 0) {
-    event_pub(EVENT_SHOOT);
+    LOG_INF("→ Command: SHOOT");
     snprintf(response, sizeof(response), "ACK:SHOOT");
 
   } else {
+    LOG_WRN("→ Unknown command: %s", token);
     snprintf(response, sizeof(response), "ERR:UNKNOWN_CMD:%s", token);
   }
 
@@ -221,13 +168,12 @@ void PwaService::init() {
 }
 
 const struct bt_gatt_attr *PwaService::findStatusAttr() {
-  const struct bt_gatt_attr *attrs = pwa_gatt_svc.attrs;
-  size_t attr_count = pwa_gatt_svc.attr_count;
-
-  for (size_t i = 0; i < attr_count; i++) {
-    if (attrs[i].uuid && bt_uuid_cmp(attrs[i].uuid, PWA_STATUS_UUID) == 0) {
-      return &attrs[i];
+  const struct bt_gatt_attr *svc = bt_gatt_attr_next(nullptr);
+  while (svc) {
+    if (bt_uuid_cmp(svc->uuid, PWA_STATUS_UUID) == 0) {
+      return svc;
     }
+    svc = bt_gatt_attr_next(svc);
   }
   return nullptr;
 }
@@ -239,19 +185,19 @@ void PwaService::notifyStatus(const char *status) {
     return;
   }
 
-  const struct bt_gatt_attr *attr = findStatusAttr();
-  if (!attr) {
-    LOG_ERR("Status attribute not found");
-    return;
-  }
-
   size_t len = strlen(status);
-  if (len > sizeof(status_buffer_) - 1) {
+  if (len >= sizeof(status_buffer_)) {
     len = sizeof(status_buffer_) - 1;
   }
 
   memcpy(status_buffer_, status, len);
   status_buffer_[len] = '\0';
+
+  const struct bt_gatt_attr *attr = findStatusAttr();
+  if (!attr) {
+    LOG_ERR("Status characteristic not found");
+    return;
+  }
 
   int err = bt_gatt_notify(pwa_conn_, attr, status_buffer_, len);
   if (err) {
@@ -275,7 +221,6 @@ void PwaService::onConnected(struct bt_conn *conn, uint8_t err) {
 
   pwa_conn_ = bt_conn_ref(conn);
 
-  // Request connection parameter update
   struct bt_le_conn_param param = {
       .interval_min = 24, .interval_max = 40, .latency = 0, .timeout = 400};
   bt_conn_le_param_update(conn, &param);
@@ -290,47 +235,36 @@ void PwaService::onDisconnected(struct bt_conn *conn, uint8_t reason) {
     pwa_conn_ = nullptr;
   }
   notify_enabled_ = false;
-
-  // Restart advertising
-  startAdvertising();
 }
 
 int PwaService::startAdvertising() {
-  static const struct bt_data ad[] = {
+  const struct bt_data ad[] = {
       BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
+  };
+
+  const struct bt_data sd[] = {
       BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME,
               sizeof(CONFIG_BT_DEVICE_NAME) - 1),
-      BT_DATA_BYTES(BT_DATA_UUID128_ALL, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
-                    0x34, 0x12, 0x34, 0x12, 0x78, 0x56, 0x34, 0x56, 0x34, 0x12),
   };
 
-  struct bt_le_adv_param adv_param_init = {
-      .id = BT_ID_DEFAULT,
-      .sid = 0,
-      .secondary_max_skip = 0,
-      .options = BT_LE_ADV_OPT_CONN | BT_LE_ADV_OPT_USE_IDENTITY,
-      .interval_min = BT_GAP_ADV_FAST_INT_MIN_1,
-      .interval_max = BT_GAP_ADV_FAST_INT_MAX_1,
-      .peer = NULL,
-  };
-
-  int err = bt_le_adv_start(&adv_param_init, ad, ARRAY_SIZE(ad), NULL, 0);
+  int err =
+      bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
   if (err) {
-    LOG_ERR("Advertising start failed: %d", err);
+    LOG_ERR("Advertising failed to start (err %d)", err);
     return err;
   }
 
-  LOG_INF("Advertising started as '%s'", CONFIG_BT_DEVICE_NAME);
+  LOG_INF("PWA advertising started - device name: %s", CONFIG_BT_DEVICE_NAME);
   return 0;
 }
 
 int PwaService::stopAdvertising() {
   int err = bt_le_adv_stop();
   if (err) {
-    LOG_ERR("Advertising stop failed: %d", err);
+    LOG_ERR("Advertising failed to stop (err %d)", err);
     return err;
   }
 
-  LOG_INF("Advertising stopped");
+  LOG_INF("PWA advertising stopped");
   return 0;
 }
