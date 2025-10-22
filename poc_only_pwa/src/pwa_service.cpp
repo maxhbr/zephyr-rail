@@ -1,4 +1,5 @@
 #include "pwa_service.h"
+#include <cstdlib>
 #include <cstring>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
@@ -145,10 +146,6 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
   return len;
 }
 
-notifyStatus(response);
-return len;
-}
-
 // C-style wrapper functions for GATT callbacks
 static void pwa_ccc_changed(const struct bt_gatt_attr *attr, uint16_t value) {
   PwaService::cccChanged(attr, value);
@@ -261,14 +258,11 @@ void PwaService::onDisconnected(struct bt_conn *conn, uint8_t reason) {
 int PwaService::startAdvertising() {
   const struct bt_data ad[] = {
       BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
-      BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME,
-              sizeof(CONFIG_BT_DEVICE_NAME) - 1),
   };
 
   const struct bt_data sd[] = {
-      BT_DATA_BYTES(BT_DATA_UUID128_ALL,
-                    BT_UUID_128_ENCODE(0x12345634, 0x5678, 0x1234, 0x1234,
-                                       0x123456789abc)),
+      BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME,
+              sizeof(CONFIG_BT_DEVICE_NAME) - 1),
   };
 
   int err =

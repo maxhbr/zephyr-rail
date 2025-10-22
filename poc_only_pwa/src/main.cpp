@@ -23,6 +23,8 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 };
 
 int main(void) {
+  // sleep for 10 seconds to allow debugger to attach
+  k_sleep(K_SECONDS(10));
   LOG_INF("═══════════════════════════════════════════════════════");
   LOG_INF("PWA Proof of Concept - Web Bluetooth Test");
   LOG_INF("═══════════════════════════════════════════════════════");
