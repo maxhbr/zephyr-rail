@@ -8,6 +8,7 @@
 #endif
 #ifdef CONFIG_BT
 #include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/conn.h>
 #ifdef CONFIG_BT_SETTINGS
 #include <zephyr/settings/settings.h>
 #endif
@@ -15,6 +16,7 @@
 
 #include "StateMachine.h"
 #ifdef CONFIG_BT
+#include "pwa_service.h"
 #include "sony_remote/sony_remote.h"
 #else
 #include "sony_remote/fake_sony_remote.h"
@@ -50,6 +52,45 @@ static StepperWithTarget *init_stepper(void) {
   return &stepper;
 }
 
+#ifdef CONFIG_BT
+// Connection callback dispatcher for both PWA and Sony camera
+static void conn_connected(struct bt_conn *conn, uint8_t err) {
+  if (err) {
+    LOG_ERR("Connection failed: %u", err);
+    return;
+  }
+
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // This is a PWA connection (we are peripheral/server)
+    PwaService::onConnected(conn, err);
+  } else {
+    // This is a Sony camera connection (we are central/client)
+    SonyRemote::on_connected(conn, err);
+  }
+}
+
+static void conn_disconnected(struct bt_conn *conn, uint8_t reason) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // PWA disconnected
+    PwaService::onDisconnected(conn, reason);
+  } else {
+    // Sony camera disconnected
+    SonyRemote::on_disconnected(conn, reason);
+  }
+}
+
+BT_CONN_CB_DEFINE(conn_callbacks) = {
+    .connected = conn_connected,
+    .disconnected = conn_disconnected,
+};
+#endif
+
 int main(void) {
   int32_t ret;
 #ifdef CONFIG_BT
@@ -73,6 +114,20 @@ int main(void) {
 #endif
   k_msleep(100); // Match POC timing
   remote.begin();
+
+#ifdef CONFIG_BT
+  // Initialize PWA service
+  LOG_DBG("main: initialize PWA service");
+  PwaService::init();
+
+  // Start advertising for PWA connections (peripheral role)
+  if (int err = PwaService::startAdvertising(); err) {
+    LOG_ERR("Failed to start PWA advertising: %d", err);
+    return err;
+  }
+  LOG_INF("PWA service ready - Web Bluetooth interface available");
+#endif
+
   k_msleep(100); // Match POC timing
   remote.startScan();
 

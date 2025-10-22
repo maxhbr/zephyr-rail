@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZephyrRail - Focus Stacking Control</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        button {
+            margin: 5px;
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        input[type="number"] {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            width: 150px;
+            margin: 5px;
+        }
+        
+        label {
+            display: block;
+            margin: 10px 5px 5px 5px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        #connect {
+            background: #667eea;
+            color: white;
+        }
+        
+        #disconnect {
+            background: #f56565;
+            color: white;
+        }
+        
+        #status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .connected {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        
+        .disconnected {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        
+        #controls {
+            display: none;
+        }
+        
+        .control-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        
+        .control-section h3 {
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 18px;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-info {
+            background: #38b2ac;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #718096;
+            color: white;
+        }
+        
+        .connection-bar {
+            margin-bottom: 20px;
+            padding: 10px 0;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning h2 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .warning p {
+            color: #856404;
+            line-height: 1.6;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            button {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            input[type="number"] {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚂 ZephyrRail Focus Stacking</h1>
+        <p class="subtitle">Web Bluetooth control for camera rail and Sony camera via nRF54L15</p>
+        
+        <div class="connection-bar">
+            <button id="connect" class="btn-primary">🔗 Connect to ZephyrRail</button>
+            <button id="disconnect" class="btn-success" disabled>❌ Disconnect</button>
+        </div>
+        
+        <div id="status" class="disconnected">
+            🔴 Not connected. Click "Connect to ZephyrRail" to begin.
+        </div>
+        
+        <div id="controls">
+            <div class="control-section">
+                <h3>🎯 Position Control</h3>
+                <div class="input-group">
+                    <label>Move Distance (steps):</label>
+                    <input type="number" id="go-distance" value="100" step="10">
+                    <button class="btn-primary" onclick="sendGo()">➡️ Move</button>
+                </div>
+                <div class="input-group">
+                    <label>Go To Position:</label>
+                    <input type="number" id="goto-position" value="0" step="10">
+                    <button class="btn-primary" onclick="sendGoTo()">📍 Go To</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>📏 Bounds & Limits</h3>
+                <div class="input-group">
+                    <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">⬇️ Set Lower Bound (Current)</button>
+                    <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">⬆️ Set Upper Bound (Current)</button>
+                </div>
+                <div class="input-group">
+                    <label>Or Set Specific Bounds:</label>
+                    <input type="number" id="lower-bound" value="-1000" placeholder="Lower">
+                    <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower</button>
+                    <input type="number" id="upper-bound" value="1000" placeholder="Upper">
+                    <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>⏱️ Timing Settings</h3>
+                <div class="input-group">
+                    <label>Wait Before Shot (ms):</label>
+                    <input type="number" id="wait-before" value="1000" step="100" min="0">
+                    <button class="btn-primary" onclick="sendSetWaitBefore()">Set Wait Before</button>
+                </div>
+                <div class="input-group">
+                    <label>Wait After Shot (ms):</label>
+                    <input type="number" id="wait-after" value="2000" step="100" min="0">
+                    <button class="btn-primary" onclick="sendSetWaitAfter()">Set Wait After</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>📸 Focus Stacking</h3>
+                <div class="input-group">
+                    <label>Expected Stack Length:</label>
+                    <input type="number" id="stack-length" value="50" step="5" min="1">
+                    <button class="btn-success" onclick="sendStartStack()">🎬 Start Stacking</button>
+                </div>
+                <p style="margin-top: 10px; font-size: 13px; color: #718096;">
+                    Will automatically take photos while moving between bounds
+                </p>
+            </div>
+            
+            <div class="control-section">
+                <h3>📷 Camera Control</h3>
+                <button class="btn-warning" onclick="sendCommand('SHOOT')">📸 Take Single Photo</button>
+                <button class="btn-secondary" onclick="sendCommand('NOOP')">⏸️ No Operation</button>
+            </div>
+            
+            <div class="control-section">
+                <h3>🔧 System</h3>
+                <button class="btn-secondary" onclick="sendCommand('STATUS')">📊 Status</button>
+                <button class="btn-secondary" onclick="sendCommand('PING')">🏓 Ping</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SERVICE_UUID = '12345634-5678-1234-1234-123456789abc';
+        const STATUS_UUID = '12345636-5678-1234-1234-123456789abc';
+        const COMMAND_UUID = '12345635-5678-1234-1234-123456789abc';
+        
+        let device, server, service, commandChar, statusChar;
+        
+        // Check Web Bluetooth support
+        if (!navigator.bluetooth) {
+            document.body.innerHTML = `
+                <div class="container">
+                    <div class="warning">
+                        <h2>⚠️ Web Bluetooth Not Supported</h2>
+                        <p>Your browser doesn't support Web Bluetooth API.</p>
+                        <p><strong>Supported browsers:</strong></p>
+                        <ul>
+                            <li>Chrome/Edge/Opera on Windows, macOS, Linux, Android</li>
+                            <li>Samsung Internet on Android</li>
+                        </ul>
+                        <p><strong>Not supported:</strong> Firefox, Safari, iOS browsers</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        document.getElementById('connect').addEventListener('click', async () => {
+            try {
+                updateStatus('🔍 Searching for ZephyrRail device...', 'disconnected');
+                
+                // Request device
+                device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'ZephyrRail' }],
+                    optionalServices: [SERVICE_UUID]
+                });
+                
+                updateStatus('🔗 Connecting to ' + device.name + '...', 'disconnected');
+                
+                // Connect to GATT server
+                server = await device.gatt.connect();
+                
+                updateStatus('🔍 Discovering services...', 'disconnected');
+                
+                // Get primary service
+                service = await server.getPrimaryService(SERVICE_UUID);
+                
+                // Get characteristics
+                commandChar = await service.getCharacteristic(COMMAND_UUID);
+                statusChar = await service.getCharacteristic(STATUS_UUID);
+                
+                // Subscribe to notifications
+                await statusChar.startNotifications();
+                statusChar.addEventListener('characteristicvaluechanged', handleStatusNotification);
+                
+                // Handle disconnection
+                device.addEventListener('gattserverdisconnected', handleDisconnection);
+                
+                updateStatus('✅ Connected to ' + device.name + '!', 'connected');
+                document.getElementById('controls').style.display = 'block';
+                document.getElementById('connect').disabled = true;
+                document.getElementById('disconnect').disabled = false;
+                
+            } catch(error) {
+                handleError(error);
+            }
+        });
+        
+        document.getElementById('disconnect').addEventListener('click', () => {
+            if (device && device.gatt.connected) {
+                device.gatt.disconnect();
+            }
+        });
+        
+        function handleStatusNotification(event) {
+            const value = new TextDecoder().decode(event.target.value);
+            const timestamp = new Date().toLocaleTimeString();
+            
+            // Parse status messages
+            let icon = '📡';
+            if (value.startsWith('ACK:')) icon = '✅';
+            if (value.startsWith('ERR:')) icon = '❌';
+            if (value === 'PONG') icon = '🏓';
+            if (value === 'READY') icon = '🟢';
+            
+            updateStatus(`[${timestamp}] ${icon} ${value}`, 'connected');
+        }
+        
+        function handleDisconnection() {
+            updateStatus('🔴 Disconnected from device', 'disconnected');
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('connect').disabled = false;
+            document.getElementById('disconnect').disabled = true;
+            
+            // Reset variables
+            device = null;
+            server = null;
+            service = null;
+            commandChar = null;
+            statusChar = null;
+        }
+        
+        function handleError(error) {
+            console.error('Bluetooth Error:', error);
+            
+            let message = error.message || error.toString();
+            
+            // User-friendly error messages
+            if (message.includes('User cancelled')) {
+                message = 'Connection cancelled by user';
+            } else if (message.includes('not found')) {
+                message = 'Device not found. Make sure ZephyrRail is powered on and advertising.';
+            } else if (message.includes('GATT')) {
+                message = 'Connection failed. Try restarting the device.';
+            }
+            
+            updateStatus('❌ Error: ' + message, 'disconnected');
+        }
+        
+        async function sendCommand(cmd) {
+            if (!commandChar) {
+                alert('Not connected! Please connect first.');
+                return;
+            }
+            
+            try {
+                const encoder = new TextEncoder();
+                await commandChar.writeValue(encoder.encode(cmd));
+                console.log('✓ Command sent:', cmd);
+            } catch(error) {
+                console.error('✗ Command failed:', error);
+                updateStatus('❌ Failed to send command: ' + cmd, 'connected');
+            }
+        }
+        
+        // Helper functions for commands with parameters
+        function sendGo() {
+            const distance = document.getElementById('go-distance').value;
+            sendCommand('GO ' + distance);
+        }
+        
+        function sendGoTo() {
+            const position = document.getElementById('goto-position').value;
+            sendCommand('GO_TO ' + position);
+        }
+        
+        function sendSetLowerBound() {
+            const value = document.getElementById('lower-bound').value;
+            sendCommand('SET_LOWER_BOUND ' + value);
+        }
+        
+        function sendSetUpperBound() {
+            const value = document.getElementById('upper-bound').value;
+            sendCommand('SET_UPPER_BOUND ' + value);
+        }
+        
+        function sendSetWaitBefore() {
+            const value = document.getElementById('wait-before').value;
+            sendCommand('SET_WAIT_BEFORE ' + value);
+        }
+        
+        function sendSetWaitAfter() {
+            const value = document.getElementById('wait-after').value;
+            sendCommand('SET_WAIT_AFTER ' + value);
+        }
+        
+        function sendStartStack() {
+            const length = document.getElementById('stack-length').value;
+            sendCommand('START_STACK ' + length);
+        }
+        
+        function updateStatus(text, className) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = className;
+            
+            // Add new message at the top
+            const newLine = document.createElement('div');
+            newLine.textContent = text;
+            statusDiv.insertBefore(newLine, statusDiv.firstChild);
+            
+            // Limit to last 20 messages
+            while (statusDiv.children.length > 20) {
+                statusDiv.removeChild(statusDiv.lastChild);
+            }
+        }
+        
+        // Log to console for debugging
+        console.log('%c🚂 ZephyrRail Focus Stacking Control', 'font-size: 20px; font-weight: bold;');
+        console.log('Service UUID:', SERVICE_UUID);
+        console.log('Command UUID:', COMMAND_UUID);
+        console.log('Status UUID:', STATUS_UUID);
+    </script>
+</body>
+</html>

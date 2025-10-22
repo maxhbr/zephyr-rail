@@ -70,6 +70,7 @@ in
   ])
   (mkWestBuildBoardCommand "native_sim" "" [ ])
   (pkgs.writeShellScriptBin "west-native_sim-build-and-run" ''
+    set -euo pipefail
     set -x
     west-native_sim-build "$@"
     ./builds/native_sim/zephyr/zephyr.exe

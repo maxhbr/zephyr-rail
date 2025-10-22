@@ -1,5 +1,6 @@
 # A macro stacking rail
 
+
 ## Firmware
 The firmware is written with zephyr. The code is in [./app](./app).
 
@@ -19,9 +20,12 @@ It internally has a state machine:
 The version of zephyr is pinned via the `./flake.nix` and the script `./scripts/init-and-chores.sh` updates the `app/west.yml` from that.
 
 ### UI
-It has a GUI with LVGL.
+~~It has a GUI with LVGL.~~
 
-It has two main views corresponding to the states `S_PARENT_INTERACTIVE` und `S_PARENT_STACKING`.
+### PWA
+connected via [https://maxhbr.github.io/zephyr-rail/](https://maxhbr.github.io/zephyr-rail/)
+
+Control your ZephyrRail wirelessly from any compatible browser (Chrome, Edge, Opera) via Web Bluetooth! No cables, no drivers, no installation required.
 
 ## Hardware
 Some of the shelf Mechanical Parts used in this project:
