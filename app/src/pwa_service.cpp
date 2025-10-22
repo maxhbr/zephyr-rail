@@ -67,8 +67,19 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
     return len;
   }
 
-  // Parse command with parameters
-  if (strcmp(token, "GO") == 0) {
+  // Handle commands without parameters
+  if (strcmp(token, "NOOP") == 0) {
+    LOG_INF("→ Command: NOOP");
+    event_pub(EVENT_NOOP);
+    snprintf(response, sizeof(response), "ACK:NOOP");
+
+  } else if (strcmp(token, "SHOOT") == 0) {
+    LOG_INF("→ Command: SHOOT");
+    event_pub(EVENT_SHOOT);
+    snprintf(response, sizeof(response), "ACK:SHOOT");
+
+    // Commands with one required parameter
+  } else if (strcmp(token, "GO") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {
       LOG_WRN("→ Command: GO (missing distance)");
@@ -77,6 +88,7 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
     }
     int distance = atoi(token);
     LOG_INF("→ Command: GO distance=%d", distance);
+    event_pub(EVENT_GO, distance);
     snprintf(response, sizeof(response), "ACK:GO %d", distance);
 
   } else if (strcmp(token, "GO_TO") == 0) {
@@ -88,39 +100,91 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
     }
     int position = atoi(token);
     LOG_INF("→ Command: GO_TO position=%d", position);
+    event_pub(EVENT_GO_TO, position);
     snprintf(response, sizeof(response), "ACK:GO_TO %d", position);
 
+  } else if (strcmp(token, "WAIT_BEFORE") == 0) {
+    token = strtok_r(nullptr, " ", &saveptr);
+    if (!token) {
+      LOG_WRN("→ Command: WAIT_BEFORE (missing milliseconds)");
+      notifyStatus("ERR:WAIT_BEFORE_MISSING_MS");
+      return len;
+    }
+    int wait_ms = atoi(token);
+    LOG_INF("→ Command: WAIT_BEFORE ms=%d", wait_ms);
+    event_pub(EVENT_SET_WAIT_BEFORE_MS, wait_ms);
+    snprintf(response, sizeof(response), "ACK:WAIT_BEFORE %d", wait_ms);
+
+  } else if (strcmp(token, "WAIT_AFTER") == 0) {
+    token = strtok_r(nullptr, " ", &saveptr);
+    if (!token) {
+      LOG_WRN("→ Command: WAIT_AFTER (missing milliseconds)");
+      notifyStatus("ERR:WAIT_AFTER_MISSING_MS");
+      return len;
+    }
+    int wait_ms = atoi(token);
+    LOG_INF("→ Command: WAIT_AFTER ms=%d", wait_ms);
+    event_pub(EVENT_SET_WAIT_AFTER_MS, wait_ms);
+    snprintf(response, sizeof(response), "ACK:WAIT_AFTER %d", wait_ms);
+
+    // Commands with optional parameters
   } else if (strcmp(token, "SET_LOWER_BOUND") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {
-      LOG_WRN("→ Command: SET_LOWER_BOUND (missing position)");
-      notifyStatus("ERR:SET_LOWER_BOUND_MISSING_POSITION");
-      return len;
+      LOG_INF("→ Command: SET_LOWER_BOUND (current position)");
+      event_pub(EVENT_SET_LOWER_BOUND);
+      snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND");
+    } else {
+      int position = atoi(token);
+      LOG_INF("→ Command: SET_LOWER_BOUND position=%d", position);
+      event_pub(EVENT_SET_LOWER_BOUND_TO, position);
+      snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND %d", position);
     }
-    int position = atoi(token);
-    LOG_INF("→ Command: SET_LOWER_BOUND position=%d", position);
-    snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND %d", position);
 
   } else if (strcmp(token, "SET_UPPER_BOUND") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {
-      LOG_WRN("→ Command: SET_UPPER_BOUND (missing position)");
-      notifyStatus("ERR:SET_UPPER_BOUND_MISSING_POSITION");
-      return len;
+      LOG_INF("→ Command: SET_UPPER_BOUND (current position)");
+      event_pub(EVENT_SET_UPPER_BOUND);
+      snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND");
+    } else {
+      int position = atoi(token);
+      LOG_INF("→ Command: SET_UPPER_BOUND position=%d", position);
+      event_pub(EVENT_SET_UPPER_BOUND_TO, position);
+      snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND %d", position);
     }
-    int position = atoi(token);
-    LOG_INF("→ Command: SET_UPPER_BOUND position=%d", position);
-    snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND %d", position);
 
   } else if (strcmp(token, "START_STACK") == 0) {
-    token = strtok_r(nullptr, " ", &saveptr);
-    int expected_length = token ? atoi(token) : 100;
-    LOG_INF("→ Command: START_STACK length=%d", expected_length);
-    snprintf(response, sizeof(response), "ACK:START_STACK %d", expected_length);
+    // START_STACK can have 0, 1, or 3 parameters
+    char *param1 = strtok_r(nullptr, " ", &saveptr);
+    char *param2 = strtok_r(nullptr, " ", &saveptr);
+    char *param3 = strtok_r(nullptr, " ", &saveptr);
 
-  } else if (strcmp(token, "SHOOT") == 0) {
-    LOG_INF("→ Command: SHOOT");
-    snprintf(response, sizeof(response), "ACK:SHOOT");
+    if (param3) {
+      // 3 parameters: expected_length lower upper
+      int expected_length = atoi(param1);
+      int lower = atoi(param2);
+      int upper = atoi(param3);
+      LOG_INF("→ Command: START_STACK length=%d lower=%d upper=%d",
+              expected_length, lower, upper);
+      event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
+      event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
+      event_pub(EVENT_START_STACK, expected_length);
+      snprintf(response, sizeof(response), "ACK:START_STACK %d %d %d",
+               expected_length, lower, upper);
+    } else if (param1) {
+      // 1 parameter: expected_length
+      int expected_length = atoi(param1);
+      LOG_INF("→ Command: START_STACK length=%d", expected_length);
+      event_pub(EVENT_START_STACK, expected_length);
+      snprintf(response, sizeof(response), "ACK:START_STACK %d",
+               expected_length);
+    } else {
+      // No parameters: use default 100
+      LOG_INF("→ Command: START_STACK length=100 (default)");
+      event_pub(EVENT_START_STACK, 100);
+      snprintf(response, sizeof(response), "ACK:START_STACK 100");
+    }
 
   } else {
     LOG_WRN("→ Unknown command: %s", token);
