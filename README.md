@@ -23,9 +23,7 @@ The version of zephyr is pinned via the `./flake.nix` and the script `./scripts/
 ~~It has a GUI with LVGL.~~
 
 ### PWA
-connected via [https://maxhbr.github.io/zephyr-rail/](https://maxhbr.github.io/zephyr-rail/)
-
-Control your ZephyrRail wirelessly from any compatible browser (Chrome, Edge, Opera) via Web Bluetooth! No cables, no drivers, no installation required.
+connected via [https://maxhbr.github.io/zephyr-rail/](https://maxhbr.github.io/zephyr-rail/), which hosts the static HTML part of the PWA.
 
 ## Hardware
 Some of the shelf Mechanical Parts used in this project:

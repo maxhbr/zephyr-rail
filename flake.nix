@@ -111,6 +111,18 @@
             pyocd
             bossa
             nrfutil
+            (nrfutil.withExtensions [
+              "nrfutil-device"
+              "nrfutil-trace"
+              "nrfutil-ble-sniffer"
+              "nrfutil-completion"
+              "nrfutil-mcu-manager"
+              "nrfutil-npm"
+              "nrfutil-nrf5sdk-tools"
+              "nrfutil-sdk-manager"
+              "nrfutil-suit"
+              "nrfutil-toolchain-manager"
+            ])
             esptool
           ]);
           postBuild = ''
