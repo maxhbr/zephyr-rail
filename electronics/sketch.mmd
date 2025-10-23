@@ -3,47 +3,46 @@ config:
 ---
 flowchart LR;
 
-  MCU_Right@{ label: "XIAO nRF54L15 (Sense)" }
-  PWA-. bluetooth .->MCU_Right
+  MCU@{ label: "XIAO nRF54L15 (Sense)" }
+  PWA-. bluetooth .->MCU
 
   StepperDriver
   
   ULN2003A
-  MCU_Right ---|ENA-| ULN2003A
-  MCU_Right ---|DIR-| ULN2003A
-  MCU_Right ---|PUL-| ULN2003A
+  MCU ---|ENA-| ULN2003A
+  MCU ---|DIR-| ULN2003A
+  MCU ---|PUL-| ULN2003A
   ULN2003A  ---|ENA-| StepperDriver
   ULN2003A  ---|DIR-| StepperDriver
   ULN2003A  ---|PUL-| StepperDriver
-  ULN2003A  ===|GND| StepperDriver
 
 
   24Vto5V
   24V@{ shape: bolt }
   24V ===|24V| 24Vto5V
-  MCU_Right ====|5V via V_bus for *+| StepperDriver
-  24Vto5V ===|5V via USB| MCU_Right
-  24Vto5V =====|24V| StepperDriver
+  24Vto5V ---|5V| MCU
+  24Vto5V ----|5V| StepperDriver
+  24V =====|24V| StepperDriver
 
   Camera@{label: "A7Rv"}
-  MCU_Right-. bluetooth .->Camera
+  MCU-. bluetooth .->Camera
 
   PositioningSensor
   style PositioningSensor stroke-dasharray: 5 5
-  MCU_Right -.-> PositioningSensor
+  MCU -.-> PositioningSensor
 
 
   IMU@{label: "LSM6DS3TR-C or LSM6DSO"}
-  MCU_Right -->|I2C| IMU
+  style IMU stroke-dasharray: 5 5
+  MCU -.-> IMU
 
-  linkStyle 1 stroke: blue
-  linkStyle 2 stroke: green
-  linkStyle 3 stroke: darkorange
-  linkStyle 4 stroke: blue
-  linkStyle 5 stroke: green
-  linkStyle 6 stroke: darkorange
-  linkStyle 7 stroke: black
-  linkStyle 8 stroke: darkred
-  linkStyle 9 stroke: darkred
+  linkStyle 1  stroke: blue
+  linkStyle 2  stroke: green
+  linkStyle 3  stroke: darkorange
+  linkStyle 4  stroke: blue
+  linkStyle 5  stroke: green
+  linkStyle 6  stroke: darkorange
+  linkStyle 7  stroke: darkred
+  linkStyle 8  stroke: darkred
+  linkStyle 9  stroke: darkred
   linkStyle 10 stroke: darkred
-  linkStyle 11 stroke: darkred
