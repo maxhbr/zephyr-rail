@@ -30,7 +30,7 @@ get_zephyr() {
 
 get_zephyr_ref() {
     ref="$(get_zephyr "ref")"
-    if [[ "$ref" == "null" ]]; then
+    if [[ $ref == "null" ]]; then
         get_zephyr "rev"
     else
         echo "$ref"
@@ -101,7 +101,7 @@ west_update_if_was_not_updated_already_today() {
     stamp_file=".west/last_update_stamp"
     if [ -f "$stamp_file" ]; then
         stamp_file_key=$(cat "$stamp_file")
-        if [[ "$stamp_file_key" == "$caching_key" && "$(date -r "$stamp_file" +%Y-%m-%d)" = "$(date +%Y-%m-%d)" ]]; then
+        if [[ $stamp_file_key == "$caching_key" && "$(date -r "$stamp_file" +%Y-%m-%d)" == "$(date +%Y-%m-%d)" ]]; then
             echo "INFO: West was already updated today"
             return
         fi
@@ -109,7 +109,7 @@ west_update_if_was_not_updated_already_today() {
     echo "INFO: Updating west"
     west update --narrow
     touch "$stamp_file"
-    echo "$caching_key" > "$stamp_file"
+    echo "$caching_key" >"$stamp_file"
 
     west blobs fetch hal_espressif
     # west blobs fetch hal_silabs
