@@ -46,13 +46,14 @@ Some adapters and parts are 3D printent. See [./3d-print.scad](./3d-print.scad).
 ## Electronics
 Electronics
 - Control of the Stepper Motor
-- Control of the Camera
-  - Ideas: IR does no longer work with A7Rv, so  maybe use the trigger cable or USB or bluetooth?
+- Control of the Camera via Bluetooth
+- Frontend via Bluetooth PWA
 - 24v -> 5v conversation to power the MCU
-- IMU to wait for the rail to settle
 - Ideas:
+  - IMU to wait for the rail to settle
+  - piezo beeper
   - limit switches and positioning
 
 A high level sketch:
 
-![sketch.wireless.svg](./electronics/sketch.wireless.svg)
+![sketch.svg](./electronics/sketch.svg)
