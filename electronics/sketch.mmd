@@ -3,52 +3,47 @@ config:
 ---
 flowchart LR;
 
-  subgraph ControlBox
-    direction LR 
-    subgraph STM32H7B3I_DK
-      STM32H7B3I
-      ST-Link --> STM32H7B3I
-      Display
-    end
-    STM32H7B3I_DK -->|Arduino UNO R3| X-NUCLEO-IDB05AI
-    STM32H7B3I_DK -->|Arduino UNO R3| ControlBoard
-  end
+  MCU_Right@{ label: "XIAO nRF54L15 (Sense)" }
+  PWA-. bluetooth .->MCU_Right
 
-  PC([PC])
-  PC ==>|USB| ST-Link
+  StepperDriver
+  
+  ULN2003A
+  MCU_Right ---|ENA-| ULN2003A
+  MCU_Right ---|DIR-| ULN2003A
+  MCU_Right ---|PUL-| ULN2003A
+  ULN2003A  ---|ENA-| StepperDriver
+  ULN2003A  ---|DIR-| StepperDriver
+  ULN2003A  ---|PUL-| StepperDriver
+  ULN2003A  ===|GND| StepperDriver
 
-  subgraph RailAssembly
-    subgraph RailBoard
-      direction TB 
-      24Vto5V
-      IMU
-    end
-    subgraph Rail
-      StepperMotor
-      PositioningSensor
-      Camera
-    end
 
-    StepperMotor ===>|24V| 24Vto5V
-    RailBoard    -->|ENA+| StepperMotor
-    RailBoard    -->|DIR+| StepperMotor
-    RailBoard    -->|PUL+| StepperMotor
-  end
-
-  cable@{ shape: das, label: ".... cable ...." }
-
-  ControlBoard === cable
-
-  cable   -->|ENA+| RailBoard
-  cable   -->|DIR+| RailBoard
-  cable   -->|PUL+| RailBoard
-  cable   -->|???| IMU
-  cable   -->|???| IMU
-  cable   -->|???| IMU
-  24Vto5V ==>|5V| cable
-
+  24Vto5V
   24V@{ shape: bolt }
-  24V ====>|24V| StepperMotor
-  X-NUCLEO-IDB05AI-. bluetooth .->Camera
+  24V ===|24V| 24Vto5V
+  MCU_Right ====|5V via V_bus for *+| StepperDriver
+  24Vto5V ===|5V via USB| MCU_Right
+  24Vto5V =====|24V| StepperDriver
 
+  Camera@{label: "A7Rv"}
+  MCU_Right-. bluetooth .->Camera
+
+  PositioningSensor
   style PositioningSensor stroke-dasharray: 5 5
+  MCU_Right -.-> PositioningSensor
+
+
+  IMU@{label: "LSM6DS3TR-C or LSM6DSO"}
+  MCU_Right -->|I2C| IMU
+
+  linkStyle 1 stroke: blue
+  linkStyle 2 stroke: green
+  linkStyle 3 stroke: darkorange
+  linkStyle 4 stroke: blue
+  linkStyle 5 stroke: green
+  linkStyle 6 stroke: darkorange
+  linkStyle 7 stroke: black
+  linkStyle 8 stroke: darkred
+  linkStyle 9 stroke: darkred
+  linkStyle 10 stroke: darkred
+  linkStyle 11 stroke: darkred
