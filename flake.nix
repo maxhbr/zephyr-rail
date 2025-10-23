@@ -94,7 +94,7 @@
             zephyr-sdk
             zephyr-packages.pythonEnv
             zephyr-packages.hosttools-nix
-            STM32CubeProg
+            # STM32CubeProg
             SDL2
           ]
           ++ (with pkgs; [
