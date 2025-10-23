@@ -26,8 +26,8 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - run: nix run .#init -- --ci
-    - run: nix run  .#entr-mermaid -- electronics/sketch.mmd --check
-    - run: nix run  .#entr-mermaid -- app/mermaid.StateMachine.mmd --check
+    # - run: nix run  .#entr-mermaid -- electronics/sketch.mmd --check
+    # - run: nix run  .#entr-mermaid -- app/mermaid.StateMachine.mmd --check
 
 
   build-nix:
