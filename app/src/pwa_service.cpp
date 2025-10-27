@@ -103,6 +103,18 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
     event_pub(EVENT_GO_TO, position);
     snprintf(response, sizeof(response), "ACK:GO_TO %d", position);
 
+  } else if (strcmp(token, "GO_PCT") == 0) {
+    token = strtok_r(nullptr, " ", &saveptr);
+    if (!token) {
+      LOG_WRN("→ Command: GO_PCT (missing percentage)");
+      notifyStatus("ERR:GO_PCT_MISSING_PERCENTAGE");
+      return len;
+    }
+    int percentage = atoi(token);
+    LOG_INF("→ Command: GO_PCT percentage=%d", percentage);
+    event_pub(EVENT_GO_PCT, percentage);
+    snprintf(response, sizeof(response), "ACK:GO_PCT %d", percentage);
+
   } else if (strcmp(token, "WAIT_BEFORE") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {

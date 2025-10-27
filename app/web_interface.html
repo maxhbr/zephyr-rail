@@ -190,6 +190,30 @@
             flex-wrap: wrap;
             margin: 10px 0;
         }
+
+        .button-grid-5, .button-grid-7 {
+            display: grid;
+            gap: 5px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .button-grid-5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        
+        .button-grid-7 {
+            grid-template-columns: repeat(7, 1fr);
+        }
+        
+        .button-grid-5 button, .button-grid-7 button {
+            margin: 0;
+            min-height: 80px;
+        }
+        
+        .button-grid-5 input[type="number"], .button-grid-7 input[type="number"] {
+            margin: 0;
+            width: 100%;
+        }
         
         @media (max-width: 600px) {
             body {
@@ -219,6 +243,7 @@
         <div class="connection-bar">
             <button id="connect" class="btn-primary">Connect to ZephyrRail</button>
             <button id="disconnect" class="btn-success" disabled>Disconnect</button>
+            <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
         </div>
         
         <div id="status" class="disconnected">
@@ -227,15 +252,15 @@
 
         <div id="controls">
             <div class="control-section">
-                <h3>1. Position Control</h3>
-                <div class="input-group">
+                <h1>Move</h1>
+                <div class="button-grid-7">
                     <button class="btn-secondary" onclick="sendGo(-10)">-10</button>
                     <button class="btn-secondary" onclick="sendGo(-5)">-5</button>
                     <button class="btn-primary" onclick="sendGo(-1)">-1</button>
                     <input type="number" id="go-distance" value="1000" step="100" min="1">
                     <button class="btn-primary" onclick="sendGo(1)">+1</button>
                     <button class="btn-secondary" onclick="sendGo(5)">+5</button>
-                    <button class="btn-secondary onclick="sendGo(10)">+10</button>
+                    <button class="btn-secondary" onclick="sendGo(10)">+10</button>
                 </div>
 
                 <div class="input-group">
@@ -246,20 +271,14 @@
             </div>
             
             <div class="control-section">
-                <h3>2. Bounds & Limits</h3>
-                <div class="input-group">
-                </div>
-                <div class="input-group">
+                <h1>Setup</h1>
+                <div class="button-grid-5">
                     <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">Set Lower Bound (Current)</button>
-                    <input type="number" id="lower-bound" value="-1000" placeholder="Lower">
                     <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower</button>
-                </div>
-                <div class="input-group">
-                    <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">Set Upper Bound (Current)</button>
-                    <input type="number" id="upper-bound" value="1000" placeholder="Upper">
+                    <input type="number" id="bound" value="0" placeholder="Lower">
                     <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper</button>
+                    <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">Set Upper Bound (Current)</button>
                 </div>
-                <h3>2.1. Timing Settings</h3>
                 <div class="input-group">
                     <label>Wait Before Shot (ms):</label>
                     <input type="number" id="wait-before" value="1000" step="100" min="0">
@@ -270,7 +289,7 @@
                     <input type="number" id="wait-after" value="2000" step="100" min="0">
                     <button class="btn-primary" onclick="sendSetWaitAfter()">Set Wait After</button>
                 </div>
-                <h3>3. Focus Stacking</h3>
+                <h1>Stack</h1>
                 <div class="input-group">
                     <label>Expected Stack Length:</label>
                     <input type="number" id="stack-length" value="300" step="5" min="1">
@@ -281,7 +300,6 @@
             <div class="control-section">
                 <h3>Camera Control</h3>
                 <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
-                <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
             </div>
         </div>
     </div>
@@ -431,12 +449,12 @@
         }
         
         function sendSetLowerBound() {
-            const value = document.getElementById('lower-bound').value;
+            const value = document.getElementById('bound').value;
             sendCommand('SET_LOWER_BOUND ' + value);
         }
         
         function sendSetUpperBound() {
-            const value = document.getElementById('upper-bound').value;
+            const value = document.getElementById('bound').value;
             sendCommand('SET_UPPER_BOUND ' + value);
         }
         

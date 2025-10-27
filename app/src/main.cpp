@@ -196,6 +196,23 @@ static int cmd_rail_go_to(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
+static int cmd_rail_go_pct(const struct shell *sh, size_t argc, char **argv) {
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail go_pct <percentage>");
+    return -EINVAL;
+  }
+
+  int percentage = atoi(argv[1]);
+  if (percentage < 0 || percentage > 100) {
+    shell_print(sh, "Percentage must be between 0 and 100");
+    return -EINVAL;
+  }
+
+  event_pub(EVENT_GO_PCT, percentage);
+
+  return 0;
+}
+
 static int cmd_rail_setLowerBound(const struct shell *sh, size_t argc,
                                   char **argv) {
   if (argc == 2) {
@@ -273,6 +290,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_rail, SHELL_CMD(noop, NULL, "No operation.", cmd_rail_noop),
     SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go),
     SHELL_CMD(go_to, NULL, "Go to absolute position.", cmd_rail_go_to),
+    SHELL_CMD(go_pct, NULL, "Go to percentage between upper and lower bound.",
+              cmd_rail_go_pct),
     SHELL_CMD(lower, NULL, "Set lower bound.", cmd_rail_setLowerBound),
     SHELL_CMD(upper, NULL, "Set upper bound.", cmd_rail_setUpperBound),
     SHELL_CMD(wait_before, NULL, "Set wait before ms.", cmd_rail_setWaitBefore),

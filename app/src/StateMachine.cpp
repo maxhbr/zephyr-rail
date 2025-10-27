@@ -97,6 +97,25 @@ static enum smf_state_result s_interactive_run(void *o) {
         s->stepper->set_target_position(msg.value);
         s->stepper->step_towards_target();
         break;
+      case EVENT_GO_PCT:
+        if (!s->stack.get_lower_bound().has_value() ||
+            !s->stack.get_upper_bound().has_value()) {
+          LOG_ERR("cannot go to pct, upper or lower bound not set");
+          break;
+        }
+        if (msg.value < 0 || msg.value > 100) {
+          LOG_ERR("cannot go to pct, value %d out of range [0-100]", msg.value);
+          break;
+        }
+        int lower = s->stack.get_lower_bound().value();
+        int upper = s->stack.get_upper_bound().value();
+        int range = upper - lower;
+        int target = lower + (range * msg.value) / 100;
+        LOG_INF("go to relative position %d% between upper and lower @ %d",
+                msg.value, target);
+        s->stepper->set_target_position(target);
+        s->stepper->step_towards_target();
+        break;
       case EVENT_SET_LOWER_BOUND: {
         int lower_bound = s->stepper->get_target_position();
         LOG_INF("set lower bound to %d", lower_bound);
