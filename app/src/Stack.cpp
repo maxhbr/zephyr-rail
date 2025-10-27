@@ -121,6 +121,10 @@ void Stack::set_upper_bound(int _upper_bound) {
   start_at_lower = false;
 }
 
+int Stack::get_lower_bound() { return lower_bound; }
+
+int Stack::get_upper_bound() { return upper_bound; }
+
 void Stack::set_expected_length_of_stack(int _expected_length_of_stack) {
   expected_length_of_stack = _expected_length_of_stack;
 }

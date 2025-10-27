@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'app/web_interface.html'
+      - 'app/web_interface/**'
       - '.github/workflows/deploy-pwa.yml'
       - '.github/workflows/landing.html'
   workflow_dispatch:
@@ -36,7 +36,9 @@ jobs:
       - name: Create deployment directory
         run: |
           mkdir -p _site
-          cp app/web_interface.html _site/index.html
+          cp app/web_interface/index.html _site/index.html
+          cp app/web_interface/styles.css _site/styles.css
+          cp app/web_interface/script.js _site/script.js
           cp .github/workflows/landing.html _site/landing.html
       
       - name: Upload artifact
