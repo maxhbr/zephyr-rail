@@ -184,8 +184,10 @@ function sendSetWaitAfter() {
   sendCommand('SET_WAIT_AFTER ' + value);
 }
 
-function sendStartStack() {
-  const length = document.getElementById('stack-length').value;
+function sendStartStack(length) {
+  if (length === undefined) {
+    length = document.getElementById('stack-length').value;
+  }
   sendCommand('START_STACK ' + length);
 }
 
