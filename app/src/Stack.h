@@ -54,6 +54,8 @@ public:
   int get_upper_bound();
   void set_expected_length_of_stack(int _expected_length_of_stack);
 
+  char *get_stack_summary();
+
   const struct stack_status get_status() {
     return {
         .lower_bound = lower_bound,

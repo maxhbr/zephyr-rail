@@ -128,3 +128,15 @@ int Stack::get_upper_bound() { return upper_bound; }
 void Stack::set_expected_length_of_stack(int _expected_length_of_stack) {
   expected_length_of_stack = _expected_length_of_stack;
 }
+
+char *Stack::get_stack_summary() {
+  static char summary[128];
+  if (stack_in_progress()) {
+    snprintf(summary, sizeof(summary), "Step %d/%d at position %d > %d > %d",
+             index_in_stack.value() + 1, length_of_stack, lower_bound,
+             get_current_step().value(), upper_bound);
+  } else {
+    snprintf(summary, sizeof(summary), "%i -> %i", lower_bound, upper_bound);
+  }
+  return summary;
+}

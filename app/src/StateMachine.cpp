@@ -1,5 +1,5 @@
 #include "StateMachine.h"
-LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_INF);
 
 // ############################################################################
 // initialize ZBus
@@ -34,24 +34,6 @@ static enum smf_state_result s0_run(void *o) {
   smf_set_state(SMF_CTX(o), s_interactive_ptr);
   return SMF_EVENT_HANDLED;
 }
-
-// static enum smf_state_result s_wait_for_camera_run(void *o) {
-//   struct s_object *s = (struct s_object *)o;
-//   if (s->remote->ready()) {
-//     // If we're in stacking mode, go to stack, otherwise go to interactive
-//     if (s->stack.stack_in_progress()) {
-//       smf_set_state(SMF_CTX(o), s_stack_ptr);
-//     } else {
-//       smf_set_state(SMF_CTX(o), s_interactive_ptr);
-//     }
-//   } else {
-//     LOG_INF("%s, sleeping for 2 seconds...", __FUNCTION__);
-//     k_sleep(K_SECONDS(2));
-//     smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
-//   }
-
-//   return SMF_EVENT_HANDLED;
-// }
 
 static void s_log_state(void *o) {
   struct s_object *s = (struct s_object *)o;
@@ -170,7 +152,6 @@ static void s_parent_stacking_entry(void *o) {
   LOG_DBG("Camera is ready, starting stack");
 
   s->stepper->set_speed(StepperSpeed::SLOW);
-
   s->stack.start_stack();
 }
 
@@ -183,8 +164,8 @@ static void s_parent_stacking_exit(void *o) {
 static enum smf_state_result s_stack_run(void *o) {
   struct s_object *s = (struct s_object *)o;
   if (s->stack.stack_in_progress()) {
-    LOG_INF("Stacking IN PROGRESS");
     int current_step = s->stack.get_current_step().value();
+    LOG_INF("Stacking: %s", s->stack.get_stack_summary());
     s->stepper->set_target_position(current_step);
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
@@ -195,7 +176,7 @@ static enum smf_state_result s_stack_run(void *o) {
 }
 
 static enum smf_state_result s_stack_move_run(void *o) {
-  LOG_INF("%s", __FUNCTION__);
+  LOG_DBG("%s", __FUNCTION__);
   struct s_object *s = (struct s_object *)o;
   s->stepper->step_towards_target();
   s->stepper->wait_and_pause();
@@ -204,7 +185,7 @@ static enum smf_state_result s_stack_move_run(void *o) {
 }
 
 static enum smf_state_result s_stack_settle_run(void *o) {
-  LOG_INF("%s", __FUNCTION__);
+  LOG_DBG("%s", __FUNCTION__);
   struct s_object *s = (struct s_object *)o;
   k_sleep(K_MSEC(s->wait_before_ms));
   smf_set_state(SMF_CTX(o), s_stack_img_ptr);
@@ -213,7 +194,7 @@ static enum smf_state_result s_stack_settle_run(void *o) {
 
 static enum smf_state_result s_stack_img_run(void *o) {
   struct s_object *s = (struct s_object *)o;
-  LOG_INF("%s", __FUNCTION__);
+  LOG_DBG("%s", __FUNCTION__);
   s->remote->shoot();
   k_sleep(K_MSEC(s->wait_after_ms));
   s->stack.increment_step();
