@@ -44,6 +44,8 @@ public:
   // stacking
   std::optional<int> start_stack();
   std::optional<int> get_current_step();
+  std::optional<int> get_index_in_stack();
+  std::optional<int> get_length_of_stack();
   void increment_step();
   bool stack_in_progress();
 
@@ -53,8 +55,6 @@ public:
   int get_lower_bound();
   int get_upper_bound();
   void set_expected_length_of_stack(int _expected_length_of_stack);
-
-  char *get_stack_summary();
 
   const struct stack_status get_status() {
     return {

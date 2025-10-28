@@ -24,7 +24,6 @@
 #include "stepper_with_target/StepperWithTarget.h"
 
 enum event {
-  EVENT_NOOP,
   EVENT_GO,
   EVENT_GO_TO,
   EVENT_GO_PCT,

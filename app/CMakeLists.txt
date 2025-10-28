@@ -22,6 +22,11 @@ add_subdirectory(../lib/sony_remote ${CMAKE_CURRENT_BINARY_DIR}/sony_remote)
 add_subdirectory(../lib/stepper_with_target ${CMAKE_CURRENT_BINARY_DIR}/stepper_with_target)
 
 FILE(GLOB app_sources src/*.cpp)
+
+if(NOT CONFIG_BT)
+    list(FILTER app_sources EXCLUDE REGEX "pwa_service\\.cpp$")
+endif()
+
 target_sources(app PRIVATE ${app_sources})
 
 # Link the libraries

@@ -23,7 +23,7 @@
 #endif
 #include "stepper_with_target/StepperWithTarget.h"
 
-LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 #define STEPPER_NODE DT_NODELABEL(stepper_motor)
 #define LED0_NODE DT_ALIAS(led0)
@@ -91,10 +91,44 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 };
 #endif
 
+void led_blink(const struct gpio_dt_spec *led, int times, int on_ms,
+               int off_ms) {
+  if (!gpio_is_ready_dt(led)) {
+    return;
+  }
+
+  for (int i = 0; i < times; i++) {
+    gpio_pin_set(led->port, led->pin, 1);
+    k_msleep(on_ms);
+    gpio_pin_set(led->port, led->pin, 0);
+    k_msleep(off_ms);
+  }
+}
+
+bool led_toggle(const struct gpio_dt_spec *led, bool was_on) {
+  if (!gpio_is_ready_dt(led)) {
+    return;
+  }
+
+  bool led_on = !was_on;
+  gpio_pin_set(led->port, led->pin, led_on ? 1 : 0);
+  return led_on;
+}
+
 int main(void) {
-  // sleep for 10 seconds to allow debugger to attach
-  k_sleep(K_SECONDS(10));
   int32_t ret;
+  static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+  const struct device *led_dev = nullptr;
+
+  if (gpio_is_ready_dt(&led)) {
+    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+    if (ret >= 0) {
+      led_dev = led.port;
+    }
+  }
+
+  led_blink(&led, 1, 100, 100);
+
 #ifdef CONFIG_BT
   LOG_DBG("main: initialize Bluetooth");
   if (int err = bt_enable(nullptr); err) {
@@ -126,11 +160,14 @@ int main(void) {
   LOG_DBG("main: initialize Dummy Sony Remote");
   SonyRemote remote;
 #endif
+  led_blink(&led, 2, 100, 100);
   k_msleep(100); // Match POC timing
   remote.begin();
 
   k_msleep(100); // Match POC timing
   remote.startScan();
+
+  led_blink(&led, 3, 100, 100);
 
   LOG_DBG("main: initialize stepper");
   StepperWithTarget *stepper = init_stepper();
@@ -139,19 +176,11 @@ int main(void) {
     return -1;
   }
 
-  static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-  const struct device *led_dev = nullptr;
-
-  if (gpio_is_ready_dt(&led)) {
-    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
-    if (ret >= 0) {
-      led_dev = led.port;
-    }
-  }
-
   StateMachine sm(stepper, &remote);
+  bool led_on = false;
   while (1) {
     LOG_DBG("loop...");
+    led_on = led_toggle(&led, led_on);
     ret = sm.run_state_machine();
     if (ret) {
       break;
@@ -164,11 +193,6 @@ int main(void) {
 }
 
 #ifdef CONFIG_SHELL
-static int cmd_rail_noop(const struct shell *sh, size_t argc, char **argv) {
-  event_pub(EVENT_NOOP);
-  return 0;
-}
-
 static int cmd_rail_go(const struct shell *sh, size_t argc, char **argv) {
 
   if (argc != 2) {
@@ -287,8 +311,7 @@ static int cmd_rail_shoot(const struct shell *sh, size_t argc, char **argv) {
 
 /* Creating subcommands (level 1 command) array for command "rail". */
 SHELL_STATIC_SUBCMD_SET_CREATE(
-    sub_rail, SHELL_CMD(noop, NULL, "No operation.", cmd_rail_noop),
-    SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go),
+    sub_rail, SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go),
     SHELL_CMD(go_to, NULL, "Go to absolute position.", cmd_rail_go_to),
     SHELL_CMD(go_pct, NULL, "Go to percentage between upper and lower bound.",
               cmd_rail_go_pct),

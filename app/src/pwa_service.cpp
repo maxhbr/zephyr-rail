@@ -68,12 +68,7 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
   }
 
   // Handle commands without parameters
-  if (strcmp(token, "NOOP") == 0) {
-    LOG_INF("→ Command: NOOP");
-    event_pub(EVENT_NOOP);
-    snprintf(response, sizeof(response), "ACK:NOOP");
-
-  } else if (strcmp(token, "SHOOT") == 0) {
+  if (strcmp(token, "SHOOT") == 0) {
     LOG_INF("→ Command: SHOOT");
     event_pub(EVENT_SHOOT);
     snprintf(response, sizeof(response), "ACK:SHOOT");

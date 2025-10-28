@@ -1,6 +1,6 @@
 #include "stepper_with_target/StepperWithTarget.h"
 
-LOG_MODULE_REGISTER(stepper_with_target, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(stepper_with_target, LOG_LEVEL_INF);
 
 StepperWithTarget::StepperWithTarget(const struct device *dev,
                                      int _pitch_per_rev, int _pulses_per_rev) {
@@ -32,6 +32,8 @@ StepperWithTarget::StepperWithTarget(const struct device *dev,
 
   pitch_per_rev = _pitch_per_rev;
   pulses_per_rev = _pulses_per_rev;
+  LOG_INF("%s initialized with pitch_per_rev=%dmm, pulses_per_rev=%d",
+          __FUNCTION__, pitch_per_rev, pulses_per_rev);
 }
 
 int StepperWithTarget::set_speed(StepperSpeed speed) {
@@ -182,12 +184,10 @@ bool StepperWithTarget::is_in_target_position() {
   return get_position() == get_target_position();
 }
 
-// Helper method for position conversion
-int StepperWithTarget::position_as_nm(int position) {
-  // Convert stepper position to nanometers
+int StepperWithTarget::position_as_um(int position) {
   if (pulses_per_rev == 0)
     return 0;
-  return (position * pitch_per_rev * 1000000) / pulses_per_rev;
+  return (position * pitch_per_rev * 1000) / pulses_per_rev;
 }
 
 const struct stepper_with_target_status StepperWithTarget::get_status() {

@@ -65,7 +65,7 @@ public:
 
   bool is_in_target_position();
 
-  int position_as_nm(int position);
+  int position_as_um(int position);
   const struct stepper_with_target_status get_status();
 };
 

@@ -39,7 +39,6 @@ static void s_log_state(void *o) {
   struct s_object *s = (struct s_object *)o;
   s->stepper->log_state();
   s->remote->log_state();
-  s->stack.log_state();
 }
 
 static void s_parent_interactive_entry(void *o) { LOG_INF("%s", __FUNCTION__); }
@@ -51,7 +50,7 @@ static enum smf_state_result s_interactive_run(void *o) {
 
   const struct zbus_channel *chan;
 
-  LOG_INF("%s, wait for input...", __FUNCTION__);
+  LOG_DBG("%s, wait for input...", __FUNCTION__);
   if (!zbus_sub_wait(&event_sub, &chan, K_FOREVER)) {
     if (&event_msg_chan == chan) {
       struct event_msg msg;
@@ -63,12 +62,6 @@ static enum smf_state_result s_interactive_run(void *o) {
       }
 
       switch (msg.evt.value()) {
-      case EVENT_NOOP:
-        s->stepper->log_state();
-        s->remote->log_state();
-        s->stack.log_state();
-
-        break;
       case EVENT_GO:
         LOG_INF("go to position %d", msg.value);
         s->stepper->go_relative(msg.value);
@@ -164,8 +157,19 @@ static void s_parent_stacking_exit(void *o) {
 static enum smf_state_result s_stack_run(void *o) {
   struct s_object *s = (struct s_object *)o;
   if (s->stack.stack_in_progress()) {
+    int index_in_stack = s->stack.get_index_in_stack().value();
+    int length_of_stack = s->stack.get_length_of_stack().value();
+    int lower_bound = s->stack.get_lower_bound();
     int current_step = s->stack.get_current_step().value();
-    LOG_INF("Stacking: %s", s->stack.get_stack_summary());
+    int upper_bound = s->stack.get_upper_bound();
+
+    int lower_bound_um = s->stepper->position_as_um(lower_bound);
+    int current_step_um = s->stepper->position_as_um(current_step);
+    int upper_bound_um = s->stepper->position_as_um(upper_bound);
+
+    LOG_INF("Stacking: Step %d/%d at position %dum < %dum @ %d < %dum",
+            index_in_stack + 1, length_of_stack, lower_bound_um,
+            current_step_um, current_step, upper_bound_um);
     s->stepper->set_target_position(current_step);
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
