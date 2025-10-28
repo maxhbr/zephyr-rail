@@ -14,14 +14,9 @@
         <div class="connection-bar">
             <button id="connect" class="btn-primary">Connect to ZephyrRail</button>
             <button id="disconnect" class="btn-success" disabled>Disconnect</button>
-            <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
-        </div>
-        
-        <div id="status" class="disconnected">
-            Not connected. Click "Connect to ZephyrRail" to begin.
         </div>
 
-        <div id="controls">
+        <div class="controls" id="controls">
             <div class="control-section">
                 <h1>Move</h1>
                 <div class="button-grid-7">
@@ -54,28 +49,37 @@
                 <h3>Camera Control</h3>
                 <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
             </div>
+        </div>
+        
+        <div id="status" class="disconnected">
+            Not connected. Click "Connect to ZephyrRail" to begin.
+        </div>
             
+        <div class="controls" id=""controls-setup>
             <div class="control-section">
-                <h1>Setup</h1>
-                <div class="input-group">
-                    <label>Go To Position:</label>
-                    <input type="number" id="goto-position" value="0" step="10">
-                    <button class="btn-primary" onclick="sendGoTo()">Go To</button>
-                </div>
-                <div class="input-group">
-                    <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To</button>
-                    <input type="number" id="bound" value="0" placeholder="Lower">
-                    <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To</button>
-                </div>
-                <div class="input-group">
-                    <label>Wait Before Shot (ms):</label>
-                    <input type="number" id="wait-before" value="1000" step="100" min="0">
-                    <button class="btn-primary" onclick="sendSetWaitBefore()">Set Wait Before</button>
-                </div>
-                <div class="input-group">
-                    <label>Wait After Shot (ms):</label>
-                    <input type="number" id="wait-after" value="2000" step="100" min="0">
-                    <button class="btn-primary" onclick="sendSetWaitAfter()">Set Wait After</button>
+                <h1 id="setup-header" class="collapsible-header collapsed">Setup <span class="toggle-icon">▼</span></h1>
+                <div id="setup-content" class="collapsible-content collapsed">
+                    <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
+                    <div class="input-group">
+                        <label>Go To Position:</label>
+                        <input type="number" id="goto-position" value="0" step="10">
+                        <button class="btn-primary" onclick="sendGoTo()">Go To</button>
+                    </div>
+                    <div class="input-group">
+                        <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To</button>
+                        <input type="number" id="bound" value="0" placeholder="Lower">
+                        <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Wait Before Shot (ms):</label>
+                        <input type="number" id="wait-before" value="1000" step="100" min="0">
+                        <button class="btn-primary" onclick="sendSetWaitBefore()">Set Wait Before</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Wait After Shot (ms):</label>
+                        <input type="number" id="wait-after" value="2000" step="100" min="0">
+                        <button class="btn-primary" onclick="sendSetWaitAfter()">Set Wait After</button>
+                    </div>
                 </div>
             </div>
         </div>

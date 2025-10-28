@@ -23,6 +23,17 @@ if (!navigator.bluetooth) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Setup collapsible section
+  const setupHeader = document.getElementById('setup-header');
+  const setupContent = document.getElementById('setup-content');
+
+  if (setupHeader && setupContent) {
+    setupHeader.addEventListener('click', function() {
+      setupHeader.classList.toggle('collapsed');
+      setupContent.classList.toggle('collapsed');
+    });
+  }
+
   document.getElementById('connect').addEventListener('click', async () => {
     try {
       updateStatus('Searching for ZephyrRail device...', 'disconnected');
@@ -57,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       updateStatus('Connected to ' + device.name + '!', 'connected');
       document.getElementById('controls').style.display = 'block';
+      document.getElementById('controls-setup').style.display = 'block';
       document.getElementById('connect').disabled = true;
       document.getElementById('disconnect').disabled = false;
 
@@ -93,6 +105,7 @@ function handleStatusNotification(event) {
 function handleDisconnection() {
   updateStatus('Disconnected from device', 'disconnected');
   document.getElementById('controls').style.display = 'none';
+  document.getElementById('controls-setup').style.display = 'none';
   document.getElementById('connect').disabled = false;
   document.getElementById('disconnect').disabled = true;
 
