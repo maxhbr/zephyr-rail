@@ -144,6 +144,8 @@ function sendGo(times) {
   sendCommand('GO ' + distance * times);
 }
 
+function sendGoPct(pct) { sendCommand('GO_PCT ' + pct); }
+
 function sendGoTo() {
   const position = document.getElementById('goto-position').value;
   sendCommand('GO_TO ' + position);
