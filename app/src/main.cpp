@@ -53,7 +53,6 @@ static StepperWithTarget *init_stepper(void) {
 }
 
 #ifdef CONFIG_BT
-// Connection callback dispatcher for both PWA and Sony camera
 static void conn_connected(struct bt_conn *conn, uint8_t err) {
   if (err) {
     LOG_ERR("Connection failed: %u", err);
@@ -66,9 +65,6 @@ static void conn_connected(struct bt_conn *conn, uint8_t err) {
   if (info.role == BT_CONN_ROLE_PERIPHERAL) {
     // This is a PWA connection (we are peripheral/server)
     PwaService::onConnected(conn, err);
-  } else {
-    // This is a Sony camera connection (we are central/client)
-    SonyRemote::on_connected(conn, err);
   }
 }
 
@@ -79,16 +75,11 @@ static void conn_disconnected(struct bt_conn *conn, uint8_t reason) {
   if (info.role == BT_CONN_ROLE_PERIPHERAL) {
     // PWA disconnected
     PwaService::onDisconnected(conn, reason);
-  } else {
-    // Sony camera disconnected
-    SonyRemote::on_disconnected(conn, reason);
   }
 }
 
-BT_CONN_CB_DEFINE(conn_callbacks) = {
-    .connected = conn_connected,
-    .disconnected = conn_disconnected,
-};
+BT_CONN_CB_DEFINE(conn_callbacks) = {.connected = conn_connected,
+                                     .disconnected = conn_disconnected};
 #endif
 
 void led_blink(const struct gpio_dt_spec *led, int times, int on_ms,

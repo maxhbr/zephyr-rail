@@ -178,6 +178,14 @@ void SonyRemote::shoot() {
 }
 
 void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, ignore
+    return;
+  }
+
   if (!self_) {
     LOG_ERR("self_ pointer is NULL in on_connected!");
     return;
@@ -218,7 +226,15 @@ void SonyRemote::on_connected(bt_conn *conn, uint8_t err) {
   }
 }
 
-void SonyRemote::on_disconnected(bt_conn * /*conn*/, uint8_t reason) {
+void SonyRemote::on_disconnected(bt_conn *conn, uint8_t reason) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, ignore
+    return;
+  }
+
   if (!self_) {
     LOG_ERR("self_ pointer is NULL in on_disconnected!");
     return;
@@ -488,6 +504,14 @@ void SonyRemote::discovery_work_handler(struct k_work *work) {
 
 void SonyRemote::on_security_changed(bt_conn *conn, bt_security_t level,
                                      enum bt_security_err err) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, ignore
+    return;
+  }
+
   if (!self_) {
     LOG_ERR("self_ pointer is NULL in on_security_changed!");
     return;
@@ -511,6 +535,14 @@ void SonyRemote::on_security_changed(bt_conn *conn, bt_security_t level,
 }
 
 void SonyRemote::auth_cancel(struct bt_conn *conn) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, ignore
+    return;
+  }
+
   char addr[BT_ADDR_LE_STR_LEN];
   bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
   LOG_WRN("Pairing cancelled: %s", addr);
@@ -518,6 +550,14 @@ void SonyRemote::auth_cancel(struct bt_conn *conn) {
 
 void SonyRemote::auth_passkey_display(struct bt_conn *conn,
                                       unsigned int passkey) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, ignore
+    return;
+  }
+
   char addr[BT_ADDR_LE_STR_LEN];
   bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
   LOG_INF("Passkey for %s: %06u", addr, passkey);
@@ -525,6 +565,14 @@ void SonyRemote::auth_passkey_display(struct bt_conn *conn,
 
 void SonyRemote::auth_passkey_confirm(struct bt_conn *conn,
                                       unsigned int passkey) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, ignore
+    return;
+  }
+
   char addr[BT_ADDR_LE_STR_LEN];
   bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
   LOG_INF("Confirm passkey for %s: %06u", addr, passkey);
@@ -533,6 +581,14 @@ void SonyRemote::auth_passkey_confirm(struct bt_conn *conn,
 }
 
 void SonyRemote::auth_passkey_entry(struct bt_conn *conn) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, ignore
+    return;
+  }
+
   char addr[BT_ADDR_LE_STR_LEN];
   bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
   LOG_INF("Enter passkey for %s", addr);
@@ -540,6 +596,14 @@ void SonyRemote::auth_passkey_entry(struct bt_conn *conn) {
 }
 
 enum bt_security_err SonyRemote::auth_pairing_confirm(struct bt_conn *conn) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_CENTRAL) {
+    // Not a Sony camera connection, reject pairing
+    return BT_SECURITY_ERR_UNSPECIFIED;
+  }
+
   char addr[BT_ADDR_LE_STR_LEN];
   bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
   LOG_INF("Confirm pairing for %s", addr);
