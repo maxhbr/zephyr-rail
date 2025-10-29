@@ -11,6 +11,12 @@
 
 LOG_MODULE_REGISTER(pwa_service, LOG_LEVEL_INF);
 
+// Connection callbacks - defined in the same style as sony_remote.cpp
+static bt_conn_cb kPwaConnCbs = {
+    .connected = PwaService::onConnected,
+    .disconnected = PwaService::onDisconnected,
+};
+
 // Custom UUIDs for PWA service (128-bit)
 // Service UUID: 12345634-5678-1234-1234-123456789abc
 #define PWA_SERVICE_UUID                                                       \
@@ -234,6 +240,7 @@ BT_GATT_SERVICE_DEFINE(
                            NULL));
 
 void PwaService::init() {
+  bt_conn_cb_register(&kPwaConnCbs);
   strcpy((char *)status_buffer_, "INIT");
   LOG_INF("PWA Service initialized");
 }
@@ -281,6 +288,14 @@ void PwaService::notifyStatus(const char *status) {
 bool PwaService::isConnected() { return pwa_conn_ != nullptr; }
 
 void PwaService::onConnected(struct bt_conn *conn, uint8_t err) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_PERIPHERAL) {
+    // Not a PWA connection (we are not peripheral/server), ignore
+    return;
+  }
+
   if (err) {
     LOG_ERR("PWA connection failed: %u", err);
     return;
@@ -298,7 +313,14 @@ void PwaService::onConnected(struct bt_conn *conn, uint8_t err) {
 }
 
 void PwaService::onDisconnected(struct bt_conn *conn, uint8_t reason) {
-  ARG_UNUSED(conn);
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role != BT_CONN_ROLE_PERIPHERAL) {
+    // Not a PWA connection (we are not peripheral/server), ignore
+    return;
+  }
+
   LOG_INF("PWA disconnected: reason 0x%02x", reason);
 
   if (pwa_conn_) {
