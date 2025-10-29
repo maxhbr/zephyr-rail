@@ -137,6 +137,12 @@ static enum smf_state_result s_interactive_run(void *o) {
 static void s_parent_stacking_entry(void *o) {
   struct s_object *s = (struct s_object *)o;
 
+  if (!s->remote->ready()) {
+    LOG_ERR("Cannot start stacking - camera not connected");
+    smf_set_state(SMF_CTX(o), s_interactive_ptr);
+    return;
+  }
+
   // wait for camera to be ready
   while (!s->remote->ready()) {
     LOG_INF("Waiting for camera to be ready...");

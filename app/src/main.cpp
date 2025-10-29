@@ -130,7 +130,7 @@ int main(void) {
   led_blink(&led, 1, 100, 100);
 
 #ifdef CONFIG_BT
-  LOG_DBG("main: initialize Bluetooth");
+  LOG_INF("initialize Bluetooth ...");
   if (int err = bt_enable(nullptr); err) {
     LOG_ERR("bt_enable failed (%d)", err);
     return err;
@@ -144,7 +144,7 @@ int main(void) {
 #endif
 
   // Initialize PWA service
-  LOG_DBG("main: initialize PWA service");
+  LOG_INF("initialize PWA service ...");
   PwaService::init();
 
   // Start advertising for PWA connections (peripheral role)
@@ -152,12 +152,12 @@ int main(void) {
     LOG_ERR("Failed to start PWA advertising: %d", err);
     return err;
   }
-  LOG_INF("PWA service ready - Web Bluetooth interface available");
+  LOG_DBG("PWA service ready - Web Bluetooth interface available");
 
-  LOG_DBG("main: initialize Sony Remote");
+  LOG_INF("initialize Sony Remote ...");
   SonyRemote remote("9C:50:D1:AF:76:5F");
 #else
-  LOG_DBG("main: initialize Dummy Sony Remote");
+  LOG_INF("initialize Dummy Sony Remote ...");
   SonyRemote remote;
 #endif
   led_blink(&led, 2, 100, 100);
@@ -169,7 +169,7 @@ int main(void) {
 
   led_blink(&led, 3, 100, 100);
 
-  LOG_DBG("main: initialize stepper");
+  LOG_INF("initialize stepper ...");
   StepperWithTarget *stepper = init_stepper();
   if (stepper == nullptr) {
     LOG_ERR("Failed to initialize stepper");
@@ -178,6 +178,7 @@ int main(void) {
 
   StateMachine sm(stepper, &remote);
   bool led_on = false;
+  LOG_INF("entering main loop ...");
   while (1) {
     LOG_DBG("loop...");
     led_on = led_toggle(&led, led_on);
