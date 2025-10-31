@@ -10,8 +10,33 @@ set(BOARD xiao_nrf54l15/nrf54l15/cpuapp)
 # Add DTS bindings path BEFORE find_package(Zephyr)
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../lib/stepper_with_target)
 
+# Capture Git commit hash before find_package
+execute_process(
+  COMMAND git rev-parse --short HEAD
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_QUIET
+)
+if(NOT GIT_COMMIT_HASH)
+  set(GIT_COMMIT_HASH "unknown")
+else()
+    # Optionally detect if the working tree is dirty
+    execute_process(
+        COMMAND git diff --quiet --ignore-submodules HEAD
+        RESULT_VARIABLE GIT_DIRTY
+    )
+
+    if (GIT_DIRTY EQUAL 1)
+        set(GIT_COMMIT_HASH "${GIT_COMMIT_HASH}-dirty")
+    endif()
+endif()
+
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(zephyr-rail)
+
+# Define BUILD_COMMIT as a string macro
+add_compile_definitions(BUILD_COMMIT="${GIT_COMMIT_HASH}")
 
 zephyr_library_compile_options(-lstdc++ -std=c++17 -fpermissive)
 

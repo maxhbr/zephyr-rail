@@ -91,7 +91,7 @@ void StepperWithTarget::log_state() {
   int32_t pos = get_position();
   LOG_INF("Enabled: %s, Position: %dum @ %d, Target: %dum, Moving: %s",
           enabled ? "true" : "false", steps_to_um(pos), pos,
-          step_to_um(target_position), is_moving ? "true" : "false");
+          steps_to_um(target_position), is_moving ? "true" : "false");
 }
 
 int StepperWithTarget::enable() {

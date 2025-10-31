@@ -139,6 +139,11 @@ int main(void) {
 
   StateMachine sm(stepper, &remote);
   bool led_on = false;
+
+#ifdef BUILD_COMMIT
+  LOG_INF("Build commit: %s", BUILD_COMMIT);
+#endif
+
   LOG_INF("entering main loop ...");
   while (1) {
     LOG_DBG("loop...");
