@@ -310,6 +310,8 @@ void PwaService::onConnected(struct bt_conn *conn, uint8_t err) {
   struct bt_le_conn_param param = {
       .interval_min = 24, .interval_max = 40, .latency = 0, .timeout = 400};
   bt_conn_le_param_update(conn, &param);
+
+  stopAdvertising();
 }
 
 void PwaService::onDisconnected(struct bt_conn *conn, uint8_t reason) {
@@ -328,6 +330,11 @@ void PwaService::onDisconnected(struct bt_conn *conn, uint8_t reason) {
     pwa_conn_ = nullptr;
   }
   notify_enabled_ = false;
+
+  LOG_INF("Restarting advertising after disconnect...");
+  if (int err = startAdvertising(); err) {
+    LOG_ERR("Failed to restart advertising: %d", err);
+  }
 }
 
 int PwaService::startAdvertising() {
