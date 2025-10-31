@@ -174,29 +174,56 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
     char *param3 = strtok_r(nullptr, " ", &saveptr);
 
     if (param3) {
-      // 3 parameters: expected_length lower upper
+      int expected_step_size = atoi(param1);
+      int lower = atoi(param2);
+      int upper = atoi(param3);
+      LOG_INF("→ Command: START_STACK step_size=%d lower=%d upper=%d",
+              expected_step_size, lower, upper);
+      event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
+      event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
+      event_pub(EVENT_START_STACK, expected_step_size);
+      snprintf(response, sizeof(response), "ACK:START_STACK %d %d %d",
+               expected_step_size, lower, upper);
+    } else if (param1) {
+      int expected_step_size = atoi(param1);
+      LOG_INF("→ Command: START_STACK step_size=%d", expected_step_size);
+      event_pub(EVENT_START_STACK, expected_step_size);
+      snprintf(response, sizeof(response), "ACK:START_STACK %d",
+               expected_step_size);
+    } else {
+      LOG_INF("→ Command: START_STACK step_size=1 (default)");
+      event_pub(EVENT_START_STACK, 1);
+      snprintf(response, sizeof(response), "ACK:START_STACK 1");
+    }
+
+  } else if (strcmp(token, "START_STACK_COUNT") == 0) {
+    // START_STACK can have 0, 1, or 3 parameters
+    char *param1 = strtok_r(nullptr, " ", &saveptr);
+    char *param2 = strtok_r(nullptr, " ", &saveptr);
+    char *param3 = strtok_r(nullptr, " ", &saveptr);
+
+    if (param3) {
       int expected_length = atoi(param1);
       int lower = atoi(param2);
       int upper = atoi(param3);
       LOG_INF("→ Command: START_STACK length=%d lower=%d upper=%d",
               expected_length, lower, upper);
-      event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
       event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
-      event_pub(EVENT_START_STACK, expected_length);
-      snprintf(response, sizeof(response), "ACK:START_STACK %d %d %d",
-               expected_length, lower, upper);
+      event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
+      event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length);
+      snprintf(response, sizeof(response),
+               "ACK:START_STACK_WITH_LENGTH %d %d %d", expected_length, lower,
+               upper);
     } else if (param1) {
-      // 1 parameter: expected_length
       int expected_length = atoi(param1);
       LOG_INF("→ Command: START_STACK length=%d", expected_length);
-      event_pub(EVENT_START_STACK, expected_length);
-      snprintf(response, sizeof(response), "ACK:START_STACK %d",
+      event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length);
+      snprintf(response, sizeof(response), "ACK:START_STACK_WITH_LENGTH %d",
                expected_length);
     } else {
-      // No parameters: use default 100
-      LOG_INF("→ Command: START_STACK length=100 (default)");
-      event_pub(EVENT_START_STACK, 100);
-      snprintf(response, sizeof(response), "ACK:START_STACK 100");
+      LOG_INF("→ Command: START_STACK length=1 (default)");
+      event_pub(EVENT_START_STACK_WITH_LENGTH, 1);
+      snprintf(response, sizeof(response), "ACK:START_STACK_WITH_LENGTH 1");
     }
 
   } else {

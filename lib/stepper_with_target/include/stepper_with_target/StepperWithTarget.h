@@ -41,6 +41,13 @@ class StepperWithTarget {
                                      const enum stepper_event event,
                                      void *user_data);
 
+  int32_t go_relative(int32_t dist);
+  void set_target_position(int32_t _target_position);
+  int32_t get_target_position();
+
+  int32_t steps_to_um(int32_t steps);
+  int32_t um_to_steps(int32_t um);
+
 public:
   StepperWithTarget(const struct device *dev, int _pitch_per_rev,
                     int _pulses_per_rev);
@@ -57,15 +64,14 @@ public:
 
   int set_speed(StepperSpeed speed);
 
-  int go_relative(int32_t dist);
-  void set_target_position(int32_t _target_position);
-  int32_t get_target_position();
+  int32_t go_relative_um(int32_t dist);
+  void set_target_position_um(int32_t _target_position);
+  int32_t get_target_position_um();
 
   bool step_towards_target();
 
   bool is_in_target_position();
 
-  int position_as_um(int position);
   const struct stepper_with_target_status get_status();
 };
 

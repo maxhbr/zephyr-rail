@@ -141,7 +141,7 @@ int StepperWithTarget::get_position() {
   return pos;
 }
 
-int StepperWithTarget::go_relative(int32_t dist) {
+int32_t StepperWithTarget::go_relative(int32_t dist) {
   target_position += dist;
   return target_position;
 }
@@ -151,6 +151,27 @@ void StepperWithTarget::set_target_position(int32_t _target_position) {
 }
 
 int32_t StepperWithTarget::get_target_position() { return target_position; }
+
+int32_t StepperWithTarget::steps_to_um(int32_t steps) {
+  return (steps * pitch_per_rev * 1000) / pulses_per_rev;
+}
+
+int32_t StepperWithTarget::um_to_steps(int32_t um) {
+  return (um * pulses_per_rev) / (pitch_per_rev * 1000);
+}
+
+int32_t StepperWithTarget::go_relative_um(int32_t dist) {
+  int32_t steps = um_to_steps(dist);
+  return go_relative(steps);
+}
+void StepperWithTarget::set_target_position_um(int32_t _target_position) {
+  int32_t steps = um_to_steps(_target_position);
+  set_target_position(steps);
+}
+int32_t StepperWithTarget::get_target_position_um() {
+  int32_t steps = get_target_position();
+  return steps_to_um(steps);
+}
 
 bool StepperWithTarget::step_towards_target() {
   if (!enabled) {
@@ -182,12 +203,6 @@ bool StepperWithTarget::step_towards_target() {
 
 bool StepperWithTarget::is_in_target_position() {
   return get_position() == get_target_position();
-}
-
-int StepperWithTarget::position_as_um(int position) {
-  if (pulses_per_rev == 0)
-    return 0;
-  return (position * pitch_per_rev * 1000) / pulses_per_rev;
 }
 
 const struct stepper_with_target_status StepperWithTarget::get_status() {

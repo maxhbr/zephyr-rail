@@ -25,7 +25,7 @@ class Stack {
   bool start_at_lower = true;
 
   int expected_length_of_stack = 300;
-  int expected_step_size = 30;
+  int expected_step_size = 1;
   bool compute_via_step_size = false;
 
   int length_of_stack = 0;
@@ -43,10 +43,10 @@ public:
 
   // stacking
   std::optional<int> start_stack();
-  std::optional<int> get_current_step();
+  std::optional<int> get_current_target();
   std::optional<int> get_index_in_stack();
   std::optional<int> get_length_of_stack();
-  void increment_step();
+  void increment_target();
   bool stack_in_progress();
 
   // configuring stack
@@ -55,6 +55,7 @@ public:
   int get_lower_bound();
   int get_upper_bound();
   void set_expected_length_of_stack(int _expected_length_of_stack);
+  void set_expected_step_size(int _expected_step_size);
 
   const struct stack_status get_status() {
     return {

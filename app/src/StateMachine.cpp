@@ -64,12 +64,12 @@ static enum smf_state_result s_interactive_run(void *o) {
       switch (msg.evt.value()) {
       case EVENT_GO:
         LOG_INF("go to position %d", msg.value);
-        s->stepper->go_relative(msg.value);
+        s->stepper->go_relative_um(msg.value);
         s->stepper->step_towards_target();
         break;
       case EVENT_GO_TO:
         LOG_INF("go to absolute position %d", msg.value);
-        s->stepper->set_target_position(msg.value);
+        s->stepper->set_target_position_um(msg.value);
         s->stepper->step_towards_target();
         break;
       case EVENT_GO_PCT: {
@@ -83,18 +83,18 @@ static enum smf_state_result s_interactive_run(void *o) {
         int target = lower + (range * msg.value) / 100;
         LOG_INF("go to relative position %d% between upper and lower @ %d",
                 msg.value, target);
-        s->stepper->set_target_position(target);
+        s->stepper->set_target_position_um(target);
         s->stepper->step_towards_target();
         break;
       }
       case EVENT_SET_LOWER_BOUND: {
-        int lower_bound = s->stepper->get_target_position();
+        int lower_bound = s->stepper->get_target_position_um();
         LOG_INF("set lower bound to %d", lower_bound);
         s->stack.set_lower_bound(lower_bound);
         break;
       }
       case EVENT_SET_UPPER_BOUND: {
-        int upper_bound = s->stepper->get_target_position();
+        int upper_bound = s->stepper->get_target_position_um();
         LOG_INF("set upper bound to %d", upper_bound);
         s->stack.set_upper_bound(upper_bound);
         break;
@@ -116,6 +116,11 @@ static enum smf_state_result s_interactive_run(void *o) {
         s->wait_after_ms = msg.value;
         break;
       case EVENT_START_STACK:
+        LOG_INF("Starting stack..., %d images", msg.value);
+        s->stack.set_expected_step_size(msg.value);
+        smf_set_state(SMF_CTX(o), s_stack_ptr);
+        break;
+      case EVENT_START_STACK_WITH_LENGTH:
         LOG_INF("Starting stack..., %d images", msg.value);
         s->stack.set_expected_length_of_stack(msg.value);
         smf_set_state(SMF_CTX(o), s_stack_ptr);
@@ -166,17 +171,13 @@ static enum smf_state_result s_stack_run(void *o) {
     int index_in_stack = s->stack.get_index_in_stack().value();
     int length_of_stack = s->stack.get_length_of_stack().value();
     int lower_bound = s->stack.get_lower_bound();
-    int current_step = s->stack.get_current_step().value();
+    int current_target = s->stack.get_current_target().value();
     int upper_bound = s->stack.get_upper_bound();
 
-    int lower_bound_um = s->stepper->position_as_um(lower_bound);
-    int current_step_um = s->stepper->position_as_um(current_step);
-    int upper_bound_um = s->stepper->position_as_um(upper_bound);
-
-    LOG_INF("Stacking: Step %d/%d at position %dum < %dum @ %d < %dum",
-            index_in_stack + 1, length_of_stack, lower_bound_um,
-            current_step_um, current_step, upper_bound_um);
-    s->stepper->set_target_position(current_step);
+    LOG_INF("Stacking: Step %d/%d at position %dum < %dum < %dum",
+            index_in_stack + 1, length_of_stack, lower_bound, current_target,
+            upper_bound);
+    s->stepper->set_target_position_um(current_target);
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
     LOG_INF("Stacking DONE");
@@ -207,7 +208,7 @@ static enum smf_state_result s_stack_img_run(void *o) {
   LOG_DBG("%s", __FUNCTION__);
   s->remote->shoot();
   k_sleep(K_MSEC(s->wait_after_ms));
-  s->stack.increment_step();
+  s->stack.increment_target();
   smf_set_state(SMF_CTX(o), s_stack_ptr);
   return SMF_EVENT_HANDLED;
 }

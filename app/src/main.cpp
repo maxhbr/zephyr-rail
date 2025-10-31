@@ -245,23 +245,43 @@ static int cmd_rail_setWaitAfter(const struct shell *sh, size_t argc,
   return 0;
 }
 
-static int cmd_rail_startStack(const struct shell *sh, size_t argc,
-                               char **argv) {
+static int cmd_rail_startStackWithStepSize(const struct shell *sh, size_t argc,
+                                           char **argv) {
   if (argc == 2) {
-    int expected_length_of_stack = atoi(argv[1]);
-    event_pub(EVENT_START_STACK, expected_length_of_stack);
+    int expected_step_size = atoi(argv[1]);
+    event_pub(EVENT_START_STACK, expected_step_size);
   } else if (argc == 4) {
-    int expected_length_of_stack = atoi(argv[1]);
+    int expected_step_size = atoi(argv[1]);
     int lower = atoi(argv[2]);
     int upper = atoi(argv[3]);
-    event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
     event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
-    event_pub(EVENT_START_STACK, expected_length_of_stack);
+    event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
+    event_pub(EVENT_START_STACK, expected_step_size);
   } else if (argc > 2) {
     shell_print(sh, "Usage: rail startStack <expected_length_of_stack>");
     return -EINVAL;
   } else {
-    event_pub(EVENT_START_STACK, 100);
+    event_pub(EVENT_START_STACK, 1);
+  }
+  return 0;
+}
+static int cmd_rail_startStackWithLength(const struct shell *sh, size_t argc,
+                                         char **argv) {
+  if (argc == 2) {
+    int expected_length_of_stack = atoi(argv[1]);
+    event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length_of_stack);
+  } else if (argc == 4) {
+    int expected_length_of_stack = atoi(argv[1]);
+    int lower = atoi(argv[2]);
+    int upper = atoi(argv[3]);
+    event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
+    event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
+    event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length_of_stack);
+  } else if (argc > 2) {
+    shell_print(sh, "Usage: rail startStack <expected_length_of_stack>");
+    return -EINVAL;
+  } else {
+    event_pub(EVENT_START_STACK_WITH_LENGTH, 100);
   }
   return 0;
 }
@@ -281,7 +301,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(upper, NULL, "Set upper bound.", cmd_rail_setUpperBound),
     SHELL_CMD(wait_before, NULL, "Set wait before ms.", cmd_rail_setWaitBefore),
     SHELL_CMD(wait_after, NULL, "Set wait after ms.", cmd_rail_setWaitAfter),
-    SHELL_CMD(stack, NULL, "Start stacking.", cmd_rail_startStack),
+    SHELL_CMD(stack, NULL, "Start stacking with step size.",
+              cmd_rail_startStackWithStepSize),
+    SHELL_CMD(stack_count, NULL, "Start stacking with length.",
+              cmd_rail_startStackWithLength),
     SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_rail_shoot),
     SHELL_SUBCMD_SET_END);
 /* Creating root (level 0) command "rail" without a handler */

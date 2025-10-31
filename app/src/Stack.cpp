@@ -1,6 +1,6 @@
 #include "Stack.h"
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(stack, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(stack, LOG_LEVEL_INF);
 
 Stack::Stack() { LOG_INF("%s", __FUNCTION__); };
 
@@ -8,7 +8,7 @@ void Stack::log_state() {
   if (stack_in_progress()) {
     LOG_INF("Stacking in progress: Step %d/%d at position %d > %d > %d",
             index_in_stack.value() + 1, length_of_stack, lower_bound,
-            get_current_step().value(), upper_bound);
+            get_current_target().value(), upper_bound);
   } else {
     LOG_INF("%i -> %i", lower_bound, upper_bound);
   }
@@ -16,19 +16,25 @@ void Stack::log_state() {
 
 bool Stack::compute_by_step_size(const int start, const int end) {
   int step_size = expected_step_size;
-  if (step_size == 0 || start == end) {
-    LOG_WRN("Invalid step size or start equals end");
+  LOG_DBG("Computing stack from %d to %d with step size %d", start, end,
+          step_size);
+  if (step_size <= 0 || start == end) {
+    LOG_ERR("Invalid step size (=%d) or start (=%d) equals end (=%d)",
+            step_size, start, end);
     return false;
   }
-  if (step_size <= 0 && start < end || step_size >= 0 && end < start) {
+  if (end < start) {
+    LOG_DBG("Reversing step size for descending stack");
     step_size = -step_size;
   }
 
   length_of_stack = 0;
   stepps_of_stack[length_of_stack] = start;
-  while (stepps_of_stack[length_of_stack] <= end) {
+  while ((step_size > 0 && stepps_of_stack[length_of_stack] <= end) ||
+         (step_size < 0 && stepps_of_stack[length_of_stack] >= end)) {
     length_of_stack++;
     if (length_of_stack > 1999) {
+      LOG_ERR("Exceeded maximum stack size of 2000");
       return false;
     }
     stepps_of_stack[length_of_stack] =
@@ -72,6 +78,7 @@ bool Stack::compute() {
     end = lower_bound;
     start = upper_bound;
   }
+  LOG_DBG("Computing stack from %d to %d", start, end);
   if (compute_via_step_size) {
     LOG_DBG("Computing via step size");
     return compute_by_step_size(start, end);
@@ -87,10 +94,10 @@ std::optional<int> Stack::start_stack() {
     return {};
   }
   index_in_stack = 0;
-  return get_current_step();
+  return get_current_target();
 }
 
-std::optional<int> Stack::get_current_step() {
+std::optional<int> Stack::get_current_target() {
   if (!index_in_stack.has_value()) {
     return {};
   }
@@ -110,14 +117,14 @@ std::optional<int> Stack::get_length_of_stack() {
   return length_of_stack;
 }
 
-void Stack::increment_step() {
+void Stack::increment_target() {
   if (index_in_stack.has_value()) {
     index_in_stack = index_in_stack.value() + 1;
   }
 }
 
 bool Stack::stack_in_progress() {
-  return index_in_stack.has_value() && get_current_step().has_value();
+  return index_in_stack.has_value() && get_current_target().has_value();
 }
 
 void Stack::set_lower_bound(int _lower_bound) {
@@ -136,4 +143,10 @@ int Stack::get_upper_bound() { return upper_bound; }
 
 void Stack::set_expected_length_of_stack(int _expected_length_of_stack) {
   expected_length_of_stack = _expected_length_of_stack;
+  compute_via_step_size = false;
+}
+
+void Stack::set_expected_step_size(int _expected_step_size) {
+  expected_step_size = _expected_step_size;
+  compute_via_step_size = true;
 }
