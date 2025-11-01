@@ -68,12 +68,12 @@ static enum smf_state_result s_interactive_run(void *o) {
 
       switch (msg.evt.value()) {
       case EVENT_GO:
-        LOG_INF("go to position %.3gum", nm_as_um(msg.value));
+        LOG_INF("go to position %.3fum", nm_as_um(msg.value));
         s->stepper->go_relative_nm(msg.value);
         s->stepper->step_towards_target();
         break;
       case EVENT_GO_TO:
-        LOG_INF("go to absolute position %.3gum", nm_as_um(msg.value));
+        LOG_INF("go to absolute position %.3fum", nm_as_um(msg.value));
         s->stepper->set_target_position_nm(msg.value);
         s->stepper->step_towards_target();
         break;
@@ -86,7 +86,7 @@ static enum smf_state_result s_interactive_run(void *o) {
         int upper = s->stack.get_upper_bound();
         int range = upper - lower;
         int target = lower + (range * msg.value) / 100;
-        LOG_INF("go to relative position %d%% between upper and lower @ %.3gum",
+        LOG_INF("go to relative position %d%% between upper and lower @ %.3fum",
                 msg.value, nm_as_um(target));
         s->stepper->set_target_position_nm(target);
         s->stepper->step_towards_target();
@@ -94,7 +94,7 @@ static enum smf_state_result s_interactive_run(void *o) {
       }
       case EVENT_SET_LOWER_BOUND: {
         int lower_bound = s->stepper->get_target_position_nm();
-        LOG_INF("set lower bound to %.3gum", nm_as_um(lower_bound),
+        LOG_INF("set lower bound to %.3fum", nm_as_um(lower_bound),
                 nm_as_um(s->stack.get_upper_bound()));
         s->stack.set_lower_bound(lower_bound);
         s->stack.log_state();
@@ -102,18 +102,18 @@ static enum smf_state_result s_interactive_run(void *o) {
       }
       case EVENT_SET_UPPER_BOUND: {
         int upper_bound = s->stepper->get_target_position_nm();
-        LOG_INF("set upper bound to %.3gum", nm_as_um(upper_bound));
+        LOG_INF("set upper bound to %.3fum", nm_as_um(upper_bound));
         s->stack.set_upper_bound(upper_bound);
         s->stack.log_state();
         break;
       }
       case EVENT_SET_LOWER_BOUND_TO:
-        LOG_INF("set lower bound to %.3gum", nm_as_um(msg.value));
+        LOG_INF("set lower bound to %.3fum", nm_as_um(msg.value));
         s->stack.set_lower_bound(msg.value);
         s->stack.log_state();
         break;
       case EVENT_SET_UPPER_BOUND_TO:
-        LOG_INF("set upper bound to %.3gum", nm_as_um(msg.value));
+        LOG_INF("set upper bound to %.3fum", nm_as_um(msg.value));
         s->stack.set_upper_bound(msg.value);
         s->stack.log_state();
         break;

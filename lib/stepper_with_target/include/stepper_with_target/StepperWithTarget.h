@@ -34,7 +34,7 @@ class StepperWithTarget {
   int32_t target_position = 0;
   bool enabled = false;
 
-  int pitch_per_rev = 0;
+  int pitch_per_rev_nm = 0;
   int pulses_per_rev = 0;
 
   static void event_callback_wrapper(const struct device *dev,
@@ -50,7 +50,7 @@ class StepperWithTarget {
 
 public:
   StepperWithTarget(const struct device *dev, int _pitch_per_rev,
-                    int _pulses_per_rev);
+                    int _pulses_per_rev_mm);
 
   void log_state();
 

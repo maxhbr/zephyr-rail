@@ -3,7 +3,8 @@
 LOG_MODULE_REGISTER(stepper_with_target, LOG_LEVEL_INF);
 
 StepperWithTarget::StepperWithTarget(const struct device *dev,
-                                     int _pitch_per_rev, int _pulses_per_rev) {
+                                     int _pitch_per_rev_mm,
+                                     int _pulses_per_rev) {
   stepper_dev = dev;
 
   if (!device_is_ready(stepper_dev)) {
@@ -30,10 +31,10 @@ StepperWithTarget::StepperWithTarget(const struct device *dev,
     LOG_WRN("Failed to set step interval: %d", ret);
   }
 
-  pitch_per_rev = _pitch_per_rev;
+  pitch_per_rev_nm = _pitch_per_rev_mm * 10000000;
   pulses_per_rev = _pulses_per_rev;
-  LOG_INF("%s initialized with pitch_per_rev=%dmm, pulses_per_rev=%d",
-          __FUNCTION__, pitch_per_rev, pulses_per_rev);
+  LOG_INF("%s initialized with pitch_per_rev=%.3fum, pulses_per_rev=%d",
+          __FUNCTION__, nm_as_um(pitch_per_rev_nm), pulses_per_rev);
 }
 
 int StepperWithTarget::set_speed(StepperSpeed speed) {
@@ -89,7 +90,7 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
 
 void StepperWithTarget::log_state() {
   int32_t pos = get_position();
-  LOG_INF("Enabled: %s, Position: %.3gum @ %d, Target: %.3gum, Moving: %s",
+  LOG_INF("Enabled: %s, Position: %.3fum @ %d, Target: %.3fum, Moving: %s",
           enabled ? "true" : "false", nm_as_um(steps_to_nm(pos)), pos,
           nm_as_um(steps_to_nm(target_position)), is_moving ? "true" : "false");
 }
@@ -153,11 +154,11 @@ void StepperWithTarget::set_target_position(int32_t _target_position) {
 int32_t StepperWithTarget::get_target_position() { return target_position; }
 
 int32_t StepperWithTarget::steps_to_nm(int32_t steps) {
-  return (steps * pitch_per_rev * 1000000) / pulses_per_rev;
+  return (steps * pitch_per_rev_nm) / pulses_per_rev;
 }
 
 int32_t StepperWithTarget::nm_to_steps(int32_t nm) {
-  return (nm * pulses_per_rev) / (pitch_per_rev * 1000000);
+  return (nm * pulses_per_rev) / pitch_per_rev_nm;
 }
 
 int32_t StepperWithTarget::go_relative_nm(int32_t dist) {
@@ -166,11 +167,14 @@ int32_t StepperWithTarget::go_relative_nm(int32_t dist) {
 }
 void StepperWithTarget::set_target_position_nm(int32_t _target_position) {
   int32_t steps = nm_to_steps(_target_position);
+  LOG_DBG("set_target_position_nm: nm=%d -> steps=%d", _target_position, steps);
   set_target_position(steps);
 }
 int32_t StepperWithTarget::get_target_position_nm() {
   int32_t steps = get_target_position();
-  return steps_to_nm(steps);
+  int32_t nm = steps_to_nm(steps);
+  LOG_DBG("get_target_position_nm: steps=%d -> nm=%d", steps, nm);
+  return nm;
 }
 
 bool StepperWithTarget::step_towards_target() {

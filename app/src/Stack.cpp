@@ -7,11 +7,11 @@ Stack::Stack() { LOG_INF("%s", __FUNCTION__); };
 void Stack::log_state() {
   if (stack_in_progress()) {
     LOG_INF(
-        "Stacking in progress: Step %d/%d at position %.3gum < %.3gum < %.3gum",
+        "Stacking in progress: Step %d/%d at position %.3fum < %.3fum < %.3fum",
         index_in_stack.value() + 1, length_of_stack, nm_as_um(lower_bound),
         nm_as_um(get_current_target().value()), nm_as_um(upper_bound));
   } else {
-    LOG_INF("%.3gum -> %.3gum, start_at=%s", nm_as_um(lower_bound),
+    LOG_INF("%.3fum -> %.3fum, start_at=%s", nm_as_um(lower_bound),
             nm_as_um(upper_bound), start_at_lower ? "lower" : "upper");
   }
 };
