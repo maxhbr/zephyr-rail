@@ -307,6 +307,11 @@ static int cmd_rail_shoot(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
+static int cmd_rail_status(const struct shell *sh, size_t argc, char **argv) {
+  event_pub(EVENT_STATUS);
+  return 0;
+}
+
 /* Creating subcommands (level 1 command) array for command "rail". */
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_rail, SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go),
@@ -325,6 +330,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(stack_count, NULL, "Start stacking with length.",
               cmd_rail_startStackWithLength),
     SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_rail_shoot),
+    SHELL_CMD(status, NULL, "Get current status.", cmd_rail_status),
     SHELL_SUBCMD_SET_END);
 /* Creating root (level 0) command "rail" without a handler */
 SHELL_CMD_REGISTER(rail, &sub_rail, "rail commands", NULL);

@@ -89,10 +89,9 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
 
 void StepperWithTarget::log_state() {
   int32_t pos = get_position();
-  LOG_INF("Enabled: %s, Position: %s @ %d, Target: %s, Moving: %s",
-          enabled ? "true" : "false", nm_as_um_representation(steps_to_nm(pos)),
-          pos, nm_as_um_representation(steps_to_nm(target_position)),
-          is_moving ? "true" : "false");
+  LOG_INF("Enabled: %s, Position: %.3gum @ %d, Target: %.3gum, Moving: %s",
+          enabled ? "true" : "false", nm_as_um(steps_to_nm(pos)), pos,
+          nm_as_um(steps_to_nm(target_position)), is_moving ? "true" : "false");
 }
 
 int StepperWithTarget::enable() {

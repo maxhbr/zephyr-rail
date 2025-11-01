@@ -10,6 +10,7 @@
 #include <zephyr/types.h>
 #include <zephyr/zbus/zbus.h>
 
+#include "stepper_with_target/StepperWithTarget.h"
 #include <optional>
 
 struct stack_status {

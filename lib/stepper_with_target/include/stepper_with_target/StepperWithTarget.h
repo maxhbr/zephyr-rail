@@ -77,11 +77,6 @@ public:
 
 void start_stepper(StepperWithTarget *_started_stepper_ptr);
 
-static char *nm_as_um_representation(int nm) {
-  static char buf[20];
-  double um = nm / 1000.0;
-  snprintf(buf, sizeof(buf), "%.3fum", um);
-  return buf;
-}
+static float nm_as_um(int nm) { return nm / 1000.0; }
 
 #endif // STEPPERWITHTARGET_H_

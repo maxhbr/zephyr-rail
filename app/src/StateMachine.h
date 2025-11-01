@@ -35,7 +35,8 @@ enum event {
   EVENT_SET_WAIT_AFTER_MS,
   EVENT_START_STACK,
   EVENT_START_STACK_WITH_LENGTH,
-  EVENT_SHOOT
+  EVENT_SHOOT,
+  EVENT_STATUS
 };
 struct event_msg {
   std::optional<event> evt;

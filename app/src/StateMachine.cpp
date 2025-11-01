@@ -35,10 +35,15 @@ static enum smf_state_result s0_run(void *o) {
   return SMF_EVENT_HANDLED;
 }
 
+void log_stack_state(void *o) {}
+
 static void s_log_state(void *o) {
   struct s_object *s = (struct s_object *)o;
   s->stepper->log_state();
   s->remote->log_state();
+  s->stack.log_state();
+  LOG_INF("wait_before_ms=%d, wait_after_ms=%d", s->wait_before_ms,
+          s->wait_after_ms);
 }
 
 static void s_parent_interactive_entry(void *o) { LOG_INF("%s", __FUNCTION__); }
@@ -63,13 +68,12 @@ static enum smf_state_result s_interactive_run(void *o) {
 
       switch (msg.evt.value()) {
       case EVENT_GO:
-        LOG_INF("go to position %s", nm_as_um_representation(msg.value));
+        LOG_INF("go to position %.3gum", nm_as_um(msg.value));
         s->stepper->go_relative_nm(msg.value);
         s->stepper->step_towards_target();
         break;
       case EVENT_GO_TO:
-        LOG_INF("go to absolute position %s",
-                nm_as_um_representation(msg.value));
+        LOG_INF("go to absolute position %.3gum", nm_as_um(msg.value));
         s->stepper->set_target_position_nm(msg.value);
         s->stepper->step_towards_target();
         break;
@@ -82,36 +86,36 @@ static enum smf_state_result s_interactive_run(void *o) {
         int upper = s->stack.get_upper_bound();
         int range = upper - lower;
         int target = lower + (range * msg.value) / 100;
-        LOG_INF("go to relative position %d%% between upper and lower @ %s",
-                msg.value, nm_as_um_representation(target));
+        LOG_INF("go to relative position %d%% between upper and lower @ %.3gum",
+                msg.value, nm_as_um(target));
         s->stepper->set_target_position_nm(target);
         s->stepper->step_towards_target();
         break;
       }
       case EVENT_SET_LOWER_BOUND: {
         int lower_bound = s->stepper->get_target_position_nm();
-        LOG_INF("set lower bound to %s (upper is %s)",
-                nm_as_um_representation(lower_bound),
-                nm_as_um_representation(s->stack.get_upper_bound()));
+        LOG_INF("set lower bound to %.3gum", nm_as_um(lower_bound),
+                nm_as_um(s->stack.get_upper_bound()));
         s->stack.set_lower_bound(lower_bound);
-
+        s->stack.log_state();
         break;
       }
       case EVENT_SET_UPPER_BOUND: {
         int upper_bound = s->stepper->get_target_position_nm();
-        LOG_INF("set upper bound to %s (lower is %s)",
-                nm_as_um_representation(upper_bound),
-                nm_as_um_representation(s->stack.get_lower_bound()));
+        LOG_INF("set upper bound to %.3gum", nm_as_um(upper_bound));
         s->stack.set_upper_bound(upper_bound);
+        s->stack.log_state();
         break;
       }
       case EVENT_SET_LOWER_BOUND_TO:
-        LOG_INF("set lower bound to %s", nm_as_um_representation(msg.value));
+        LOG_INF("set lower bound to %.3gum", nm_as_um(msg.value));
         s->stack.set_lower_bound(msg.value);
+        s->stack.log_state();
         break;
       case EVENT_SET_UPPER_BOUND_TO:
-        LOG_INF("set upper bound to %s", nm_as_um_representation(msg.value));
+        LOG_INF("set upper bound to %.3gum", nm_as_um(msg.value));
         s->stack.set_upper_bound(msg.value);
+        s->stack.log_state();
         break;
       case EVENT_SET_WAIT_BEFORE_MS:
         LOG_INF("set wait before ms to %d", msg.value);
@@ -134,6 +138,9 @@ static enum smf_state_result s_interactive_run(void *o) {
       case EVENT_SHOOT:
         LOG_INF("Triggering camera shoot");
         s->remote->shoot();
+        break;
+      case EVENT_STATUS:
+        s_log_state(s);
         break;
       default:
         LOG_INF("unsupported event: %d", msg.evt.value());
@@ -174,16 +181,9 @@ static void s_parent_stacking_exit(void *o) {
 static enum smf_state_result s_stack_run(void *o) {
   struct s_object *s = (struct s_object *)o;
   if (s->stack.stack_in_progress()) {
-    int index_in_stack = s->stack.get_index_in_stack().value();
-    int length_of_stack = s->stack.get_length_of_stack().value();
-    int lower_bound = s->stack.get_lower_bound();
+    LOG_INF("Stacking:");
+    s->stack.log_state();
     int current_target = s->stack.get_current_target().value();
-    int upper_bound = s->stack.get_upper_bound();
-
-    LOG_INF("Stacking: Step %d/%d at position %s < %s < %s", index_in_stack + 1,
-            length_of_stack, nm_as_um_representation(lower_bound),
-            nm_as_um_representation(current_target),
-            nm_as_um_representation(upper_bound));
     s->stepper->set_target_position_nm(current_target);
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
