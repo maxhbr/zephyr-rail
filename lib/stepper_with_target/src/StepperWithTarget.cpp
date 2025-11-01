@@ -90,9 +90,10 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
 
 void StepperWithTarget::log_state() {
   int32_t pos = get_position();
-  LOG_INF("Enabled: %s, Position: %.3fum @ %d, Target: %.3fum, Moving: %s",
+  LOG_INF("Enabled: %s, Position: %.3fum @ %d, Target: %.3fum @ %d, Moving: %s",
           enabled ? "true" : "false", nm_as_um(steps_to_nm(pos)), pos,
-          nm_as_um(steps_to_nm(target_position)), is_moving ? "true" : "false");
+          nm_as_um(steps_to_nm(target_position)), target_position,
+          is_moving ? "true" : "false");
 }
 
 int StepperWithTarget::enable() {
@@ -154,15 +155,21 @@ void StepperWithTarget::set_target_position(int32_t _target_position) {
 int32_t StepperWithTarget::get_target_position() { return target_position; }
 
 int32_t StepperWithTarget::steps_to_nm(int32_t steps) {
-  return (steps * pitch_per_rev_nm) / pulses_per_rev;
+  // Use int64_t for calculation to avoid overflow
+  int64_t result =
+      ((int64_t)steps * (int64_t)pitch_per_rev_nm) / (int64_t)pulses_per_rev;
+  return (int32_t)result;
 }
 
 int32_t StepperWithTarget::nm_to_steps(int32_t nm) {
-  return (nm * pulses_per_rev) / pitch_per_rev_nm;
+  // Use int64_t for calculation to avoid overflow
+  int64_t result =
+      ((int64_t)nm * (int64_t)pulses_per_rev) / (int64_t)pitch_per_rev_nm;
+  return (int32_t)result;
 }
 
-int32_t StepperWithTarget::go_relative_nm(int32_t dist) {
-  int32_t steps = nm_to_steps(dist);
+int32_t StepperWithTarget::go_relative_nm(int32_t nm) {
+  int32_t steps = nm_to_steps(nm);
   return go_relative(steps);
 }
 void StepperWithTarget::set_target_position_nm(int32_t _target_position) {
