@@ -277,7 +277,7 @@ static int cmd_rail_startStackWithStepSize(const struct shell *sh, size_t argc,
                 argv[0]);
     return -EINVAL;
   } else {
-    event_pub(EVENT_START_STACK, 1);
+    event_pub(EVENT_START_STACK, 1000);
   }
   return 0;
 }
