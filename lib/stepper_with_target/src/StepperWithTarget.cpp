@@ -31,7 +31,7 @@ StepperWithTarget::StepperWithTarget(const struct device *dev,
     LOG_WRN("Failed to set step interval: %d", ret);
   }
 
-  pitch_per_rev_nm = _pitch_per_rev_mm * 10000000;
+  pitch_per_rev_nm = _pitch_per_rev_mm * 1000000;
   pulses_per_rev = _pulses_per_rev;
   LOG_INF("%s initialized with pitch_per_rev=%.3fum, pulses_per_rev=%d",
           __FUNCTION__, nm_as_um(pitch_per_rev_nm), pulses_per_rev);

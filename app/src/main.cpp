@@ -138,7 +138,7 @@ int main(void) {
   }
 
   StateMachine sm(stepper, &remote);
-  bool led_on = false;
+  bool led_on = true;
 
 #ifdef BUILD_COMMIT
   LOG_INF("Build commit: %s", BUILD_COMMIT);
