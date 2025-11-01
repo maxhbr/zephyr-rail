@@ -89,9 +89,10 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
 
 void StepperWithTarget::log_state() {
   int32_t pos = get_position();
-  LOG_INF("Enabled: %s, Position: %dum @ %d, Target: %dum, Moving: %s",
-          enabled ? "true" : "false", steps_to_um(pos), pos,
-          steps_to_um(target_position), is_moving ? "true" : "false");
+  LOG_INF("Enabled: %s, Position: %s @ %d, Target: %s, Moving: %s",
+          enabled ? "true" : "false", nm_as_um_representation(steps_to_nm(pos)),
+          pos, nm_as_um_representation(steps_to_nm(target_position)),
+          is_moving ? "true" : "false");
 }
 
 int StepperWithTarget::enable() {
@@ -152,25 +153,25 @@ void StepperWithTarget::set_target_position(int32_t _target_position) {
 
 int32_t StepperWithTarget::get_target_position() { return target_position; }
 
-int32_t StepperWithTarget::steps_to_um(int32_t steps) {
-  return (steps * pitch_per_rev * 1000) / pulses_per_rev;
+int32_t StepperWithTarget::steps_to_nm(int32_t steps) {
+  return (steps * pitch_per_rev * 1000000) / pulses_per_rev;
 }
 
-int32_t StepperWithTarget::um_to_steps(int32_t um) {
-  return (um * pulses_per_rev) / (pitch_per_rev * 1000);
+int32_t StepperWithTarget::nm_to_steps(int32_t nm) {
+  return (nm * pulses_per_rev) / (pitch_per_rev * 1000000);
 }
 
-int32_t StepperWithTarget::go_relative_um(int32_t dist) {
-  int32_t steps = um_to_steps(dist);
+int32_t StepperWithTarget::go_relative_nm(int32_t dist) {
+  int32_t steps = nm_to_steps(dist);
   return go_relative(steps);
 }
-void StepperWithTarget::set_target_position_um(int32_t _target_position) {
-  int32_t steps = um_to_steps(_target_position);
+void StepperWithTarget::set_target_position_nm(int32_t _target_position) {
+  int32_t steps = nm_to_steps(_target_position);
   set_target_position(steps);
 }
-int32_t StepperWithTarget::get_target_position_um() {
+int32_t StepperWithTarget::get_target_position_nm() {
   int32_t steps = get_target_position();
-  return steps_to_um(steps);
+  return steps_to_nm(steps);
 }
 
 bool StepperWithTarget::step_towards_target() {

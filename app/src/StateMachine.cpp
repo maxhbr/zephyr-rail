@@ -63,13 +63,14 @@ static enum smf_state_result s_interactive_run(void *o) {
 
       switch (msg.evt.value()) {
       case EVENT_GO:
-        LOG_INF("go to position %d", msg.value);
-        s->stepper->go_relative_um(msg.value);
+        LOG_INF("go to position %s", nm_as_um_representation(msg.value));
+        s->stepper->go_relative_nm(msg.value);
         s->stepper->step_towards_target();
         break;
       case EVENT_GO_TO:
-        LOG_INF("go to absolute position %d", msg.value);
-        s->stepper->set_target_position_um(msg.value);
+        LOG_INF("go to absolute position %s",
+                nm_as_um_representation(msg.value));
+        s->stepper->set_target_position_nm(msg.value);
         s->stepper->step_towards_target();
         break;
       case EVENT_GO_PCT: {
@@ -81,30 +82,35 @@ static enum smf_state_result s_interactive_run(void *o) {
         int upper = s->stack.get_upper_bound();
         int range = upper - lower;
         int target = lower + (range * msg.value) / 100;
-        LOG_INF("go to relative position %d% between upper and lower @ %d",
-                msg.value, target);
-        s->stepper->set_target_position_um(target);
+        LOG_INF("go to relative position %d%% between upper and lower @ %s",
+                msg.value, nm_as_um_representation(target));
+        s->stepper->set_target_position_nm(target);
         s->stepper->step_towards_target();
         break;
       }
       case EVENT_SET_LOWER_BOUND: {
-        int lower_bound = s->stepper->get_target_position_um();
-        LOG_INF("set lower bound to %d", lower_bound);
+        int lower_bound = s->stepper->get_target_position_nm();
+        LOG_INF("set lower bound to %s (upper is %s)",
+                nm_as_um_representation(lower_bound),
+                nm_as_um_representation(s->stack.get_upper_bound()));
         s->stack.set_lower_bound(lower_bound);
+
         break;
       }
       case EVENT_SET_UPPER_BOUND: {
-        int upper_bound = s->stepper->get_target_position_um();
-        LOG_INF("set upper bound to %d", upper_bound);
+        int upper_bound = s->stepper->get_target_position_nm();
+        LOG_INF("set upper bound to %s (lower is %s)",
+                nm_as_um_representation(upper_bound),
+                nm_as_um_representation(s->stack.get_lower_bound()));
         s->stack.set_upper_bound(upper_bound);
         break;
       }
       case EVENT_SET_LOWER_BOUND_TO:
-        LOG_INF("set lower bound to %d", msg.value);
+        LOG_INF("set lower bound to %s", nm_as_um_representation(msg.value));
         s->stack.set_lower_bound(msg.value);
         break;
       case EVENT_SET_UPPER_BOUND_TO:
-        LOG_INF("set upper bound to %d", msg.value);
+        LOG_INF("set upper bound to %s", nm_as_um_representation(msg.value));
         s->stack.set_upper_bound(msg.value);
         break;
       case EVENT_SET_WAIT_BEFORE_MS:
@@ -174,10 +180,11 @@ static enum smf_state_result s_stack_run(void *o) {
     int current_target = s->stack.get_current_target().value();
     int upper_bound = s->stack.get_upper_bound();
 
-    LOG_INF("Stacking: Step %d/%d at position %dum < %dum < %dum",
-            index_in_stack + 1, length_of_stack, lower_bound, current_target,
-            upper_bound);
-    s->stepper->set_target_position_um(current_target);
+    LOG_INF("Stacking: Step %d/%d at position %s < %s < %s", index_in_stack + 1,
+            length_of_stack, nm_as_um_representation(lower_bound),
+            nm_as_um_representation(current_target),
+            nm_as_um_representation(upper_bound));
+    s->stepper->set_target_position_nm(current_target);
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
     LOG_INF("Stacking DONE");

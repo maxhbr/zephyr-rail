@@ -45,8 +45,8 @@ class StepperWithTarget {
   void set_target_position(int32_t _target_position);
   int32_t get_target_position();
 
-  int32_t steps_to_um(int32_t steps);
-  int32_t um_to_steps(int32_t um);
+  int32_t steps_to_nm(int32_t steps);
+  int32_t nm_to_steps(int32_t nm);
 
 public:
   StepperWithTarget(const struct device *dev, int _pitch_per_rev,
@@ -64,9 +64,9 @@ public:
 
   int set_speed(StepperSpeed speed);
 
-  int32_t go_relative_um(int32_t dist);
-  void set_target_position_um(int32_t _target_position);
-  int32_t get_target_position_um();
+  int32_t go_relative_nm(int32_t dist);
+  void set_target_position_nm(int32_t _target_position);
+  int32_t get_target_position_nm();
 
   bool step_towards_target();
 
@@ -76,5 +76,12 @@ public:
 };
 
 void start_stepper(StepperWithTarget *_started_stepper_ptr);
+
+static char *nm_as_um_representation(int nm) {
+  static char buf[20];
+  double um = nm / 1000.0;
+  snprintf(buf, sizeof(buf), "%.3fum", um);
+  return buf;
+}
 
 #endif // STEPPERWITHTARGET_H_
