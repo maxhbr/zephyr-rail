@@ -57,6 +57,7 @@ public:
   int get_upper_bound();
   void set_expected_length_of_stack(int _expected_length_of_stack);
   void set_expected_step_size(int _expected_step_size);
+  void flip_start_at();
 
   const struct stack_status get_status() {
     return {

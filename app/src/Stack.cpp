@@ -155,3 +155,5 @@ void Stack::set_expected_step_size(int _expected_step_size) {
   expected_step_size = _expected_step_size;
   compute_via_step_size = true;
 }
+
+void Stack::flip_start_at() { start_at_lower = !start_at_lower; }

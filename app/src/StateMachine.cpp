@@ -188,6 +188,7 @@ static enum smf_state_result s_stack_run(void *o) {
     smf_set_state(SMF_CTX(o), s_stack_move_ptr);
   } else {
     LOG_INF("Stacking DONE");
+    s->stack.flip_start_at();
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
   }
   return SMF_EVENT_HANDLED;
