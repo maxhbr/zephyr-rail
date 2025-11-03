@@ -11,8 +11,11 @@ void Stack::log_state() {
         index_in_stack.value() + 1, length_of_stack, nm_as_um(lower_bound),
         nm_as_um(get_current_target().value()), nm_as_um(upper_bound));
   } else {
-    LOG_INF("%.3fum -> %.3fum, start_at=%s", nm_as_um(lower_bound),
-            nm_as_um(upper_bound), start_at_lower ? "lower" : "upper");
+    double lower_nm = nm_as_um(lower_bound);
+    double upper_nm = nm_as_um(upper_bound);
+    double diff_nm = upper_nm - lower_nm;
+    LOG_INF("%.3fum -> %.3fum, diff=%.3fum, start_at=%s", lower_nm, upper_nm,
+            diff_nm, start_at_lower ? "lower" : "upper");
   }
 };
 
