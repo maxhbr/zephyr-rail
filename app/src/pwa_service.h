@@ -15,11 +15,6 @@
 class PwaService {
 public:
   /**
-   * @brief Initialize the PWA service
-   */
-  static void init();
-
-  /**
    * @brief Start advertising the PWA service
    * @return 0 on success, negative error code on failure
    */

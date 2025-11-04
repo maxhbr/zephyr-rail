@@ -15,7 +15,6 @@ public:
   SonyRemote();
   SonyRemote(
       const char *target_address); // Constructor with specific BT address
-  void begin();                    // bt_enable() must be called before this
   void startScan();                // start scanning for the camera
   void stopScan();                 // stop scanning for the camera
   void end();                      // disconnect and cleanup

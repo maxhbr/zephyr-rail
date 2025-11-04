@@ -11,12 +11,6 @@
 
 LOG_MODULE_REGISTER(pwa_service, LOG_LEVEL_INF);
 
-// Connection callbacks - defined in the same style as sony_remote.cpp
-static bt_conn_cb kPwaConnCbs = {
-    .connected = PwaService::onConnected,
-    .disconnected = PwaService::onDisconnected,
-};
-
 // Custom UUIDs for PWA service (128-bit)
 // Service UUID: 12345634-5678-1234-1234-123456789abc
 #define PWA_SERVICE_UUID                                                       \
@@ -269,12 +263,6 @@ BT_GATT_SERVICE_DEFINE(
                            BT_GATT_CHRC_WRITE | BT_GATT_CHRC_WRITE_WITHOUT_RESP,
                            BT_GATT_PERM_WRITE_ENCRYPT, NULL, pwa_cmd_write,
                            NULL));
-
-void PwaService::init() {
-  bt_conn_cb_register(&kPwaConnCbs);
-  strcpy((char *)status_buffer_, "INIT");
-  LOG_INF("PWA Service initialized");
-}
 
 const struct bt_gatt_attr *PwaService::findStatusAttr() {
   const struct bt_gatt_attr *svc = bt_gatt_attr_next(nullptr);

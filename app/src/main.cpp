@@ -25,6 +25,81 @@
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
+#ifdef CONFIG_BT
+// Unified connection callbacks that delegate to appropriate implementation
+static void unified_connected(struct bt_conn *conn, uint8_t err) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // We are acting as peripheral/server - this is a PWA connection
+    PwaService::onConnected(conn, err);
+  } else if (info.role == BT_CONN_ROLE_CENTRAL) {
+    // We are acting as central/client - this is a Sony camera connection
+    SonyRemote::on_connected(conn, err);
+  }
+}
+
+static void unified_disconnected(struct bt_conn *conn, uint8_t reason) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    PwaService::onDisconnected(conn, reason);
+  } else if (info.role == BT_CONN_ROLE_CENTRAL) {
+    SonyRemote::on_disconnected(conn, reason);
+  }
+}
+
+static void unified_security_changed(struct bt_conn *conn, bt_security_t level,
+                                     enum bt_security_err err) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  // Only Sony camera connections need security change handling
+  if (info.role == BT_CONN_ROLE_CENTRAL) {
+    SonyRemote::on_security_changed(conn, level, err);
+  }
+}
+
+static bt_conn_cb kConnCbs = {
+    .connected = unified_connected,
+    .disconnected = unified_disconnected,
+    .security_changed = unified_security_changed,
+};
+
+// Auth callbacks delegate to Sony Remote (only used for camera pairing)
+static void unified_auth_cancel(struct bt_conn *conn) {
+  SonyRemote::auth_cancel(conn);
+}
+
+static void unified_auth_passkey_display(struct bt_conn *conn,
+                                         unsigned int passkey) {
+  SonyRemote::auth_passkey_display(conn, passkey);
+}
+
+static void unified_auth_passkey_confirm(struct bt_conn *conn,
+                                         unsigned int passkey) {
+  SonyRemote::auth_passkey_confirm(conn, passkey);
+}
+
+static void unified_auth_passkey_entry(struct bt_conn *conn) {
+  SonyRemote::auth_passkey_entry(conn);
+}
+
+static enum bt_security_err unified_auth_pairing_confirm(struct bt_conn *conn) {
+  return SonyRemote::auth_pairing_confirm(conn);
+}
+
+static bt_conn_auth_cb kAuthCbs = {
+    .passkey_display = unified_auth_passkey_display,
+    .passkey_entry = unified_auth_passkey_entry,
+    .passkey_confirm = unified_auth_passkey_confirm,
+    .cancel = unified_auth_cancel,
+    .pairing_confirm = unified_auth_pairing_confirm,
+};
+#endif
+
 #define STEPPER_NODE DT_NODELABEL(stepper_motor)
 #define LED0_NODE DT_ALIAS(led0)
 
@@ -106,7 +181,7 @@ int main(void) {
 
   // Initialize PWA service
   LOG_INF("initialize PWA service ...");
-  PwaService::init();
+  // PwaService::init();
 
   // Start advertising for PWA connections (peripheral role)
   if (int err = PwaService::startAdvertising(); err) {
@@ -119,8 +194,9 @@ int main(void) {
   SonyRemote remote("9C:50:D1:AF:76:5F"); // A7Riv
   // SonyRemote remote("CC:C0:79:DA:94:B6"); // A7iii
 
-  k_msleep(100);
-  s->remote->begin();
+  bt_conn_cb_register(&kConnCbs);
+  bt_conn_auth_cb_register(&kAuthCbs);
+
   k_msleep(100);
 #else
   LOG_INF("initialize Dummy Sony Remote ...");

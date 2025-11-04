@@ -10,8 +10,8 @@ public:
   SonyRemote(const char *target_address); // Constructor with specific BT
                                           // address (ignored)
 
-  void begin();       // no-op
-  void startScan();   // no-op
+  void startScan(); // no-op
+  void stopScan();
   void end();         // no-op
   bool ready() const; // always returns true
 

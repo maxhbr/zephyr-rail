@@ -30,20 +30,6 @@ static bt_uuid_128 kSonySvcUuid =
 
 static bt_uuid_16 kFF01Uuid = BT_UUID_INIT_16(0xFF01);
 
-static bt_conn_cb kConnCbs = {
-    .connected = SonyRemote::on_connected,
-    .disconnected = SonyRemote::on_disconnected,
-    .security_changed = SonyRemote::on_security_changed,
-};
-
-static bt_conn_auth_cb kAuthCbs = {
-    .passkey_display = SonyRemote::auth_passkey_display,
-    .passkey_entry = SonyRemote::auth_passkey_entry,
-    .passkey_confirm = SonyRemote::auth_passkey_confirm,
-    .cancel = SonyRemote::auth_cancel,
-    .pairing_confirm = SonyRemote::auth_pairing_confirm,
-};
-
 static bool accept_any(bt_data *data, void * /*user*/) {
   // Look for Sony devices by checking for Sony manufacturer data or device name
   if (data->type == BT_DATA_MANUFACTURER_DATA && data->data_len >= 2) {
@@ -101,11 +87,6 @@ SonyRemote::SonyRemote(const char *target_address) {
     has_target_addr_ = false;
     LOG_ERR("NULL target address provided");
   }
-}
-
-void SonyRemote::begin() {
-  bt_conn_cb_register(&kConnCbs);
-  bt_conn_auth_cb_register(&kAuthCbs);
 }
 
 void SonyRemote::end() {

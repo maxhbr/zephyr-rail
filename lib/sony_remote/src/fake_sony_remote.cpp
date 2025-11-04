@@ -4,19 +4,19 @@
 
 LOG_MODULE_REGISTER(fake_sony_remote, LOG_LEVEL_INF);
 
-SonyRemote::SonyRemote() { LOG_INF("FakeSonyRemote: constructor"); }
+SonyRemote::SonyRemote() {
+  LOG_INF("FakeSonyRemote: constructor");
+  ready = true;
+}
 
 SonyRemote::SonyRemote(const char *target_address) {
   LOG_INF("FakeSonyRemote: constructor with target address (ignored): %s",
           target_address ? target_address : "null");
 }
 
-void SonyRemote::begin() {
-  LOG_INF("FakeSonyRemote: begin (no-op)");
-  ready_ = true;
-}
-
 void SonyRemote::startScan() { LOG_INF("FakeSonyRemote: startScan (no-op)"); }
+
+void SonyRemote::stopScan() { LOG_INF("FakeSonyRemote: stopScan (no-op)"); }
 
 void SonyRemote::end() {
   LOG_INF("FakeSonyRemote: end (no-op)");

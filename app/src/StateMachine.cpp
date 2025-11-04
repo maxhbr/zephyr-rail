@@ -176,7 +176,7 @@ static void s_parent_camera_pairing_entry(void *o) {
 static void s_parent_camera_pairing_exit(void *o) {
   LOG_INF("Exiting camera pairing mode");
   struct s_object *s = (struct s_object *)o;
-  s->remote.stopScan();
+  s->remote->stopScan();
   k_msleep(100);
 }
 
