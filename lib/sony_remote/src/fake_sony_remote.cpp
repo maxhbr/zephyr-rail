@@ -25,9 +25,7 @@ void SonyRemote::end() {
 
 bool SonyRemote::ready() const { return ready_; }
 
-void SonyRemote::log_state() const {
-  LOG_INF("FakeSonyRemote: ready=%d", ready_);
-}
+void SonyRemote::log_state() { LOG_INF("FakeSonyRemote: ready=%d", ready_); }
 
 void SonyRemote::focusDown() { LOG_INF("FakeSonyRemote: focusDown"); }
 

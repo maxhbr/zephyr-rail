@@ -116,16 +116,17 @@ int main(void) {
   LOG_DBG("PWA service ready - Web Bluetooth interface available");
 
   LOG_INF("initialize Sony Remote ...");
-  SonyRemote remote("9C:50:D1:AF:76:5F");
+  SonyRemote remote("9C:50:D1:AF:76:5F"); // A7Riv
+  // SonyRemote remote("CC:C0:79:DA:94:B6"); // A7iii
 #else
   LOG_INF("initialize Dummy Sony Remote ...");
   SonyRemote remote;
 #endif
   led_blink(&led, 2, 100, 100);
-  k_msleep(100); // Match POC timing
+  k_msleep(100);
   remote.begin();
 
-  k_msleep(100); // Match POC timing
+  k_msleep(100);
   remote.startScan();
 
   led_blink(&led, 3, 100, 100);
