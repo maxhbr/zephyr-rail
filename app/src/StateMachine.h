@@ -65,6 +65,7 @@ enum stack_state {
 
 struct s_object {
   struct smf_ctx ctx;
+  int retry_counter = 0;
   /* Other state specific data add here */
   const StepperWithTarget *stepper;
   const SonyRemote *remote;

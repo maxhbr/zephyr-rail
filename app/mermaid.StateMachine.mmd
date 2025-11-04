@@ -17,6 +17,7 @@ flowchart LR;
     end
 
     S0 --> S_INTERACTIVE;
+    S0 -. directly pair? .-> S_WAIT_FOR_CAMERA;
     S_INTERACTIVE --->|pair Camera| S_WAIT_FOR_CAMERA;
     S_INTERACTIVE <--- S_WAIT_FOR_CAMERA;
     S_INTERACTIVE -->|process command| S_INTERACTIVE;

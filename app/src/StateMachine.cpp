@@ -166,6 +166,7 @@ static void s_parent_camera_pairing_entry(void *o) {
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
     return;
   }
+  s->retry_counter = 0;
 
   k_msleep(100);
   s->remote->startScan();
@@ -182,16 +183,20 @@ static void s_parent_camera_pairing_exit(void *o) {
 static enum smf_state_result s_wait_for_camera_run(void *o) {
   struct s_object *s = (struct s_object *)o;
 
-  // Check if camera is ready/paired
   if (s->remote->ready()) {
     LOG_INF("Camera paired successfully");
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
     return SMF_EVENT_HANDLED;
   }
 
-  // Continue waiting for camera
-  LOG_DBG("Waiting for camera to pair...");
-  k_sleep(K_MSEC(500)); // Check every 500ms
+  if (s->retry_counter++ > 10) {
+    LOG_ERR("Camera pairing failed");
+    smf_set_state(SMF_CTX(o), s_interactive_ptr);
+    return SMF_EVENT_HANDLED;
+  }
+
+  LOG_DBG("Waiting for camera to pair (%d)...", s->retry_counter);
+  k_sleep(K_MSEC(1000));
 
   return SMF_EVENT_HANDLED;
 }
