@@ -135,6 +135,15 @@ void SonyRemote::startScan() {
   }
 }
 
+void SonyRemote::stopScan() {
+  int err = bt_le_scan_stop();
+  if (err) {
+    LOG_ERR("Scan stop failed (%d)", err);
+  } else {
+    LOG_INF("Bluetooth LE scan stopped");
+  }
+}
+
 bool SonyRemote::ready() const {
   if (conn_ != nullptr && ff01_handle_ != 0 && !is_paired_) {
     LOG_DBG("connected but not paired");
@@ -249,12 +258,7 @@ void SonyRemote::on_disconnected(bt_conn *conn, uint8_t reason) {
   self_->ff01_properties_ = 0; // Reset properties
   self_->is_paired_ = false;   // Reset pairing status on disconnect
   // resume scanning
-  static struct bt_le_scan_param scan_param =
-      BT_LE_SCAN_PARAM_INIT(BT_LE_SCAN_TYPE_ACTIVE, BT_LE_SCAN_OPT_NONE,
-                            BT_GAP_SCAN_FAST_INTERVAL, BT_GAP_SCAN_FAST_WINDOW);
-  int err = bt_le_scan_start(&scan_param, SonyRemote::on_scan);
-  if (err)
-    LOG_ERR("Scan restart failed (%d)", err);
+  self_->startScan();
 }
 
 uint8_t SonyRemote::on_discover(bt_conn * /*conn*/, const bt_gatt_attr *attr,
@@ -348,7 +352,6 @@ uint8_t SonyRemote::on_discover_service(bt_conn * /*conn*/,
 void SonyRemote::start_discovery() {
   // Check if we have proper security level before discovering services
   bt_security_t sec_level = bt_conn_get_security(conn_);
-  LOG_INF("Connection security level: %d", sec_level);
 
   if (sec_level < BT_SECURITY_L2) {
     LOG_WRN("Security level too low (%d), retrying after delay...", sec_level);
@@ -419,10 +422,7 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
           bt_conn_le_create(addr, &create_param, &conn_param, &self_->conn_);
       if (err) {
         LOG_ERR("Create conn failed (%d)", err);
-        static struct bt_le_scan_param scan_param = BT_LE_SCAN_PARAM_INIT(
-            BT_LE_SCAN_TYPE_ACTIVE, BT_LE_SCAN_OPT_NONE,
-            BT_GAP_SCAN_FAST_INTERVAL, BT_GAP_SCAN_FAST_WINDOW);
-        bt_le_scan_start(&scan_param, SonyRemote::on_scan);
+        self_->startScan();
       }
     }
   }

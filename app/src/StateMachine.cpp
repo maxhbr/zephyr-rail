@@ -168,17 +168,15 @@ static void s_parent_camera_pairing_entry(void *o) {
   }
 
   k_msleep(100);
-  s->remote->begin();
-
-  k_msleep(100);
   s->remote->startScan();
   k_msleep(100);
 }
 
 static void s_parent_camera_pairing_exit(void *o) {
   LOG_INF("Exiting camera pairing mode");
-  // struct s_object *s = (struct s_object *)o;
-  // s->remote.stopScan();
+  struct s_object *s = (struct s_object *)o;
+  s->remote.stopScan();
+  k_msleep(100);
 }
 
 static enum smf_state_result s_wait_for_camera_run(void *o) {

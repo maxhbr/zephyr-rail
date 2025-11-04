@@ -118,18 +118,15 @@ int main(void) {
   LOG_INF("initialize Sony Remote ...");
   SonyRemote remote("9C:50:D1:AF:76:5F"); // A7Riv
   // SonyRemote remote("CC:C0:79:DA:94:B6"); // A7iii
+
+  k_msleep(100);
+  s->remote->begin();
+  k_msleep(100);
 #else
   LOG_INF("initialize Dummy Sony Remote ...");
   SonyRemote remote;
 #endif
   led_blink(&led, 2, 100, 100);
-  // k_msleep(100);
-  // remote.begin();
-
-  // k_msleep(100);
-  // remote.startScan();
-
-  // led_blink(&led, 3, 100, 100);
 
   LOG_INF("initialize stepper ...");
   StepperWithTarget *stepper = init_stepper();
