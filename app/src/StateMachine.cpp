@@ -23,7 +23,6 @@ ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 // initialize StateMachine
 
 struct smf_state *s0_ptr;
-struct smf_state *s_parent_camera_pairing_ptr;
 struct smf_state *s_wait_for_camera_ptr;
 struct smf_state *s_interactive_ptr;
 struct smf_state *s_stack_ptr;
@@ -32,7 +31,7 @@ struct smf_state *s_stack_settle_ptr;
 struct smf_state *s_stack_img_ptr;
 
 static enum smf_state_result s0_run(void *o) {
-  smf_set_state(SMF_CTX(o), s_interactive_ptr);
+  smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
   return SMF_EVENT_HANDLED;
 }
 
@@ -307,7 +306,6 @@ StateMachine::StateMachine(const StepperWithTarget *stepper,
   stack_states[S_STACK_IMG].parent = &stack_states[S_PARENT_STACKING];
 
   s0_ptr = &stack_states[S0];
-  s_parent_camera_pairing_ptr = &stack_states[S_PARENT_CAMERA_PAIRING];
   s_wait_for_camera_ptr = &stack_states[S_WAIT_FOR_CAMERA];
   s_interactive_ptr = &stack_states[S_INTERACTIVE];
   s_stack_ptr = &stack_states[S_STACK];
