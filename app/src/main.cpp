@@ -70,24 +70,85 @@ static bt_conn_cb kConnCbs = {
 
 // Auth callbacks delegate to Sony Remote (only used for camera pairing)
 static void unified_auth_cancel(struct bt_conn *conn) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // PWA connection - just log
+    char addr[BT_ADDR_LE_STR_LEN];
+    bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+    LOG_WRN("PWA pairing cancelled: %s", addr);
+    return;
+  }
+
+  // Delegate to Sony Remote for central connections
   SonyRemote::auth_cancel(conn);
 }
 
 static void unified_auth_passkey_display(struct bt_conn *conn,
                                          unsigned int passkey) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // PWA connection - just log
+    char addr[BT_ADDR_LE_STR_LEN];
+    bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+    LOG_INF("PWA passkey display for %s: %06u", addr, passkey);
+    return;
+  }
+
+  // Delegate to Sony Remote for central connections
   SonyRemote::auth_passkey_display(conn, passkey);
 }
 
 static void unified_auth_passkey_confirm(struct bt_conn *conn,
                                          unsigned int passkey) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // PWA connection - auto-confirm
+    char addr[BT_ADDR_LE_STR_LEN];
+    bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+    LOG_INF("PWA confirm passkey for %s: %06u", addr, passkey);
+    bt_conn_auth_passkey_confirm(conn);
+    return;
+  }
+
+  // Delegate to Sony Remote for central connections
   SonyRemote::auth_passkey_confirm(conn, passkey);
 }
 
 static void unified_auth_passkey_entry(struct bt_conn *conn) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // PWA connection - just log
+    char addr[BT_ADDR_LE_STR_LEN];
+    bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+    LOG_INF("PWA passkey entry for %s", addr);
+    return;
+  }
+
+  // Delegate to Sony Remote for central connections
   SonyRemote::auth_passkey_entry(conn);
 }
 
 static enum bt_security_err unified_auth_pairing_confirm(struct bt_conn *conn) {
+  struct bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+
+  if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // PWA connection - auto-accept
+    char addr[BT_ADDR_LE_STR_LEN];
+    bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+    LOG_INF("PWA pairing confirm for %s - accepting", addr);
+    return BT_SECURITY_ERR_SUCCESS;
+  }
+
+  // Delegate to Sony Remote for central connections
   return SonyRemote::auth_pairing_confirm(conn);
 }
 

@@ -185,6 +185,7 @@ static enum smf_state_result s_wait_for_camera_run(void *o) {
 
   if (s->remote->ready()) {
     LOG_INF("Camera paired successfully");
+    s->remote->log_state();
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
     return SMF_EVENT_HANDLED;
   }

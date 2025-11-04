@@ -5,7 +5,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/sys/byteorder.h>
 
-LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_DBG);
 
 SonyRemote *SonyRemote::self_ = nullptr;
 
@@ -331,6 +331,7 @@ uint8_t SonyRemote::on_discover_service(bt_conn * /*conn*/,
 }
 
 void SonyRemote::start_discovery() {
+  LOG_DBG("Starting service discovery...");
   // Check if we have proper security level before discovering services
   bt_security_t sec_level = bt_conn_get_security(conn_);
 
@@ -509,7 +510,6 @@ void SonyRemote::on_security_changed(bt_conn *conn, bt_security_t level,
     if (level >= BT_SECURITY_L2) {
       LOG_INF("Pairing successful! Starting service discovery...");
       self_->is_paired_ = true;
-      // Start discovery now that we're paired
       self_->start_discovery();
     }
   }
