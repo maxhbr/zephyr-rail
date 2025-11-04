@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('controls').style.display = 'block';
       document.getElementById('controls-setup').style.display = 'block';
       document.getElementById('connect').disabled = true;
+      document.getElementById('pair-camera').disabled = false
       document.getElementById('disconnect').disabled = false;
 
     } catch (error) {
@@ -107,6 +108,7 @@ function handleDisconnection() {
   document.getElementById('controls').style.display = 'none';
   document.getElementById('controls-setup').style.display = 'none';
   document.getElementById('connect').disabled = false;
+  document.getElementById('pair-camera').disabled = true;
   document.getElementById('disconnect').disabled = true;
 
   // Reset variables

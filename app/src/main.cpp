@@ -123,13 +123,13 @@ int main(void) {
   SonyRemote remote;
 #endif
   led_blink(&led, 2, 100, 100);
-  k_msleep(100);
-  remote.begin();
+  // k_msleep(100);
+  // remote.begin();
 
-  k_msleep(100);
-  remote.startScan();
+  // k_msleep(100);
+  // remote.startScan();
 
-  led_blink(&led, 3, 100, 100);
+  // led_blink(&led, 3, 100, 100);
 
   LOG_INF("initialize stepper ...");
   StepperWithTarget *stepper = init_stepper();
@@ -303,6 +303,11 @@ static int cmd_rail_startStackWithLength(const struct shell *sh, size_t argc,
   return 0;
 }
 
+static int cmd_rail_pair(const struct shell *sh, size_t argc, char **argv) {
+  event_pub(EVENT_PAIR_CAMERA);
+  return 0;
+}
+
 static int cmd_rail_shoot(const struct shell *sh, size_t argc, char **argv) {
   event_pub(EVENT_SHOOT);
   return 0;
@@ -330,6 +335,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
               cmd_rail_startStackWithStepSize),
     SHELL_CMD(stack_count, NULL, "Start stacking with length.",
               cmd_rail_startStackWithLength),
+    SHELL_CMD(pair, NULL, "Pair camera", cmd_rail_pair),
     SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_rail_shoot),
     SHELL_CMD(status, NULL, "Get current status.", cmd_rail_status),
     SHELL_SUBCMD_SET_END);

@@ -79,7 +79,11 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
     event_pub(EVENT_SHOOT);
     snprintf(response, sizeof(response), "ACK:SHOOT");
 
-    // Commands with one required parameter
+  } else if (strcmp(token, "PAIR") == 0) {
+    LOG_INF("→ Command: PAIR");
+    event_pub(EVENT_PAIR_CAMERA);
+    snprintf(response, sizeof(response), "ACK:PAIR");
+
   } else if (strcmp(token, "GO") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
     if (!token) {

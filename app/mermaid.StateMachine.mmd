@@ -1,10 +1,12 @@
 flowchart LR;
     S0((S0));
 
-    S_WAIT_FOR_CAMERA;
-
     subgraph S_PARENT_INTERACTIVE
       S_INTERACTIVE{S_INTERACTIVE}
+    end
+
+    subgraph S_PARENT_CAMERA_PAIRING
+      S_WAIT_FOR_CAMERA;
     end
     
     subgraph S_PARENT_STACKING;
@@ -15,6 +17,8 @@ flowchart LR;
     end
 
     S0 --> S_INTERACTIVE;
+    S_INTERACTIVE --->|pair Camera| S_WAIT_FOR_CAMERA;
+    S_INTERACTIVE <--- S_WAIT_FOR_CAMERA;
     S_INTERACTIVE -->|process command| S_INTERACTIVE;
     S_INTERACTIVE -->|start stack| S_STACK;
     S_INTERACTIVE <-----|done| S_STACK;

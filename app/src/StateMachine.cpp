@@ -23,6 +23,7 @@ ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 // initialize StateMachine
 
 struct smf_state *s0_ptr;
+struct smf_state *s_parent_camera_pairing_ptr;
 struct smf_state *s_wait_for_camera_ptr;
 struct smf_state *s_interactive_ptr;
 struct smf_state *s_stack_ptr;
@@ -125,6 +126,10 @@ static enum smf_state_result s_interactive_run(void *o) {
         LOG_INF("set wait after ms to %d", msg.value);
         s->wait_after_ms = msg.value;
         break;
+      case EVENT_PAIR_CAMERA:
+        LOG_INF("Starting camera pairing");
+        smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+        break;
       case EVENT_START_STACK:
         LOG_INF("Starting stack..., %d images", msg.value);
         s->stack.set_expected_step_size(msg.value);
@@ -149,6 +154,47 @@ static enum smf_state_result s_interactive_run(void *o) {
   } else {
     LOG_ERR("failed to wait for zbus");
   }
+  return SMF_EVENT_HANDLED;
+}
+
+static void s_parent_camera_pairing_entry(void *o) {
+  LOG_INF("Entering camera pairing mode");
+
+  struct s_object *s = (struct s_object *)o;
+  if (!s->remote) {
+    LOG_ERR("No remote available for pairing");
+    smf_set_state(SMF_CTX(o), s_interactive_ptr);
+    return;
+  }
+
+  k_msleep(100);
+  s->remote->begin();
+
+  k_msleep(100);
+  s->remote->startScan();
+  k_msleep(100);
+}
+
+static void s_parent_camera_pairing_exit(void *o) {
+  LOG_INF("Exiting camera pairing mode");
+  // struct s_object *s = (struct s_object *)o;
+  // s->remote.stopScan();
+}
+
+static enum smf_state_result s_wait_for_camera_run(void *o) {
+  struct s_object *s = (struct s_object *)o;
+
+  // Check if camera is ready/paired
+  if (s->remote->ready()) {
+    LOG_INF("Camera paired successfully");
+    smf_set_state(SMF_CTX(o), s_interactive_ptr);
+    return SMF_EVENT_HANDLED;
+  }
+
+  // Continue waiting for camera
+  LOG_DBG("Waiting for camera to pair...");
+  k_sleep(K_MSEC(500)); // Check every 500ms
+
   return SMF_EVENT_HANDLED;
 }
 
@@ -229,6 +275,11 @@ static struct smf_state stack_states[] = {
                      NULL), // S_PARENT_INTERACTIVE
     SMF_CREATE_STATE(s_log_state, s_interactive_run, NULL, NULL,
                      NULL), // S_INTERACTIVE
+    SMF_CREATE_STATE(s_parent_camera_pairing_entry, NULL,
+                     s_parent_camera_pairing_exit, NULL,
+                     NULL), // S_PARENT_CAMERA_PAIRING
+    SMF_CREATE_STATE(NULL, s_wait_for_camera_run, NULL, NULL,
+                     NULL), // S_WAIT_FOR_CAMERA
     SMF_CREATE_STATE(s_parent_stacking_entry, NULL, s_parent_stacking_exit,
                      NULL, NULL),                          // S_PARENT_STACKING
     SMF_CREATE_STATE(NULL, s_stack_run, NULL, NULL, NULL), // S_STACK
@@ -244,12 +295,16 @@ StateMachine::StateMachine(const StepperWithTarget *stepper,
 
   // Set up parent pointers after array initialization
   stack_states[S_INTERACTIVE].parent = &stack_states[S_PARENT_INTERACTIVE];
+  stack_states[S_WAIT_FOR_CAMERA].parent =
+      &stack_states[S_PARENT_CAMERA_PAIRING];
   stack_states[S_STACK].parent = &stack_states[S_PARENT_STACKING];
   stack_states[S_STACK_MOVE].parent = &stack_states[S_PARENT_STACKING];
   stack_states[S_STACK_SETTLE].parent = &stack_states[S_PARENT_STACKING];
   stack_states[S_STACK_IMG].parent = &stack_states[S_PARENT_STACKING];
 
   s0_ptr = &stack_states[S0];
+  s_parent_camera_pairing_ptr = &stack_states[S_PARENT_CAMERA_PAIRING];
+  s_wait_for_camera_ptr = &stack_states[S_WAIT_FOR_CAMERA];
   s_interactive_ptr = &stack_states[S_INTERACTIVE];
   s_stack_ptr = &stack_states[S_STACK];
   s_stack_move_ptr = &stack_states[S_STACK_MOVE];
