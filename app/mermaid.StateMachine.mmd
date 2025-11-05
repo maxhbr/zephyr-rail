@@ -2,18 +2,19 @@ flowchart LR;
     S0((S0));
 
     subgraph S_PARENT_INTERACTIVE
-      S_INTERACTIVE{S_INTERACTIVE}
+      S_INTERACTIVE{{S_INTERACTIVE}}
     end
 
     subgraph S_PARENT_CAMERA_PAIRING
-      S_WAIT_FOR_CAMERA{S_WAIT_FOR_CAMERA};
+      S_WAIT_FOR_CAMERA{{S_WAIT_FOR_CAMERA}}
     end
     
     subgraph S_PARENT_STACKING;
-      S_STACK{S_STACK}
-      S_STACK_MOVE;
-      S_STACK_SETTLE;
-      S_STACK_IMG;
+      S_STACK{{S_STACK}}
+    
+      S_STACK_MOVE[/S_STACK_MOVE/]
+      S_STACK_SETTLE[/S_STACK_SETTLE/]
+      S_STACK_IMG[/S_STACK_IMG/]
     end
 
     S0 --> S_WAIT_FOR_CAMERA;
