@@ -6,7 +6,7 @@ flowchart LR;
     end
 
     subgraph S_PARENT_CAMERA_PAIRING
-      S_WAIT_FOR_CAMERA;
+      S_WAIT_FOR_CAMERA{S_WAIT_FOR_CAMERA};
     end
     
     subgraph S_PARENT_STACKING;
@@ -16,13 +16,14 @@ flowchart LR;
       S_STACK_IMG;
     end
 
-    S0 --> S_INTERACTIVE;
-    S0 -. directly pair? .-> S_WAIT_FOR_CAMERA;
+    S0 --> S_WAIT_FOR_CAMERA;
+    S_WAIT_FOR_CAMERA --> S_INTERACTIVE;
+    S_WAIT_FOR_CAMERA -->|wait| S_WAIT_FOR_CAMERA;
     S_INTERACTIVE --->|pair Camera| S_WAIT_FOR_CAMERA;
-    S_INTERACTIVE <--- S_WAIT_FOR_CAMERA;
+    
     S_INTERACTIVE -->|process command| S_INTERACTIVE;
     S_INTERACTIVE -->|start stack| S_STACK;
-    S_INTERACTIVE <-----|done| S_STACK;
+    S_STACK --->|done| S_INTERACTIVE;
     S_STACK_MOVE --> S_STACK_SETTLE;
     S_STACK_SETTLE --> S_STACK_IMG;
     S_STACK_IMG --> S_STACK;
