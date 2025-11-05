@@ -3,8 +3,9 @@ config:
 ---
 flowchart LR;
 
-  MCU@{ label: "XIAO nRF54L15 (Sense)" }
-  PWA-. bluetooth .->MCU
+  MCU@{ label: "XIAO\nnRF52840 /\nnRF54L15 /\nesp32s3" }
+  PWA@{ label: "PWA", shape: rounded }
+  PWA-. Bluetooth .->MCU
 
   StepperDriver
   
@@ -24,18 +25,10 @@ flowchart LR;
   24Vto5V ----|5V| StepperDriver
   24V =====|24V| StepperDriver
 
-  Camera@{label: "A7Rv"}
-  MCU-. bluetooth .->Camera
+  Camera@{label: "A7Rv", shape: curv-trap }
+  MCU-. Bluetooth .->Camera
 
-  PositioningSensor
-  style PositioningSensor stroke-dasharray: 5 5
-  MCU -.-> PositioningSensor
-
-
-  IMU@{label: "LSM6DS3TR-C or LSM6DSO"}
-  style IMU stroke-dasharray: 5 5
-  MCU -.-> IMU
-
+  linkStyle 0  stroke: lightblue
   linkStyle 1  stroke: blue
   linkStyle 2  stroke: green
   linkStyle 3  stroke: darkorange
@@ -46,3 +39,4 @@ flowchart LR;
   linkStyle 8  stroke: darkred
   linkStyle 9  stroke: darkred
   linkStyle 10 stroke: darkred
+  linkStyle 11 stroke: lightblue
