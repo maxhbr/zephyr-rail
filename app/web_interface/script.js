@@ -186,11 +186,15 @@ function sendSetWaitAfter() {
   sendCommand('SET_WAIT_AFTER ' + value);
 }
 
-function sendStartStack(length) {
+function sendStartStack(expected_step_size_nm) {
+  sendCommand('START_STACK ' + expected_step_size_nm);
+}
+
+function sendStartStackCount(length) {
   if (length === undefined) {
     length = document.getElementById('stack-length').value;
   }
-  sendCommand('START_STACK ' + length);
+  sendCommand('START_STACK_COUNT ' + length);
 }
 
 function updateStatus(text, className) {

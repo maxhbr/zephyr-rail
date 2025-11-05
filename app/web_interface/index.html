@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>ZephyrRail - Focus Stacking Control</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -46,11 +46,18 @@
                 <div class="spacer">&nbsp;</div>
                 <h1>Stack</h1>
                 <div class="button-grid-5">
-                    <button class="btn-success" onclick="sendStartStack(50)">Stack:50</button>
-                    <button class="btn-success" onclick="sendStartStack(100)">Stack:100</button>
-                    <button class="btn-success" onclick="sendStartStack(300)">Stack:300</button>
-                    <button class="btn-success" onclick="sendStartStack(500)">Stack:500</button>
-                    <button class="btn-success" onclick="sendStartStack(1000)">Stack:1000</button>
+                    <button class="btn-success" onclick="sendStartStack(5000)">Stack:5μm</button>
+                    <button class="btn-success" onclick="sendStartStack(1000)">Stack:1μm</button>
+                    <button class="btn-success" onclick="sendStartStack(500)">Stack:0.5μm</button>
+                    <button class="btn-success" onclick="sendStartStack(200)">Stack:0.2μm</button>
+                    <button class="btn-success" onclick="sendStartStack(100)">Stack:0.1μm</button>
+                </div>
+                <div class="button-grid-5">
+                    <button class="btn-success" onclick="sendStartStackCount(50)">Stack#50</button>
+                    <button class="btn-success" onclick="sendStartStackCount(100)">Stack#100</button>
+                    <button class="btn-success" onclick="sendStartStackCount(300)">Stack#300</button>
+                    <button class="btn-success" onclick="sendStartStackCount(500)">Stack#500</button>
+                    <button class="btn-success" onclick="sendStartStackCount(1000)">Stack#1000</button>
                 </div>
                 <div class="input-group">
                     <label>Expected Stack Length:</label>
@@ -73,12 +80,18 @@
                     <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
                     <div class="input-group">
                         <label>Go To Position:</label>
-                        <input type="number" id="goto-position" value="0" step="10">
+                        <div class="input-with-unit">
+                            <input type="number" id="goto-position" value="0" step="10">
+                            <span class="unit-label">μm</span>
+                        </div>
                         <button class="btn-primary" onclick="sendGoTo()">Go To</button>
                     </div>
                     <div class="input-group">
                         <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To</button>
-                        <input type="number" id="bound" value="0" placeholder="Lower">
+                        <div class="input-with-unit">
+                            <input type="number" id="bound" value="0" placeholder="Lower">
+                            <span class="unit-label">μm</span>
+                        </div>
                         <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To</button>
                     </div>
                     <div class="input-group">

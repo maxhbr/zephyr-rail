@@ -4,13 +4,15 @@
     padding: 0;
 }
 
+html, body {
+  touch-action: manipulation;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     padding: 20px;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
 }
 
 .container {
@@ -136,9 +138,9 @@ label {
     border: 2px solid #dc3545;
 }
 
-#controls, #controls-setup {
+/* #controls, #controls-setup {
     display: none;
-}
+} */
 
 .control-section {
     margin: 20px 0;
