@@ -138,9 +138,9 @@ label {
     border: 2px solid #dc3545;
 }
 
-/* #controls, #controls-setup {
+#controls, #controls-setup {
     display: none;
-} */
+}
 
 .control-section {
     margin: 20px 0;
