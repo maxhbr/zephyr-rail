@@ -70,6 +70,27 @@ input[type="number"] {
     margin: 5px;
 }
 
+.input-with-unit {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    margin: 5px;
+}
+
+.input-with-unit input[type="number"] {
+    margin: 0;
+    padding-right: 35px;
+}
+
+.unit-label {
+    position: absolute;
+    right: 12px;
+    color: #718096;
+    font-size: 14px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
 input[type="range"] {
     width: 100%;
     margin: 10px 0;

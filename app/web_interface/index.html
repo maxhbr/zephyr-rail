@@ -24,7 +24,10 @@
                     <button class="btn-secondary" onclick="sendGo(-10)">-10</button>
                     <button class="btn-secondary" onclick="sendGo(-5)">-5</button>
                     <button class="btn-primary" onclick="sendGo(-1)">-1</button>
-                    <input type="number" id="go-distance" value="1000" step="100" min="100">
+                    <div class="input-with-unit">
+                        <input type="number" id="go-distance" value="100" step="1" min="1">
+                        <span class="unit-label">μm</span>
+                    </div>
                     <button class="btn-primary" onclick="sendGo(1)">+1</button>
                     <button class="btn-secondary" onclick="sendGo(5)">+5</button>
                     <button class="btn-secondary" onclick="sendGo(10)">+10</button>

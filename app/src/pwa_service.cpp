@@ -85,10 +85,10 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
       notifyStatus("ERR:GO_MISSING_DISTANCE");
       return len;
     }
-    int distance = atoi(token);
-    LOG_INF("→ Command: GO distance=%d", distance);
-    event_pub(EVENT_GO, distance);
-    snprintf(response, sizeof(response), "ACK:GO %d", distance);
+    int distance_nm = atoi(token);
+    LOG_INF("→ Command: GO distance=%dnm", distance_nm);
+    event_pub(EVENT_GO, distance_nm);
+    snprintf(response, sizeof(response), "ACK:GO %d", distance_nm);
 
   } else if (strcmp(token, "GO_TO") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
@@ -97,10 +97,10 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
       notifyStatus("ERR:GO_TO_MISSING_POSITION");
       return len;
     }
-    int position = atoi(token);
-    LOG_INF("→ Command: GO_TO position=%d", position);
-    event_pub(EVENT_GO_TO, position);
-    snprintf(response, sizeof(response), "ACK:GO_TO %d", position);
+    int position_nm = atoi(token);
+    LOG_INF("→ Command: GO_TO position=%dnm", position_nm);
+    event_pub(EVENT_GO_TO, position_nm);
+    snprintf(response, sizeof(response), "ACK:GO_TO %d", position_nm);
 
   } else if (strcmp(token, "GO_PCT") == 0) {
     token = strtok_r(nullptr, " ", &saveptr);
@@ -146,10 +146,11 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
       event_pub(EVENT_SET_LOWER_BOUND);
       snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND");
     } else {
-      int position = atoi(token);
-      LOG_INF("→ Command: SET_LOWER_BOUND position=%d", position);
-      event_pub(EVENT_SET_LOWER_BOUND_TO, position);
-      snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND %d", position);
+      int position_nm = atoi(token);
+      LOG_INF("→ Command: SET_LOWER_BOUND position=%dnm", position_nm);
+      event_pub(EVENT_SET_LOWER_BOUND_TO, position_nm);
+      snprintf(response, sizeof(response), "ACK:SET_LOWER_BOUND %d",
+               position_nm);
     }
 
   } else if (strcmp(token, "SET_UPPER_BOUND") == 0) {
@@ -159,10 +160,11 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
       event_pub(EVENT_SET_UPPER_BOUND);
       snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND");
     } else {
-      int position = atoi(token);
-      LOG_INF("→ Command: SET_UPPER_BOUND position=%d", position);
-      event_pub(EVENT_SET_UPPER_BOUND_TO, position);
-      snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND %d", position);
+      int position_nm = atoi(token);
+      LOG_INF("→ Command: SET_UPPER_BOUND position=%dnm", position_nm);
+      event_pub(EVENT_SET_UPPER_BOUND_TO, position_nm);
+      snprintf(response, sizeof(response), "ACK:SET_UPPER_BOUND %d",
+               position_nm);
     }
 
   } else if (strcmp(token, "START_STACK") == 0) {
@@ -172,26 +174,26 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
     char *param3 = strtok_r(nullptr, " ", &saveptr);
 
     if (param3) {
-      int expected_step_size = atoi(param1);
+      int expected_step_size_nm = atoi(param1);
       int lower = atoi(param2);
       int upper = atoi(param3);
-      LOG_INF("→ Command: START_STACK step_size=%d lower=%d upper=%d",
-              expected_step_size, lower, upper);
+      LOG_INF("→ Command: START_STACK step_size=%dnm lower=%d upper=%d",
+              expected_step_size_nm, lower, upper);
       event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
       event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
-      event_pub(EVENT_START_STACK, expected_step_size);
+      event_pub(EVENT_START_STACK, expected_step_size_nm);
       snprintf(response, sizeof(response), "ACK:START_STACK %d %d %d",
-               expected_step_size, lower, upper);
+               expected_step_size_nm, lower, upper);
     } else if (param1) {
-      int expected_step_size = atoi(param1);
-      LOG_INF("→ Command: START_STACK step_size=%d", expected_step_size);
-      event_pub(EVENT_START_STACK, expected_step_size);
+      int expected_step_size_nm = atoi(param1);
+      LOG_INF("→ Command: START_STACK step_size=%dnm", expected_step_size_nm);
+      event_pub(EVENT_START_STACK, expected_step_size_nm);
       snprintf(response, sizeof(response), "ACK:START_STACK %d",
-               expected_step_size);
+               expected_step_size_nm);
     } else {
       LOG_INF("→ Command: START_STACK step_size=1 (default)");
-      event_pub(EVENT_START_STACK, 1);
-      snprintf(response, sizeof(response), "ACK:START_STACK 1");
+      event_pub(EVENT_START_STACK, 1000);
+      snprintf(response, sizeof(response), "ACK:START_STACK 1000");
     }
 
   } else if (strcmp(token, "START_STACK_COUNT") == 0) {

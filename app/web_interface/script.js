@@ -156,24 +156,24 @@ async function sendCommand(cmd) {
 // Helper functions for commands with parameters
 function sendGo(times) {
   const distance = document.getElementById('go-distance').value;
-  sendCommand('GO ' + distance * times);
+  sendCommand('GO ' + Math.ceil(distance * times * 1000));
 }
 
 function sendGoPct(pct) { sendCommand('GO_PCT ' + pct); }
 
 function sendGoTo() {
   const position = document.getElementById('goto-position').value;
-  sendCommand('GO_TO ' + position);
+  sendCommand('GO_TO ' + Math.ceil(position * 1000));
 }
 
 function sendSetLowerBound() {
   const value = document.getElementById('bound').value;
-  sendCommand('SET_LOWER_BOUND ' + value);
+  sendCommand('SET_LOWER_BOUND ' + Math.ceil(value * 1000));
 }
 
 function sendSetUpperBound() {
   const value = document.getElementById('bound').value;
-  sendCommand('SET_UPPER_BOUND ' + value);
+  sendCommand('SET_UPPER_BOUND ' + Math.ceil(value * 1000));
 }
 
 function sendSetWaitBefore() {
