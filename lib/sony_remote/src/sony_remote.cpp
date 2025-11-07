@@ -5,7 +5,7 @@
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/sys/byteorder.h>
 
-LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(sony_remote, LOG_LEVEL_DBG);
 
 SonyRemote *SonyRemote::self_ = nullptr;
 
@@ -123,6 +123,7 @@ void SonyRemote::stopScan() {
   } else {
     LOG_INF("Bluetooth LE scan stopped");
   }
+  k_work_cancel_delayable(&discovery_work_);
 }
 
 bool SonyRemote::ready() const {
@@ -132,11 +133,16 @@ bool SonyRemote::ready() const {
   return conn_ != nullptr && ff01_handle_ != 0 && is_paired_;
 }
 
-void SonyRemote::log_state() {
-  LOG_INF("SonyRemote state: connected=%s, paired=%s, ff01_handle=0x%04x",
-          conn_ ? "true" : "false", is_paired_ ? "true" : "false",
-          ff01_handle_);
+char *SonyRemote::state() {
+  static char buffer[128];
+  snprintf(buffer, sizeof(buffer),
+           "SonyRemote: connected=%s, paired=%s, ff01_handle=0x%04x",
+           conn_ ? "true" : "false", is_paired_ ? "true" : "false",
+           ff01_handle_);
+  return buffer;
 }
+
+void SonyRemote::log_state() { LOG_INF("%s", state()); }
 
 void SonyRemote::focusDown() { send_cmd(FOCUS_DOWN, sizeof(FOCUS_DOWN)); }
 void SonyRemote::focusUp() { send_cmd(FOCUS_UP, sizeof(FOCUS_UP)); }
@@ -336,8 +342,10 @@ void SonyRemote::start_discovery() {
   bt_security_t sec_level = bt_conn_get_security(conn_);
 
   if (sec_level < BT_SECURITY_L2) {
-    LOG_WRN("Security level too low (%d), retrying after delay...", sec_level);
-    // Retry discovery after a delay if security is not established
+    LOG_WRN("Security level too low (%d < %d), retrying after delay...",
+            sec_level, BT_SECURITY_L2);
+    bt_conn_set_security(conn_, BT_SECURITY_L2);
+
     k_work_schedule(&discovery_work_, K_MSEC(1000));
     return;
   }
@@ -371,11 +379,7 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
     bt_addr_le_to_str(&self_->target_addr_, target_addr_str,
                       sizeof(target_addr_str));
 
-    // LOG_DBG("Comparing found: %s vs target: %s", found_addr_str,
-    //         target_addr_str);
-
     if (!bt_addr_le_eq(addr, &self_->target_addr_)) {
-      // LOG_DBG("Ignoring non-target device: %s", found_addr_str);
       return;
     }
   }

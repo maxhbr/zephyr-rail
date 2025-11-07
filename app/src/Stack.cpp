@@ -4,20 +4,26 @@ LOG_MODULE_REGISTER(stack, LOG_LEVEL_INF);
 
 Stack::Stack() { LOG_INF("%s", __FUNCTION__); };
 
-void Stack::log_state() {
+char *Stack::state() {
+  static char buffer[256];
   if (stack_in_progress()) {
-    LOG_INF(
-        "Stacking in progress: Step %d/%d at position %.3fum < %.3fum < %.3fum",
-        index_in_stack.value() + 1, length_of_stack, nm_as_um(lower_bound),
-        nm_as_um(get_current_target().value()), nm_as_um(upper_bound));
+    snprintf(buffer, sizeof(buffer),
+             "Stacking in progress: Step %d/%d at position %.3fum < %.3fum < "
+             "%.3fum",
+             index_in_stack.value() + 1, length_of_stack, nm_as_um(lower_bound),
+             nm_as_um(get_current_target().value()), nm_as_um(upper_bound));
   } else {
     double lower_nm = nm_as_um(lower_bound);
     double upper_nm = nm_as_um(upper_bound);
     double diff_nm = upper_nm - lower_nm;
-    LOG_INF("%.3fum -> %.3fum, diff=%.3fum, start_at=%s", lower_nm, upper_nm,
-            diff_nm, start_at_lower ? "lower" : "upper");
+    snprintf(buffer, sizeof(buffer),
+             "%.3fum -> %.3fum, diff=%.3fum, start_at=%s", lower_nm, upper_nm,
+             diff_nm, start_at_lower ? "lower" : "upper");
   }
-};
+  return buffer;
+}
+
+void Stack::log_state() { LOG_INF("%s", state()); }
 
 bool Stack::compute_by_step_size(const int start, const int end) {
   int step_size = expected_step_size;

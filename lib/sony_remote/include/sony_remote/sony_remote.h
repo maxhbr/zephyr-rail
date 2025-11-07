@@ -20,6 +20,7 @@ public:
   void end();                      // disconnect and cleanup
   bool ready() const;              // connected + FF01 handle found?
 
+  char *state();
   void log_state();
 
   // Common actions (write to 0xFF01)

@@ -1,6 +1,5 @@
 # A macro stacking rail
 
-
 ## Firmware
 The firmware is written with zephyr. The code is in [./app](./app).
 
@@ -57,3 +56,7 @@ Electronics
 A high level sketch:
 
 ![sketch.svg](./electronics/sketch.svg)
+
+## Software
+
+For stacking and other things the project https://github.com/maxhbr/myphoto is used.

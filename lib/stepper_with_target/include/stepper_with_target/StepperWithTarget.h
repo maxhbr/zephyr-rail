@@ -52,6 +52,7 @@ public:
   StepperWithTarget(const struct device *dev, int _pitch_per_rev,
                     int _pulses_per_rev_mm);
 
+  char *state();
   void log_state();
 
   int enable();

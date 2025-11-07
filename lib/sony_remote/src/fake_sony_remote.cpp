@@ -25,7 +25,12 @@ void SonyRemote::end() {
 
 bool SonyRemote::ready() const { return ready_; }
 
-void SonyRemote::log_state() { LOG_INF("FakeSonyRemote: ready=%d", ready_); }
+char *SonyRemote::state() {
+  static char buffer[64];
+  snprintf(buffer, sizeof(buffer), "FakeSonyRemote: ready=%d", ready_);
+  return buffer;
+}
+void SonyRemote::log_state() { LOG_INF("%s", state()); }
 
 void SonyRemote::focusDown() { LOG_INF("FakeSonyRemote: focusDown"); }
 

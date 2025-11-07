@@ -40,6 +40,7 @@ class Stack {
 public:
   Stack();
 
+  char *state();
   void log_state();
 
   // stacking

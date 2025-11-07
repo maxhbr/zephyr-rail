@@ -88,12 +88,21 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
   }
 }
 
+char *StepperWithTarget::state() {
+  int32_t pos = get_position();
+  static char buffer[128];
+  snprintf(
+      buffer, sizeof(buffer),
+      "Enabled: %s, Position: %.3fum @ %d, Target: %.3fum @ %d, Moving: %s",
+      enabled ? "true" : "false", nm_as_um(steps_to_nm(pos)), pos,
+      nm_as_um(steps_to_nm(target_position)), target_position,
+      is_moving ? "true" : "false");
+  return buffer;
+}
+
 void StepperWithTarget::log_state() {
   int32_t pos = get_position();
-  LOG_INF("Enabled: %s, Position: %.3fum @ %d, Target: %.3fum @ %d, Moving: %s",
-          enabled ? "true" : "false", nm_as_um(steps_to_nm(pos)), pos,
-          nm_as_um(steps_to_nm(target_position)), target_position,
-          is_moving ? "true" : "false");
+  LOG_INF("%s", state());
 }
 
 int StepperWithTarget::enable() {

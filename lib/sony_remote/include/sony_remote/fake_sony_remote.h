@@ -15,6 +15,7 @@ public:
   void end();         // no-op
   bool ready() const; // always returns true
 
+  char *state();    // no-op
   void log_state(); // no-op
 
   // Common actions (all no-ops)
