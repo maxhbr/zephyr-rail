@@ -23,11 +23,46 @@
 #endif
 #include "stepper_with_target/StepperWithTarget.h"
 
-LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
 #ifdef CONFIG_BT
+
+static void debug_log_bluetooth_information(struct bt_conn *conn) {
+  char addr[BT_ADDR_LE_STR_LEN];
+  bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+  LOG_DBG("Bluetooth info for %s:", addr);
+
+  bt_conn_info info;
+  bt_conn_get_info(conn, &info);
+  LOG_DBG("  Role: %s",
+          info.role == BT_CONN_ROLE_CENTRAL ? "Central" : "Peripheral");
+
+  bt_security_t sec_level = bt_conn_get_security(conn);
+  switch (sec_level) {
+  case BT_SECURITY_L0:
+    LOG_DBG("  Current security level: BT_SECURITY_L0 (no security)");
+    break;
+  case BT_SECURITY_L1:
+    LOG_DBG("  Current security level: BT_SECURITY_L1 (unencrypted)");
+    break;
+  case BT_SECURITY_L2:
+    LOG_DBG("  Current security level: BT_SECURITY_L2 (encrypted, no MITM)");
+    break;
+  case BT_SECURITY_L3:
+    LOG_DBG("  Current security level: BT_SECURITY_L3 (encrypted with MITM)");
+    break;
+  case BT_SECURITY_L4:
+    LOG_DBG("  Current security level: BT_SECURITY_L4 (LE Secure Connections)");
+    break;
+  default:
+    LOG_DBG("  Current security level: Unknown (%d)", sec_level);
+    break;
+  }
+}
+
 // Unified connection callbacks that delegate to appropriate implementation
 static void unified_connected(struct bt_conn *conn, uint8_t err) {
+  debug_log_bluetooth_information(conn);
   struct bt_conn_info info;
   bt_conn_get_info(conn, &info);
 
@@ -41,6 +76,7 @@ static void unified_connected(struct bt_conn *conn, uint8_t err) {
 }
 
 static void unified_disconnected(struct bt_conn *conn, uint8_t reason) {
+  debug_log_bluetooth_information(conn);
   struct bt_conn_info info;
   bt_conn_get_info(conn, &info);
 
@@ -53,12 +89,23 @@ static void unified_disconnected(struct bt_conn *conn, uint8_t reason) {
 
 static void unified_security_changed(struct bt_conn *conn, bt_security_t level,
                                      enum bt_security_err err) {
+  debug_log_bluetooth_information(conn);
   struct bt_conn_info info;
   bt_conn_get_info(conn, &info);
 
-  // Only Sony camera connections need security change handling
   if (info.role == BT_CONN_ROLE_CENTRAL) {
+    // Sony camera connection
     SonyRemote::on_security_changed(conn, level, err);
+  } else if (info.role == BT_CONN_ROLE_PERIPHERAL) {
+    // PWA connection - just log the security change
+    char addr[BT_ADDR_LE_STR_LEN];
+    bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
+
+    if (err) {
+      LOG_ERR("PWA security failed: %s level %u err %d", addr, level, err);
+    } else {
+      LOG_INF("PWA security changed: %s level %u", addr, level);
+    }
   }
 }
 
@@ -159,6 +206,7 @@ static bt_conn_auth_cb kAuthCbs = {
     .cancel = unified_auth_cancel,
     .pairing_confirm = unified_auth_pairing_confirm,
 };
+
 #endif
 
 #define STEPPER_NODE DT_NODELABEL(stepper_motor)
@@ -437,22 +485,11 @@ static int cmd_rail_startStackWithLength(const struct shell *sh, size_t argc,
   return 0;
 }
 
-static int cmd_rail_pair(const struct shell *sh, size_t argc, char **argv) {
-  event_pub(EVENT_PAIR_CAMERA);
-  return 0;
-}
-
-static int cmd_rail_shoot(const struct shell *sh, size_t argc, char **argv) {
-  event_pub(EVENT_SHOOT);
-  return 0;
-}
-
 static int cmd_rail_status(const struct shell *sh, size_t argc, char **argv) {
   event_pub(EVENT_STATUS);
   return 0;
 }
 
-/* Creating subcommands (level 1 command) array for command "rail". */
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_rail, SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go),
     SHELL_CMD(go_nm, NULL, "Go relative (nm).", cmd_rail_go),
@@ -469,10 +506,22 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
               cmd_rail_startStackWithStepSize),
     SHELL_CMD(stack_count, NULL, "Start stacking with length.",
               cmd_rail_startStackWithLength),
-    SHELL_CMD(pair, NULL, "Pair camera", cmd_rail_pair),
-    SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_rail_shoot),
     SHELL_CMD(status, NULL, "Get current status.", cmd_rail_status),
     SHELL_SUBCMD_SET_END);
-/* Creating root (level 0) command "rail" without a handler */
 SHELL_CMD_REGISTER(rail, &sub_rail, "rail commands", NULL);
+
+static int cmd_cam_shoot(const struct shell *sh, size_t argc, char **argv) {
+  event_pub(EVENT_SHOOT);
+  return 0;
+}
+
+static int cmd_cam_pair(const struct shell *sh, size_t argc, char **argv) {
+  event_pub(EVENT_PAIR_CAMERA);
+  return 0;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(
+    sub_cam, SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_cam_shoot),
+    SHELL_CMD(pair, NULL, "Pair camera", cmd_cam_pair), SHELL_SUBCMD_SET_END);
+SHELL_CMD_REGISTER(cam, &sub_cam, "cam commands", cmd_cam_pair);
 #endif

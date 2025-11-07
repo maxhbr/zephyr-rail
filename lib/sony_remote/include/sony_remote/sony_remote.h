@@ -89,6 +89,10 @@ private:
   // Pairing status
   bool is_paired_ = false;
 
+  // Discovery retry counter
+  uint8_t discovery_retry_count_ = 0;
+  static constexpr uint8_t MAX_DISCOVERY_RETRIES = 20;
+
   void start_discovery();
   void send_cmd(const uint8_t *buf, size_t len);
 };

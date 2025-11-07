@@ -43,20 +43,23 @@ document.addEventListener('DOMContentLoaded', function() {
         filters : [ {namePrefix : 'ZephyrRail'} ],
         optionalServices : [ SERVICE_UUID ]
       });
+      console.log('Device selected:', device);
 
-      updateStatus('Connecting to ' + device.name + '...', 'disconnected');
+      updateStatus('Connecting to ' + device.name + '...', 'connecting');
 
       // Connect to GATT server
       server = await device.gatt.connect();
-
-      updateStatus('Discovering services...', 'disconnected');
+      console.log('Connected to GATT server:', server);
 
       // Get primary service
       service = await server.getPrimaryService(SERVICE_UUID);
+      console.log('Got service:', service);
 
       // Get characteristics
       commandChar = await service.getCharacteristic(COMMAND_UUID);
+      console.log('Got command characteristic:', commandChar);
       statusChar = await service.getCharacteristic(STATUS_UUID);
+      console.log('Got status characteristic:', statusChar);
 
       // Subscribe to notifications
       await statusChar.startNotifications();
@@ -89,18 +92,7 @@ function handleStatusNotification(event) {
   const value = new TextDecoder().decode(event.target.value);
   const timestamp = new Date().toLocaleTimeString();
 
-  // Parse status messages
-  let icon = '';
-  if (value.startsWith('ACK:'))
-    icon = '[ACK]';
-  if (value.startsWith('ERR:'))
-    icon = '[ERR]';
-  if (value === 'PONG')
-    icon = '[PONG]';
-  if (value === 'READY')
-    icon = '[READY]';
-
-  updateStatus(`[${timestamp}] ${icon} ${value}`, 'connected');
+  updateStatus(`[${timestamp}] ${value}`, 'connected');
 }
 
 function handleDisconnection() {
@@ -121,20 +113,7 @@ function handleDisconnection() {
 
 function handleError(error) {
   console.error('Bluetooth Error:', error);
-
-  let message = error.message || error.toString();
-
-  // User-friendly error messages
-  if (message.includes('User cancelled')) {
-    message = 'Connection cancelled by user';
-  } else if (message.includes('not found')) {
-    message =
-        'Device not found. Make sure ZephyrRail is powered on and advertising.';
-  } else if (message.includes('GATT')) {
-    message = 'Connection failed. Try restarting the device.';
-  }
-
-  updateStatus('Error: ' + message, 'disconnected');
+  updateStatus('Error: ' + error, 'disconnected');
 }
 
 async function sendCommand(cmd) {

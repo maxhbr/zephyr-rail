@@ -52,6 +52,8 @@ static bool accept_any(bt_data *data, void * /*user*/) {
     }
   }
 
+  LOG_WRN("Device that actually should be rejected by filter, type: %u",
+          data->type);
   return true; // For now, still accept any device for broader compatibility
 }
 
@@ -62,12 +64,14 @@ SonyRemote::SonyRemote() {
   k_work_init_delayable(&discovery_work_, discovery_work_handler);
   has_target_addr_ = false;
   is_paired_ = false;
+  discovery_retry_count_ = 0;
 }
 
 SonyRemote::SonyRemote(const char *target_address) {
   self_ = this;
   k_work_init_delayable(&discovery_work_, discovery_work_handler);
   is_paired_ = false;
+  discovery_retry_count_ = 0;
 
   // Parse the target address string and set has_target_addr_
   if (target_address) {
@@ -242,8 +246,9 @@ void SonyRemote::on_disconnected(bt_conn *conn, uint8_t reason) {
     self_->conn_ = nullptr;
   }
   self_->ff01_handle_ = 0;
-  self_->ff01_properties_ = 0; // Reset properties
-  self_->is_paired_ = false;   // Reset pairing status on disconnect
+  self_->ff01_properties_ = 0;       // Reset properties
+  self_->is_paired_ = false;         // Reset pairing status on disconnect
+  self_->discovery_retry_count_ = 0; // Reset retry counter on disconnect
   // resume scanning
   self_->startScan();
 }
@@ -342,13 +347,25 @@ void SonyRemote::start_discovery() {
   bt_security_t sec_level = bt_conn_get_security(conn_);
 
   if (sec_level < BT_SECURITY_L2) {
-    LOG_WRN("Security level too low (%d < %d), retrying after delay...",
-            sec_level, BT_SECURITY_L2);
+    if (discovery_retry_count_ >= MAX_DISCOVERY_RETRIES) {
+      LOG_ERR("Maximum discovery retries (%d) reached, giving up",
+              MAX_DISCOVERY_RETRIES);
+      return;
+    }
+
+    LOG_WRN("Security level too low (%d < %d), retrying after delay... "
+            "(attempt %d/%d)",
+            sec_level, BT_SECURITY_L2, discovery_retry_count_ + 1,
+            MAX_DISCOVERY_RETRIES);
+    discovery_retry_count_++;
     bt_conn_set_security(conn_, BT_SECURITY_L2);
 
     k_work_schedule(&discovery_work_, K_MSEC(1000));
     return;
   }
+
+  // Reset retry counter on successful security level
+  discovery_retry_count_ = 0;
 
   // Only discover the FF01 characteristic directly
   // Remove the unnecessary primary service discovery to avoid conflicts
@@ -408,6 +425,10 @@ void SonyRemote::on_scan(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
           bt_conn_le_create(addr, &create_param, &conn_param, &self_->conn_);
       if (err) {
         LOG_ERR("Create conn failed (%d)", err);
+        bt_conn_unref(self_->conn_);
+        self_->conn_ = nullptr;
+        k_msleep(300);
+
         self_->startScan();
       }
     }

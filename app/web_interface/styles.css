@@ -133,6 +133,11 @@ label {
     border: 2px solid #28a745;
 }
 
+.connecting {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+}
+
 .disconnected {
     background: #f8d7da;
     border: 2px solid #dc3545;

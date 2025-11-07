@@ -6,7 +6,7 @@ LOG_MODULE_REGISTER(fake_sony_remote, LOG_LEVEL_INF);
 
 SonyRemote::SonyRemote() {
   LOG_INF("FakeSonyRemote: constructor");
-  ready = true;
+  ready_ = true;
 }
 
 SonyRemote::SonyRemote(const char *target_address) {

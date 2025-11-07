@@ -31,7 +31,7 @@ struct smf_state *s_stack_settle_ptr;
 struct smf_state *s_stack_img_ptr;
 
 static enum smf_state_result s0_run(void *o) {
-  smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+  smf_set_state(SMF_CTX(o), s_interactive_ptr);
   return SMF_EVENT_HANDLED;
 }
 
@@ -161,7 +161,7 @@ static void s_parent_camera_pairing_entry(void *o) {
 
   struct s_object *s = (struct s_object *)o;
   if (!s->remote) {
-    LOG_ERR("No remote available for pairing");
+    LOG_WRN("No remote available for pairing");
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
     return;
   }
@@ -190,7 +190,7 @@ static enum smf_state_result s_wait_for_camera_run(void *o) {
   }
 
   if (s->retry_counter++ > 10) {
-    LOG_ERR("Camera pairing failed");
+    LOG_WRN("Camera pairing failed");
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
     return SMF_EVENT_HANDLED;
   }
@@ -205,7 +205,7 @@ static void s_parent_stacking_entry(void *o) {
   struct s_object *s = (struct s_object *)o;
 
   if (!s->remote->ready()) {
-    LOG_ERR("Cannot start stacking - camera not connected");
+    LOG_WRN("Cannot start stacking - camera not connected");
     smf_set_state(SMF_CTX(o), s_interactive_ptr);
     return;
   }
