@@ -492,14 +492,19 @@ static int cmd_rail_status(const struct shell *sh, size_t argc, char **argv) {
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_rail, SHELL_CMD(go, NULL, "Go relative.", cmd_rail_go),
+    SHELL_CMD(g, NULL, "Go relative.", cmd_rail_go),
     SHELL_CMD(go_nm, NULL, "Go relative (nm).", cmd_rail_go),
     SHELL_CMD(go_to, NULL, "Go to absolute position.", cmd_rail_go_to),
     SHELL_CMD(go_pct, NULL, "Go to percentage between upper and lower bound.",
+              cmd_rail_go_pct),
+    SHELL_CMD(p, NULL, "Go to percentage between upper and lower bound.",
               cmd_rail_go_pct),
     SHELL_CMD(lower, NULL, "Set lower bound.", cmd_rail_setLowerBound),
     SHELL_CMD(upper, NULL, "Set upper bound.", cmd_rail_setUpperBound),
     SHELL_CMD(wait_before, NULL, "Set wait before ms.", cmd_rail_setWaitBefore),
     SHELL_CMD(wait_after, NULL, "Set wait after ms.", cmd_rail_setWaitAfter),
+    SHELL_CMD(s, NULL, "Start stacking with step size.",
+              cmd_rail_startStackWithStepSize),
     SHELL_CMD(stack, NULL, "Start stacking with step size.",
               cmd_rail_startStackWithStepSize),
     SHELL_CMD(stack_nm, NULL, "Start stacking with step size (nm).",
@@ -515,6 +520,11 @@ static int cmd_cam_shoot(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
+static int cmd_cam_record(const struct shell *sh, size_t argc, char **argv) {
+  event_pub(EVENT_RECORD);
+  return 0;
+}
+
 static int cmd_cam_pair(const struct shell *sh, size_t argc, char **argv) {
   event_pub(EVENT_PAIR_CAMERA);
   return 0;
@@ -522,6 +532,7 @@ static int cmd_cam_pair(const struct shell *sh, size_t argc, char **argv) {
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_cam, SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_cam_shoot),
+    SHELL_CMD(record, NULL, "Toggle camera recording.", cmd_cam_record),
     SHELL_CMD(pair, NULL, "Pair camera", cmd_cam_pair), SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(cam, &sub_cam, "cam commands", cmd_cam_pair);
 #endif

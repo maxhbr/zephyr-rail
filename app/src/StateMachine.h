@@ -37,6 +37,7 @@ enum event {
   EVENT_START_STACK,
   EVENT_START_STACK_WITH_LENGTH,
   EVENT_SHOOT,
+  EVENT_RECORD,
   EVENT_STATUS
 };
 struct event_msg {

@@ -143,6 +143,10 @@ static enum smf_state_result s_interactive_run(void *o) {
         LOG_INF("Triggering camera shoot");
         s->remote->shoot();
         break;
+      case EVENT_RECORD:
+        LOG_INF("Toggling camera recording");
+        s->remote->recToggle();
+        break;
       case EVENT_STATUS:
         s_log_state(s);
         break;
