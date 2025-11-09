@@ -29,3 +29,10 @@ flowchart LR;
     S_STACK_SETTLE --> S_STACK_IMG;
     S_STACK_IMG --> S_STACK;
     S_STACK --> S_STACK_MOVE;
+
+    %% subgraph S_PARENT_RECORDING
+    %%   S_RECORD{{S_RECORD}}
+    %% end
+
+    %% S_INTERACTIVE ---->|start record| S_RECORD;
+    %% S_RECORD ---->|done| S_INTERACTIVE;

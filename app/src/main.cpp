@@ -23,7 +23,7 @@
 #endif
 #include "stepper_with_target/StepperWithTarget.h"
 
-LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 #ifdef CONFIG_BT
 
