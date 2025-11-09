@@ -514,6 +514,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(status, NULL, "Get current status.", cmd_rail_status),
     SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(rail, &sub_rail, "rail commands", NULL);
+SHELL_CMD_REGISTER(r, &sub_rail, "rail commands", NULL);
 
 static int cmd_cam_shoot(const struct shell *sh, size_t argc, char **argv) {
   event_pub(EVENT_SHOOT);
@@ -535,4 +536,5 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(record, NULL, "Toggle camera recording.", cmd_cam_record),
     SHELL_CMD(pair, NULL, "Pair camera", cmd_cam_pair), SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(cam, &sub_cam, "cam commands", cmd_cam_pair);
+SHELL_CMD_REGISTER(c, &sub_cam, "cam commands", cmd_cam_pair);
 #endif
