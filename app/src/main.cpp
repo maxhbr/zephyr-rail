@@ -236,28 +236,42 @@ static StepperWithTarget *init_stepper(void) {
   return &stepper;
 }
 
-void led_blink(const struct gpio_dt_spec *led, int times, int on_ms,
-               int off_ms) {
-  if (!gpio_is_ready_dt(led)) {
-    return;
-  }
+static struct k_timer led_blink_timer;
+static const struct gpio_dt_spec *async_led = nullptr;
+static int blink_phase = 0;
 
-  for (int i = 0; i < times; i++) {
-    gpio_pin_set(led->port, led->pin, 1);
-    k_msleep(on_ms);
-    gpio_pin_set(led->port, led->pin, 0);
-    k_msleep(off_ms);
+static void led_blink_timer_handler(struct k_timer *timer) {
+  if (async_led && gpio_is_ready_dt(async_led)) {
+    if (blink_phase == 1) {
+      gpio_pin_set(async_led->port, async_led->pin, 1);
+      blink_phase = 0;
+      k_timer_stop(&led_blink_timer);
+    }
   }
 }
 
-bool led_toggle(const struct gpio_dt_spec *led, bool was_on) {
-  if (!gpio_is_ready_dt(led)) {
-    return;
+static void init_async_led(const struct gpio_dt_spec *led) {
+  async_led = led;
+  blink_phase = 0;
+  k_timer_init(&led_blink_timer, led_blink_timer_handler, nullptr);
+  if (async_led && gpio_is_ready_dt(async_led)) {
+    gpio_pin_set(async_led->port, async_led->pin, 1);
   }
+}
 
-  bool led_on = !was_on;
-  gpio_pin_set(led->port, led->pin, led_on ? 1 : 0);
-  return led_on;
+static void trigger_async_led_blink(int blink_duration_ms) {
+  if (async_led && gpio_is_ready_dt(async_led) && blink_phase == 0) {
+    gpio_pin_set(async_led->port, async_led->pin, 0);
+    blink_phase = 1;
+    k_timer_start(&led_blink_timer, K_MSEC(blink_duration_ms), K_NO_WAIT);
+  }
+}
+
+static void stop_async_led() {
+  k_timer_stop(&led_blink_timer);
+  if (async_led && gpio_is_ready_dt(async_led)) {
+    gpio_pin_set(async_led->port, async_led->pin, 0);
+  }
 }
 
 int main(void) {
@@ -272,7 +286,9 @@ int main(void) {
     }
   }
 
-  led_blink(&led, 1, 100, 100);
+  init_async_led(&led);
+  trigger_async_led_blink(100);
+  k_msleep(200);
 
 #ifdef CONFIG_BT
   LOG_INF("initialize Bluetooth ...");
@@ -311,7 +327,11 @@ int main(void) {
   LOG_INF("initialize Dummy Sony Remote ...");
   SonyRemote remote;
 #endif
-  led_blink(&led, 2, 100, 100);
+
+  trigger_async_led_blink(100);
+  k_msleep(200);
+  trigger_async_led_blink(100);
+  k_msleep(200);
 
   LOG_INF("initialize stepper ...");
   StepperWithTarget *stepper = init_stepper();
@@ -321,7 +341,6 @@ int main(void) {
   }
 
   StateMachine sm(stepper, &remote);
-  bool led_on = true;
 
 #ifdef BUILD_COMMIT
   LOG_INF("Build commit: %s", BUILD_COMMIT);
@@ -330,13 +349,14 @@ int main(void) {
   LOG_INF("entering main loop ...");
   while (1) {
     LOG_DBG("loop...");
-    led_on = led_toggle(&led, led_on);
+    trigger_async_led_blink(50);
     ret = sm.run_state_machine();
     if (ret) {
       break;
     }
   }
 
+  stop_async_led();
   remote.end();
 
   return 0;
