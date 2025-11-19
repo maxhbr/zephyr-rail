@@ -31,7 +31,7 @@ class Stack {
 
   int length_of_stack = 0;
   std::optional<int> index_in_stack = {};
-  int *stepps_of_stack = (int *)malloc(sizeof(int) * 2000);
+  int *stepps_of_stack = (int *)malloc(sizeof(int) * 4000);
 
   bool compute_by_step_size(const int start, const int end);
   bool compute_by_expected_length_of_stack(const int start, const int end);

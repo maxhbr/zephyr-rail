@@ -44,8 +44,8 @@ bool Stack::compute_by_step_size(const int start, const int end) {
   while ((step_size > 0 && stepps_of_stack[length_of_stack] <= end) ||
          (step_size < 0 && stepps_of_stack[length_of_stack] >= end)) {
     length_of_stack++;
-    if (length_of_stack > 1999) {
-      LOG_ERR("Exceeded maximum stack size of 2000");
+    if (length_of_stack > 3999) {
+      LOG_ERR("Exceeded maximum stack size of 4000");
       return false;
     }
     stepps_of_stack[length_of_stack] =
