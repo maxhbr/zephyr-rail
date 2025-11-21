@@ -1,0 +1,4 @@
+tests:
+  state_machine.ztest:
+    platform_allow: native_sim
+    tags: state_machine integration

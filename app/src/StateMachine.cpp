@@ -9,13 +9,13 @@ ZBUS_CHAN_DEFINE(event_msg_chan,   /* Name */
                  NULL, NULL, ZBUS_OBSERVERS(event_sub),
                  ZBUS_MSG_INIT(.evt = {}));
 
-static int event_pub(event event, int value) {
+int event_pub(event event, int value) {
   LOG_DBG("send msg: event=%d with value=%d", event, value);
   struct event_msg msg = {event, value};
   return zbus_chan_pub(&event_msg_chan, &msg, K_MSEC(200));
 }
 
-static int event_pub(event event) { return event_pub(event, 0); }
+int event_pub(event event) { return event_pub(event, 0); }
 
 ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 
