@@ -1,0 +1,4 @@
+tests:
+  stack.ztest:
+    platform_allow: native_sim
+    tags: stack unit
