@@ -13,12 +13,12 @@ char *Stack::state() {
              index_in_stack.value() + 1, length_of_stack, nm_as_um(lower_bound),
              nm_as_um(get_current_target().value()), nm_as_um(upper_bound));
   } else {
-    double lower_nm = nm_as_um(lower_bound);
-    double upper_nm = nm_as_um(upper_bound);
-    double diff_nm = upper_nm - lower_nm;
+    double lower_um = nm_as_um(lower_bound);
+    double upper_um = nm_as_um(upper_bound);
+    double diff_um = upper_um - lower_um;
     snprintf(buffer, sizeof(buffer),
-             "%.3fum -> %.3fum, diff=%.3fum, start_at=%s", lower_nm, upper_nm,
-             diff_nm, start_at_lower ? "lower" : "upper");
+             "%.3fum -> %.3fum, diff=%.3fum, start_at=%s", lower_um, upper_um,
+             diff_um, start_at_lower ? "lower" : "upper");
   }
   return buffer;
 }
