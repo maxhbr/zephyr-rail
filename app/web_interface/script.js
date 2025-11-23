@@ -204,6 +204,11 @@ function sendSetWaitAfter() {
   sendCommand('SET_WAIT_AFTER ' + Math.round(value));
 }
 
+function sendWaitSettings() {
+  sendSetWaitBefore();
+  sendSetWaitAfter();
+}
+
 function sendSetSpeedPreset(preset) {
   if (!preset) {
     return;
@@ -217,6 +222,7 @@ function sendSetSpeedRpm() {
 }
 
 function sendStartStack(expected_step_size_nm) {
+  sendWaitSettings();
   sendCommand('START_STACK ' + expected_step_size_nm);
 }
 
@@ -224,6 +230,7 @@ function sendStartStackCount(length) {
   const stackLength = length !== undefined
                           ? length
                           : Math.max(1, readNumber('stack-length', 1));
+  sendWaitSettings();
   sendCommand('START_STACK_COUNT ' + Math.round(stackLength));
 }
 
