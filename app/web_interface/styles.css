@@ -295,6 +295,16 @@ label {
     max-height: 0;
 }
 
+.expert-section {
+    padding: 10px 0 5px 0;
+}
+
+.expert-section + .expert-section {
+    border-top: 1px solid #e2e8f0;
+    margin-top: 10px;
+    padding-top: 15px;
+}
+
 .control-section h3 {
     margin-bottom: 10px;
     color: #2d3748;

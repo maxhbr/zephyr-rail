@@ -38,16 +38,31 @@ document.addEventListener('DOMContentLoaded', function() {
   connectionIndicatorEl = document.getElementById('connection-indicator');
   connectionLabelEl = document.getElementById('connection-label');
 
-  // Setup collapsible section
-  const setupHeader = document.getElementById('setup-header');
-  const setupContent = document.getElementById('setup-content');
+  // Setup collapsible sections
+  const collapsibleHeaders =
+      document.querySelectorAll('[data-collapsible-target]');
+  collapsibleHeaders.forEach((header) => {
+    const targetSelectors =
+        (header.getAttribute('data-collapsible-target') || '')
+            .split(',')
+            .map((selector) => selector.trim())
+            .filter((selector) => selector.length > 0);
+    if (!targetSelectors.length) {
+      return;
+    }
+    const targetElements =
+        targetSelectors.map((selector) => document.querySelector(selector))
+            .filter((element) => !!element);
+    if (!targetElements.length) {
+      return;
+    }
 
-  if (setupHeader && setupContent) {
-    setupHeader.addEventListener('click', function() {
-      setupHeader.classList.toggle('collapsed');
-      setupContent.classList.toggle('collapsed');
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      targetElements.forEach(
+          (content) => { content.classList.toggle('collapsed'); });
     });
-  }
+  });
 
   restorePersistedInputs();
   setupSlider();

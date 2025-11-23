@@ -27,9 +27,9 @@
         </div>
 
         <div class="controls" id="controls">
+            <h1 id="expert-header" class="collapsible-header collapsed" data-collapsible-target="#expert-move,#expert-prepare,#expert-stack,#expert-setup">Expert Mode <span class="toggle-icon">▼</span></h1>
             <div class="control-section">
-                <h1>Move </h1>
-                <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
+                <h1>Move</h1>
                 <div class="button-grid-7">
                     <button class="btn-secondary" onclick="sendGo(-10)">-10</button>
                     <button class="btn-secondary" onclick="sendGo(-5)">-5</button>
@@ -50,7 +50,34 @@
                     <button class="btn-secondary" onclick="sendGo(5)">+5</button>
                     <button class="btn-secondary" onclick="sendGo(10)">+10</button>
                 </div>
-                <div class="spacer">&nbsp;</div>
+                <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
+                <div id="expert-move" class="collapsible-content collapsed expert-section">
+                    <div class="input-group">
+                        <label>Go To Position:</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="goto-position" value="0" step="10">
+                            <span class="unit-label">μm</span>
+                        </div>
+                        <button class="btn-primary" onclick="sendGoTo()">Go To</button>
+                    </div>
+                    <div class="input-group">
+                        <h2>Speed:</h2>
+                        <div class="button-grid-3 speed-buttons">
+                            <button class="btn-secondary" onclick="sendSetSpeedPreset('slow')">Slow</button>
+                            <button class="btn-secondary" onclick="sendSetSpeedPreset('medium')">Medium</button>
+                            <button class="btn-secondary" onclick="sendSetSpeedPreset('fast')">Fast</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Motor Speed RPM:</label>
+                        <input type="number" id="speed-rpm" value="10" step="1" min="1">
+                        <button class="btn-primary" onclick="sendSetSpeedRpm()">Set RPM</button>
+                    </div>
+                </div>
+            </div>
+            <div class="spacer">&nbsp;</div>
+            <div class="control-section">
+                <h1>Prepare</h1>
                 <div class="button-grid-3">
                     <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">Set Lower Bound</button>
                     <div class="slider-control">
@@ -69,7 +96,40 @@
                     </div>
                     <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">Set Upper Bound</button>
                 </div>
-                <div class="spacer">&nbsp;</div>
+                <div id="expert-prepare" class="collapsible-content collapsed expert-section">
+                    <div class="input-group">
+                        <label>Go To Position (μm):</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="goto-position" value="0" step="10">
+                            <span class="unit-label">μm</span>
+                        </div>
+                        <button class="btn-primary" onclick="sendGoTo()">Go To</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Manual Bounds:</label>
+                        <div class="button-grid-3">
+                            <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To Current</button>
+                            <div class="input-with-unit">
+                                <input type="number" id="bound" value="0" placeholder="Target μm">
+                                <span class="unit-label">μm</span>
+                            </div>
+                            <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To Current</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="expert-prepare" class="collapsible-content collapsed expert-section">
+                    <div class="input-group">
+                        <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To</button>
+                        <div class="input-with-unit">
+                            <input type="number" id="bound" value="0" placeholder="Lower">
+                            <span class="unit-label">μm</span>
+                        </div>
+                        <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To</button>
+                    </div>
+                </div>
+            </div>
+            <div class="spacer">&nbsp;</div>
+            <div class="control-section">
                 <div class="button-grid-5">
                     <h1>Stack</h1>
                     <div>&nbsp;</div>
@@ -86,6 +146,17 @@
                         <div class="input-with-unit">
                             <input type="number" id="wait-after" value="500" step="100" min="0">
                             <span class="unit-label">ms</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="expert-stack" class="collapsible-content collapsed expert-section">
+                    <div class="input-group">
+                        <div class="button-grid-5">
+                            <div>&nbsp;</div>
+                            <div>&nbsp;</div>
+                            <div>&nbsp;</div>
+                            <button class="btn-primary" onclick="sendSetWaitBefore()">Apply Wait Before</button>
+                            <button class="btn-primary" onclick="sendSetWaitAfter()">Apply Wait After</button>
                         </div>
                     </div>
                 </div>
@@ -113,51 +184,19 @@
             </div>
         </div>
         
-        <div id="status" class="disconnected">
-            Not connected. Click "Connect to ZephyrRail" to begin.
-        </div>
             
         <div class="controls" id="controls-setup">
             <div class="control-section">
-                <h1 id="setup-header" class="collapsible-header collapsed">Setup <span class="toggle-icon">▼</span></h1>
-                <div id="setup-content" class="collapsible-content collapsed">
+                <div id="status" class="disconnected">
+                    Not connected. Click "Connect to ZephyrRail" to begin.
+                </div>
+                <div id="expert-setup" class="collapsible-content collapsed expert-section">
                     <div class="input-group custom-command">
                         <label for="custom-command-input">Send custom command</label>
                         <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
                         <button id="send-custom-command" class="btn-primary">Send</button>
                     </div>
                     <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
-                    <button class="btn-primary" onclick="sendSetWaitBefore()">Set Wait Before</button>
-                    <button class="btn-primary" onclick="sendSetWaitAfter()">Set Wait After</button>
-                    <div class="input-group">
-                        <label>Go To Position:</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="goto-position" value="0" step="10">
-                            <span class="unit-label">μm</span>
-                        </div>
-                        <button class="btn-primary" onclick="sendGoTo()">Go To</button>
-                    </div>
-                    <div class="input-group">
-                        <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To</button>
-                        <div class="input-with-unit">
-                            <input type="number" id="bound" value="0" placeholder="Lower">
-                            <span class="unit-label">μm</span>
-                        </div>
-                        <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To</button>
-                    </div>
-                    <div class="input-group">
-                        <label>Motor Speed:</label>
-                        <div class="button-grid-5 speed-buttons">
-                            <button class="btn-secondary" onclick="sendSetSpeedPreset('slow')">Slow</button>
-                            <button class="btn-secondary" onclick="sendSetSpeedPreset('medium')">Medium</button>
-                            <button class="btn-secondary" onclick="sendSetSpeedPreset('fast')">Fast</button>
-                        <div class="input-with-unit">
-                            <input type="number" id="speed-rpm" value="10" step="1" min="1">
-                            <span class="unit-label">RPM</span>
-                        </div>
-                        <button class="btn-primary" onclick="sendSetSpeedRpm()">Set RPM</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
