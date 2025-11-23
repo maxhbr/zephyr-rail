@@ -98,6 +98,45 @@ static int cmd_rail_setWaitAfter(const struct shell *sh, size_t argc,
   return 0;
 }
 
+static int cmd_rail_setSpeedRpm(const struct shell *sh, size_t argc,
+                                char **argv) {
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail set_rpm <rpm>");
+    return -EINVAL;
+  }
+
+  int rpm = atoi(argv[1]);
+  if (rpm < 1) {
+    shell_print(sh, "RPM must be >= 1");
+    return -EINVAL;
+  }
+
+  event_pub(EVENT_SET_SPEED_RPM, rpm);
+  return 0;
+}
+
+static int cmd_rail_setSpeed(const struct shell *sh, size_t argc, char **argv) {
+  if (argc != 2) {
+    shell_print(sh, "Usage: rail set_speed <slow|medium|fast>");
+    return -EINVAL;
+  }
+
+  int speed_value = 0;
+  if (strcmp(argv[1], "slow") == 0) {
+    speed_value = 1;
+  } else if (strcmp(argv[1], "medium") == 0) {
+    speed_value = 2;
+  } else if (strcmp(argv[1], "fast") == 0) {
+    speed_value = 3;
+  } else {
+    shell_print(sh, "Unknown speed '%s'. Use slow, medium, or fast.", argv[1]);
+    return -EINVAL;
+  }
+
+  event_pub(EVENT_SET_SPEED, speed_value);
+  return 0;
+}
+
 static int cmd_rail_startStackWithStepSize(const struct shell *sh, size_t argc,
                                            char **argv) {
   bool is_nm_command = (strcmp(argv[0], "stack_nm") == 0);
@@ -162,6 +201,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(upper, NULL, "Set upper bound.", cmd_rail_setUpperBound),
     SHELL_CMD(wait_before, NULL, "Set wait before ms.", cmd_rail_setWaitBefore),
     SHELL_CMD(wait_after, NULL, "Set wait after ms.", cmd_rail_setWaitAfter),
+    SHELL_CMD(set_speed, NULL, "Set movement speed (slow|medium|fast).",
+              cmd_rail_setSpeed),
+    SHELL_CMD(set_rpm, NULL, "Set movement speed using raw RPM.",
+              cmd_rail_setSpeedRpm),
     SHELL_CMD(s, NULL, "Start stacking with step size.",
               cmd_rail_startStackWithStepSize),
     SHELL_CMD(stack, NULL, "Start stacking with step size.",

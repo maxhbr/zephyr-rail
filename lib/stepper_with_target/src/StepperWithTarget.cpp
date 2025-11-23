@@ -6,6 +6,8 @@ StepperWithTarget::StepperWithTarget(const struct device *dev,
                                      int _pitch_per_rev_mm,
                                      int _pulses_per_rev) {
   stepper_dev = dev;
+  pitch_per_rev_nm = _pitch_per_rev_mm * 1000000;
+  pulses_per_rev = _pulses_per_rev;
 
   if (!device_is_ready(stepper_dev)) {
     LOG_ERR("Stepper device is not ready");
@@ -31,35 +33,53 @@ StepperWithTarget::StepperWithTarget(const struct device *dev,
     LOG_WRN("Failed to set step interval: %d", ret);
   }
 
-  pitch_per_rev_nm = _pitch_per_rev_mm * 1000000;
-  pulses_per_rev = _pulses_per_rev;
   LOG_INF("%s initialized with pitch_per_rev=%.3fum, pulses_per_rev=%d",
           __FUNCTION__, nm_as_um(pitch_per_rev_nm), pulses_per_rev);
 }
 
 int StepperWithTarget::set_speed(StepperSpeed speed) {
-  uint64_t interval_ns;
+  int rpm = 10;
   switch (speed) {
   case StepperSpeed::FAST:
-    interval_ns = 78125; // ~78 µs , for 15 RPM
+    rpm = 15;
     break;
   case StepperSpeed::MEDIUM:
-    interval_ns = 117188; // ~117 µs , for 10 RPM
+    rpm = 10;
     break;
   case StepperSpeed::SLOW:
-    interval_ns = 234375; // ~234 µs , for 5 RPM
+    rpm = 5;
     break;
-  default:
-    interval_ns = 117188; // Default to medium
-    break;
+  }
+  return set_speed_rpm(rpm);
+}
+
+int StepperWithTarget::set_speed_rpm(int rpm) {
+  if (rpm < 1) {
+    LOG_WRN("Requested RPM %d is too low. Must be >= 1.", rpm);
+    return -EINVAL;
+  }
+  if (pulses_per_rev <= 0) {
+    LOG_ERR("Invalid pulses per revolution: %d", pulses_per_rev);
+    return -EINVAL;
+  }
+
+  const uint64_t nsec_per_min = 60000000000ULL; // 60 seconds * 1e9 ns
+  uint64_t steps_per_min =
+      static_cast<uint64_t>(rpm) * static_cast<uint64_t>(pulses_per_rev);
+  if (steps_per_min == 0) {
+    return -EINVAL;
+  }
+
+  uint64_t interval_ns = nsec_per_min / steps_per_min;
+  if (interval_ns == 0) {
+    interval_ns = 1; // best-effort clamp
   }
 
   int ret = stepper_set_microstep_interval(stepper_dev, interval_ns);
   if (ret < 0) {
-    LOG_WRN("Failed to set step interval: %d", ret);
+    LOG_WRN("Failed to set RPM-based interval: %d", ret);
   } else {
-    LOG_DBG("Stepper speed set to %d (interval %llu ns)",
-            static_cast<int>(speed), interval_ns);
+    LOG_INF("Stepper speed set to %d RPM (interval %llu ns)", rpm, interval_ns);
   }
   return ret;
 }
@@ -71,7 +91,7 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
 
   switch (event) {
   case STEPPER_EVENT_STEPS_COMPLETED:
-    LOG_DBG("Movement completed!");
+    LOG_INF("Movement completed!");
     instance->is_moving = false;
     break;
   case STEPPER_EVENT_STALL_DETECTED:

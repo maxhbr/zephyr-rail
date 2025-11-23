@@ -64,6 +64,7 @@ public:
   int get_position();
 
   int set_speed(StepperSpeed speed);
+  int set_speed_rpm(int rpm);
 
   int32_t go_relative_nm(int32_t dist);
   void set_target_position_nm(int32_t _target_position);

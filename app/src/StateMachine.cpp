@@ -125,6 +125,33 @@ static enum smf_state_result s_interactive_run(void *o) {
         LOG_INF("set wait after ms to %d", msg.value);
         s->wait_after_ms = msg.value;
         break;
+      case EVENT_SET_SPEED:
+        switch (msg.value) {
+        case 1:
+          LOG_INF("Setting movement speed to SLOW");
+          s->stepper->set_speed(StepperSpeed::SLOW);
+          break;
+        case 2:
+          LOG_INF("Setting movement speed to MEDIUM");
+          s->stepper->set_speed(StepperSpeed::MEDIUM);
+          break;
+        case 3:
+          LOG_INF("Setting movement speed to FAST");
+          s->stepper->set_speed(StepperSpeed::FAST);
+          break;
+        default:
+          LOG_WRN("Unsupported speed preset %d (expected 1-3)", msg.value);
+          break;
+        }
+        break;
+      case EVENT_SET_SPEED_RPM:
+        if (msg.value < 1) {
+          LOG_WRN("Ignoring RPM update with invalid value %d", msg.value);
+          break;
+        }
+        LOG_INF("Setting movement speed to %d RPM", msg.value);
+        s->stepper->set_speed_rpm(msg.value);
+        break;
       case EVENT_PAIR_CAMERA:
         LOG_INF("Starting camera pairing");
         smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);

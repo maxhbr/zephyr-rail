@@ -1,11 +1,19 @@
 const SERVICE_UUID = '12345634-5678-1234-1234-123456789abc';
 const STATUS_UUID = '12345636-5678-1234-1234-123456789abc';
 const COMMAND_UUID = '12345635-5678-1234-1234-123456789abc';
+const STORAGE_PREFIX = 'zephyrRail.';
+const DEBUG_MODE = window.location.hash.toLowerCase() === '#debug';
+const PERSISTED_FIELDS = [
+  'go-distance', 'goto-position', 'bound', 'wait-before', 'wait-after',
+  'stack-length'
+];
 
 let device, server, service, commandChar, statusChar;
+let connectionIndicatorEl, connectionLabelEl;
+const bluetoothSupported = !!navigator.bluetooth;
 
 // Check Web Bluetooth support
-if (!navigator.bluetooth) {
+if (!bluetoothSupported && !DEBUG_MODE) {
   document.body.innerHTML = `
         <div class="container">
             <div class="warning">
@@ -23,6 +31,13 @@ if (!navigator.bluetooth) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  if (!bluetoothSupported && !DEBUG_MODE) {
+    return;
+  }
+
+  connectionIndicatorEl = document.getElementById('connection-indicator');
+  connectionLabelEl = document.getElementById('connection-label');
+
   // Setup collapsible section
   const setupHeader = document.getElementById('setup-header');
   const setupContent = document.getElementById('setup-content');
@@ -34,54 +49,80 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  document.getElementById('connect').addEventListener('click', async () => {
-    try {
-      updateStatus('Searching for ZephyrRail device...', 'disconnected');
+  restorePersistedInputs();
+  setupSlider();
+  setupCustomCommandInput();
 
-      // Request device
-      device = await navigator.bluetooth.requestDevice({
-        filters : [ {namePrefix : 'ZephyrRail'} ],
-        optionalServices : [ SERVICE_UUID ]
+  const connectButton = document.getElementById('connect');
+  const pairButton = document.getElementById('pair-camera');
+  const disconnectButton = document.getElementById('disconnect');
+
+  toggleControls(false);
+  setConnectionState('disconnected', 'Not connected');
+
+  if (DEBUG_MODE) {
+    updateStatus('Debug mode: controls forced visible', 'connected');
+  }
+
+  if (pairButton) {
+    pairButton.addEventListener('click', () => sendCommand('PAIR'));
+  }
+
+  if (!bluetoothSupported && connectButton) {
+    connectButton.disabled = true;
+    connectButton.title = 'Web Bluetooth not supported in this browser';
+  }
+
+  connectButton && bluetoothSupported &&
+      connectButton.addEventListener('click', async () => {
+        try {
+          setConnectionState('connecting', 'Searching for ZephyrRail...');
+          updateStatus('Searching for ZephyrRail device...', 'disconnected');
+
+          // Request device
+          device = await navigator.bluetooth.requestDevice({
+            filters : [ {namePrefix : 'ZephyrRail'} ],
+            optionalServices : [ SERVICE_UUID ]
+          });
+          console.log('Device selected:', device);
+
+          setConnectionState('connecting',
+                             'Connecting to ' + device.name + '...');
+          updateStatus('Connecting to ' + device.name + '...', 'connecting');
+
+          // Connect to GATT server
+          server = await device.gatt.connect();
+          console.log('Connected to GATT server:', server);
+
+          // Get primary service
+          service = await server.getPrimaryService(SERVICE_UUID);
+          console.log('Got service:', service);
+
+          // Get characteristics
+          commandChar = await service.getCharacteristic(COMMAND_UUID);
+          console.log('Got command characteristic:', commandChar);
+          statusChar = await service.getCharacteristic(STATUS_UUID);
+          console.log('Got status characteristic:', statusChar);
+
+          // Subscribe to notifications
+          await statusChar.startNotifications();
+          statusChar.addEventListener('characteristicvaluechanged',
+                                      handleStatusNotification);
+
+          // Handle disconnection
+          device.addEventListener('gattserverdisconnected',
+                                  handleDisconnection);
+
+          updateStatus('Connected to ' + device.name + '!', 'connected');
+          setConnectionState('connected', 'Connected to ' + device.name);
+          toggleControls(true);
+
+        } catch (error) {
+          handleError(error);
+        }
       });
-      console.log('Device selected:', device);
 
-      updateStatus('Connecting to ' + device.name + '...', 'connecting');
-
-      // Connect to GATT server
-      server = await device.gatt.connect();
-      console.log('Connected to GATT server:', server);
-
-      // Get primary service
-      service = await server.getPrimaryService(SERVICE_UUID);
-      console.log('Got service:', service);
-
-      // Get characteristics
-      commandChar = await service.getCharacteristic(COMMAND_UUID);
-      console.log('Got command characteristic:', commandChar);
-      statusChar = await service.getCharacteristic(STATUS_UUID);
-      console.log('Got status characteristic:', statusChar);
-
-      // Subscribe to notifications
-      await statusChar.startNotifications();
-      statusChar.addEventListener('characteristicvaluechanged',
-                                  handleStatusNotification);
-
-      // Handle disconnection
-      device.addEventListener('gattserverdisconnected', handleDisconnection);
-
-      updateStatus('Connected to ' + device.name + '!', 'connected');
-      document.getElementById('controls').style.display = 'block';
-      document.getElementById('controls-setup').style.display = 'block';
-      document.getElementById('connect').disabled = true;
-      document.getElementById('pair-camera').disabled = false
-      document.getElementById('disconnect').disabled = false;
-
-    } catch (error) {
-      handleError(error);
-    }
-  });
-
-  document.getElementById('disconnect').addEventListener('click', () => {
+  disconnectButton && disconnectButton.addEventListener('click', () => {
     if (device && device.gatt.connected) {
       device.gatt.disconnect();
     }
@@ -97,11 +138,8 @@ function handleStatusNotification(event) {
 
 function handleDisconnection() {
   updateStatus('Disconnected from device', 'disconnected');
-  document.getElementById('controls').style.display = 'none';
-  document.getElementById('controls-setup').style.display = 'none';
-  document.getElementById('connect').disabled = false;
-  document.getElementById('pair-camera').disabled = true;
-  document.getElementById('disconnect').disabled = true;
+  setConnectionState('disconnected', 'Not connected');
+  toggleControls(false);
 
   // Reset variables
   device = null;
@@ -114,6 +152,7 @@ function handleDisconnection() {
 function handleError(error) {
   console.error('Bluetooth Error:', error);
   updateStatus('Error: ' + error, 'disconnected');
+  setConnectionState('disconnected', 'Error while connecting');
 }
 
 async function sendCommand(cmd) {
@@ -134,35 +173,35 @@ async function sendCommand(cmd) {
 
 // Helper functions for commands with parameters
 function sendGo(times) {
-  const distance = document.getElementById('go-distance').value;
+  const distance = readNumber('go-distance');
   sendCommand('GO ' + Math.ceil(distance * times * 1000));
 }
 
 function sendGoPct(pct) { sendCommand('GO_PCT ' + pct); }
 
 function sendGoTo() {
-  const position = document.getElementById('goto-position').value;
+  const position = readNumber('goto-position');
   sendCommand('GO_TO ' + Math.ceil(position * 1000));
 }
 
 function sendSetLowerBound() {
-  const value = document.getElementById('bound').value;
+  const value = readNumber('bound');
   sendCommand('SET_LOWER_BOUND ' + Math.ceil(value * 1000));
 }
 
 function sendSetUpperBound() {
-  const value = document.getElementById('bound').value;
+  const value = readNumber('bound');
   sendCommand('SET_UPPER_BOUND ' + Math.ceil(value * 1000));
 }
 
 function sendSetWaitBefore() {
-  const value = document.getElementById('wait-before').value;
-  sendCommand('SET_WAIT_BEFORE ' + value);
+  const value = Math.max(0, readNumber('wait-before'));
+  sendCommand('SET_WAIT_BEFORE ' + Math.round(value));
 }
 
 function sendSetWaitAfter() {
-  const value = document.getElementById('wait-after').value;
-  sendCommand('SET_WAIT_AFTER ' + value);
+  const value = Math.max(0, readNumber('wait-after'));
+  sendCommand('SET_WAIT_AFTER ' + Math.round(value));
 }
 
 function sendStartStack(expected_step_size_nm) {
@@ -170,10 +209,10 @@ function sendStartStack(expected_step_size_nm) {
 }
 
 function sendStartStackCount(length) {
-  if (length === undefined) {
-    length = document.getElementById('stack-length').value;
-  }
-  sendCommand('START_STACK_COUNT ' + length);
+  const stackLength = length !== undefined
+                          ? length
+                          : Math.max(1, readNumber('stack-length', 1));
+  sendCommand('START_STACK_COUNT ' + Math.round(stackLength));
 }
 
 function updateStatus(text, className) {
@@ -189,6 +228,197 @@ function updateStatus(text, className) {
   while (statusDiv.children.length > 20) {
     statusDiv.removeChild(statusDiv.lastChild);
   }
+}
+
+function setConnectionState(state, labelText) {
+  if (connectionIndicatorEl) {
+    connectionIndicatorEl.classList.remove('connected', 'connecting',
+                                           'disconnected');
+    connectionIndicatorEl.classList.add(state);
+  }
+
+  if (connectionLabelEl && labelText) {
+    connectionLabelEl.textContent = labelText;
+  }
+
+  const connectButton = document.getElementById('connect');
+  if (connectButton) {
+    const shouldDisable =
+        state === 'connecting' || (state === 'connected' && !DEBUG_MODE);
+    connectButton.disabled = shouldDisable;
+  }
+}
+
+function toggleControls(isConnected) {
+  const controls = document.getElementById('controls');
+  const setupControls = document.getElementById('controls-setup');
+  const disconnectButton = document.getElementById('disconnect');
+  const pairButton = document.getElementById('pair-camera');
+
+  if (controls) {
+    controls.style.display = (isConnected || DEBUG_MODE) ? 'block' : 'none';
+  }
+  if (setupControls) {
+    setupControls.style.display =
+        (isConnected || DEBUG_MODE) ? 'block' : 'none';
+  }
+  if (disconnectButton) {
+    disconnectButton.disabled = !isConnected;
+  }
+  if (pairButton) {
+    pairButton.disabled = !isConnected;
+  }
+}
+
+function restorePersistedInputs() {
+  if (!supportsLocalStorage()) {
+    return;
+  }
+
+  PERSISTED_FIELDS.forEach((id) => {
+    const element = document.getElementById(id);
+    if (!element) {
+      return;
+    }
+
+    const storedValue = localStorage.getItem(STORAGE_PREFIX + id);
+    if (storedValue !== null) {
+      element.value = storedValue;
+    }
+
+    const eventName = element.tagName === 'SELECT' ? 'change' : 'input';
+    element.addEventListener(
+        eventName,
+        () => { localStorage.setItem(STORAGE_PREFIX + id, element.value); });
+  });
+}
+
+function supportsLocalStorage() {
+  try {
+    const key = STORAGE_PREFIX + 'probe';
+    localStorage.setItem(key, '1');
+    localStorage.removeItem(key);
+    return true;
+  } catch (err) {
+    console.warn('LocalStorage disabled, values will not persist', err);
+    return false;
+  }
+}
+
+function setupSlider() {
+  const slider = document.getElementById('go-slider');
+  if (!slider) {
+    return;
+  }
+
+  const valueLabel = document.getElementById('go-slider-value');
+  const tickButtons = document.querySelectorAll('.slider-tick');
+  const min = Number(slider.min || 0);
+  const max = Number(slider.max || 100);
+  const sliderRange = Math.max(max - min, 1);
+  const throttledSend = throttle((value) => sendGoPct(value), 150);
+
+  const formatPercent = (value) => `${value}%`;
+  const clampValue = (value) => {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+      return min;
+    }
+    return Math.min(max, Math.max(min, Math.round(numericValue)));
+  };
+
+  const updateSliderVisuals = (value) => {
+    if (valueLabel) {
+      valueLabel.textContent = formatPercent(value);
+    }
+
+    const percentage = ((value - min) / sliderRange) * 100;
+    slider.style.setProperty('--slider-progress', `${percentage}%`);
+    slider.style.background =
+        `linear-gradient(90deg, var(--slider-fill, #4299e1) 0%, var(--slider-fill, #4299e1) ${
+            percentage}%, var(--slider-bg, #e2e8f0) ${
+            percentage}%, var(--slider-bg, #e2e8f0) 100%)`;
+  };
+
+  const applyValue = (value, shouldSendCommand = true) => {
+    const clampedValue = clampValue(value);
+    slider.value = clampedValue;
+    updateSliderVisuals(clampedValue);
+    if (shouldSendCommand) {
+      throttledSend(clampedValue);
+    }
+  };
+
+  slider.addEventListener('input',
+                          (event) => { applyValue(event.target.value); });
+
+  tickButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const targetValue = button.dataset.value;
+      applyValue(targetValue);
+      button.blur();
+    });
+  });
+
+  applyValue(slider.value, false);
+}
+
+function setupCustomCommandInput() {
+  const customInput = document.getElementById('custom-command-input');
+  const sendButton = document.getElementById('send-custom-command');
+  if (!customInput || !sendButton) {
+    return;
+  }
+
+  const send = () => {
+    const value = customInput.value.trim();
+    if (value.length === 0) {
+      return;
+    }
+    sendCommand(value.toUpperCase());
+    customInput.value = '';
+  };
+
+  sendButton.addEventListener('click', send);
+  customInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      send();
+    }
+  });
+}
+
+function throttle(fn, delay) {
+  let lastCall = 0;
+  let timeoutId;
+  return (...args) => {
+    const now = Date.now();
+    const remaining = delay - (now - lastCall);
+
+    if (remaining <= 0) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      lastCall = now;
+      fn(...args);
+    } else if (!timeoutId) {
+      timeoutId = setTimeout(() => {
+        lastCall = Date.now();
+        timeoutId = null;
+        fn(...args);
+      }, remaining);
+    }
+  };
+}
+
+function readNumber(id, defaultValue = 0) {
+  const element = document.getElementById(id);
+  if (!element) {
+    return defaultValue;
+  }
+  const parsed = Number(element.value);
+  return Number.isFinite(parsed) ? parsed : defaultValue;
 }
 
 // Log to console for debugging
