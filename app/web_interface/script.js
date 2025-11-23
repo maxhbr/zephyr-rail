@@ -5,7 +5,7 @@ const STORAGE_PREFIX = 'zephyrRail.';
 const DEBUG_MODE = window.location.hash.toLowerCase() === '#debug';
 const PERSISTED_FIELDS = [
   'go-distance', 'goto-position', 'bound', 'wait-before', 'wait-after',
-  'stack-length'
+  'stack-length', 'speed-rpm'
 ];
 
 let device, server, service, commandChar, statusChar;
@@ -202,6 +202,18 @@ function sendSetWaitBefore() {
 function sendSetWaitAfter() {
   const value = Math.max(0, readNumber('wait-after'));
   sendCommand('SET_WAIT_AFTER ' + Math.round(value));
+}
+
+function sendSetSpeedPreset(preset) {
+  if (!preset) {
+    return;
+  }
+  sendCommand('SET_SPEED ' + String(preset).toUpperCase());
+}
+
+function sendSetSpeedRpm() {
+  const rpm = Math.max(1, Math.round(readNumber('speed-rpm', 1)));
+  sendCommand('SET_SPEED_RPM ' + rpm);
 }
 
 function sendStartStack(expected_step_size_nm) {

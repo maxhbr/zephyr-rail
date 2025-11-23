@@ -392,7 +392,7 @@ label {
     margin: 10px 0;
 }
 
-.button-grid-5, .button-grid-7 {
+.button-grid-5, .button-grid-7, .button-grid-3 {
     display: grid;
     gap: 5px;
     width: 100%;
@@ -406,7 +406,11 @@ label {
     grid-template-columns: repeat(7, 1fr);
 }
 
-.button-grid-5 button, .button-grid-7 button {
+.button-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.button-grid-5 button, .button-grid-7 button, .button-grid-3 button {
     margin: 0;
     min-height: 80px;
 }

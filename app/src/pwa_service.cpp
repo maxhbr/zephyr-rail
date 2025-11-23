@@ -1,6 +1,7 @@
 #include "pwa_service.h"
 #include <cstdlib>
 #include <cstring>
+#include <strings.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/conn.h>
 #include <zephyr/bluetooth/gatt.h>
@@ -195,6 +196,50 @@ ssize_t PwaService::cmdWrite(struct bt_conn *conn,
       event_pub(EVENT_START_STACK, 1000);
       snprintf(response, sizeof(response), "ACK:START_STACK 1000");
     }
+
+  } else if (strcmp(token, "SET_SPEED") == 0) {
+    token = strtok_r(nullptr, " ", &saveptr);
+    if (!token) {
+      LOG_WRN("→ Command: SET_SPEED (missing preset)");
+      notifyStatus("ERR:SET_SPEED_MISSING_PRESET");
+      return len;
+    }
+
+    int speed_value = 0;
+    if (strcasecmp(token, "SLOW") == 0 || strcmp(token, "1") == 0) {
+      speed_value = 1;
+    } else if (strcasecmp(token, "MEDIUM") == 0 || strcmp(token, "2") == 0) {
+      speed_value = 2;
+    } else if (strcasecmp(token, "FAST") == 0 || strcmp(token, "3") == 0) {
+      speed_value = 3;
+    }
+
+    if (speed_value == 0) {
+      LOG_WRN("→ Command: SET_SPEED (unknown preset %s)", token);
+      notifyStatus("ERR:SET_SPEED_UNKNOWN_PRESET");
+      return len;
+    }
+
+    LOG_INF("→ Command: SET_SPEED preset=%d", speed_value);
+    event_pub(EVENT_SET_SPEED, speed_value);
+    snprintf(response, sizeof(response), "ACK:SET_SPEED %d", speed_value);
+
+  } else if (strcmp(token, "SET_SPEED_RPM") == 0) {
+    token = strtok_r(nullptr, " ", &saveptr);
+    if (!token) {
+      LOG_WRN("→ Command: SET_SPEED_RPM (missing rpm)");
+      notifyStatus("ERR:SET_SPEED_RPM_MISSING_VALUE");
+      return len;
+    }
+    int rpm = atoi(token);
+    if (rpm < 1) {
+      LOG_WRN("→ Command: SET_SPEED_RPM invalid rpm=%d", rpm);
+      notifyStatus("ERR:SET_SPEED_RPM_INVALID");
+      return len;
+    }
+    LOG_INF("→ Command: SET_SPEED_RPM rpm=%d", rpm);
+    event_pub(EVENT_SET_SPEED_RPM, rpm);
+    snprintf(response, sizeof(response), "ACK:SET_SPEED_RPM %d", rpm);
 
   } else if (strcmp(token, "START_STACK_COUNT") == 0) {
     // START_STACK can have 0, 1, or 3 parameters

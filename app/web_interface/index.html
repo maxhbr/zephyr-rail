@@ -28,7 +28,8 @@
 
         <div class="controls" id="controls">
             <div class="control-section">
-                <h1>Move</h1>
+                <h1>Move </h1>
+                <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
                 <div class="button-grid-7">
                     <button class="btn-secondary" onclick="sendGo(-10)">-10</button>
                     <button class="btn-secondary" onclick="sendGo(-5)">-5</button>
@@ -50,29 +51,27 @@
                     <button class="btn-secondary" onclick="sendGo(10)">+10</button>
                 </div>
                 <div class="spacer">&nbsp;</div>
-                <div class="button-grid-5">
+                <div class="button-grid-3">
                     <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">Set Lower Bound</button>
-                    <button class="btn-secondary" onclick="sendGoPct(0)">0% &lt;- </button>
-                    <button class="btn-secondary" onclick="sendGoPct(50)">50%</button>
-                    <button class="btn-secondary" onclick="sendGoPct(100)"> -&gt; 100%</button>
+                    <div class="slider-control">
+                        <div class="slider-header">
+                            <span>Rail position, relative to boundaries</span>
+                            <span id="go-slider-value">50%</span>
+                        </div>
+                        <input type="range" id="go-slider" value="50" min="0" max="100" step="1">
+                        <div class="slider-ticks button-grid-5">
+                            <button type="button" class="btn-secondary slider-tick" data-value="0">0%</button>
+                            <button type="button" class="btn-secondary slider-tick" data-value="25">25%</button>
+                            <button type="button" class="btn-secondary slider-tick" data-value="50">50%</button>
+                            <button type="button" class="btn-secondary slider-tick" data-value="75">75%</button>
+                            <button type="button" class="btn-secondary slider-tick" data-value="100">100%</button>
+                        </div>
+                    </div>
                     <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">Set Upper Bound</button>
-                </div>
-                <div class="slider-control">
-                    <div class="slider-header">
-                        <span>Rail position</span>
-                        <span id="go-slider-value">50%</span>
-                    </div>
-                    <input type="range" id="go-slider" value="50" min="0" max="100" step="1">
-                    <div class="slider-ticks button-grid-5">
-                        <button type="button" class="btn-secondary slider-tick" data-value="0">0%</button>
-                        <button type="button" class="btn-secondary slider-tick" data-value="25">25%</button>
-                        <button type="button" class="btn-secondary slider-tick" data-value="50">50%</button>
-                        <button type="button" class="btn-secondary slider-tick" data-value="75">75%</button>
-                        <button type="button" class="btn-secondary slider-tick" data-value="100">100%</button>
-                    </div>
                 </div>
                 <div class="spacer">&nbsp;</div>
                 <h1>Stack</h1>
+                <h2>By step size</h2>
                 <div class="button-grid-5">
                     <button class="btn-success" onclick="sendStartStack(5000)">Stack:5μm</button>
                     <button class="btn-success" onclick="sendStartStack(1000)">Stack:1μm</button>
@@ -80,6 +79,7 @@
                     <button class="btn-success" onclick="sendStartStack(200)">Stack:0.2μm</button>
                     <button class="btn-success" onclick="sendStartStack(100)">Stack:0.1μm</button>
                 </div>
+                <h2>By count</h2>
                 <div class="button-grid-5">
                     <button class="btn-success" onclick="sendStartStackCount(50)">Stack#50</button>
                     <button class="btn-success" onclick="sendStartStackCount(100)">Stack#100</button>
@@ -92,13 +92,6 @@
                     <input type="number" id="stack-length" value="300" step="5" min="1">
                     <button class="btn-success" onclick="sendStartStack()">Start Stacking</button>
                 </div>
-                <h3>Camera Control</h3>
-                <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
-                <div class="input-group custom-command">
-                    <label for="custom-command-input">Send custom command</label>
-                    <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
-                    <button id="send-custom-command" class="btn-primary">Send</button>
-                </div>
             </div>
         </div>
         
@@ -109,6 +102,11 @@
         <div class="controls" id="controls-setup">
             <div class="control-section">
                 <h1 id="setup-header" class="collapsible-header collapsed">Setup <span class="toggle-icon">▼</span></h1>
+                <div class="input-group custom-command">
+                    <label for="custom-command-input">Send custom command</label>
+                    <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
+                    <button id="send-custom-command" class="btn-primary">Send</button>
+                </div>
                 <div id="setup-content" class="collapsible-content collapsed">
                     <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
                     <div class="input-group">
@@ -136,6 +134,19 @@
                         <label>Wait After Shot (ms):</label>
                         <input type="number" id="wait-after" value="2000" step="100" min="0">
                         <button class="btn-primary" onclick="sendSetWaitAfter()">Set Wait After</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Motor Speed Preset:</label>
+                        <div class="button-grid-5 speed-buttons">
+                            <button class="btn-secondary" onclick="sendSetSpeedPreset('slow')">Slow</button>
+                            <button class="btn-secondary" onclick="sendSetSpeedPreset('medium')">Medium</button>
+                            <button class="btn-secondary" onclick="sendSetSpeedPreset('fast')">Fast</button>
+                        <div class="input-with-unit">
+                            <input type="number" id="speed-rpm" value="10" step="1" min="1">
+                            <span class="unit-label">RPM</span>
+                        </div>
+                        <button class="btn-primary" onclick="sendSetSpeedRpm()">Set RPM</button>
+                        </div>
                     </div>
                 </div>
             </div>
