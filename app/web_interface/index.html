@@ -23,11 +23,11 @@
                 <button id="connect" class="btn-primary">Connect to ZephyrRail</button>
                 <button id="pair-camera" class="btn-primary" disabled>Pair Camera</button>
                 <button id="disconnect" class="btn-success" disabled>Disconnect</button>
+                <span id="expert-header" class="collapsible-header collapsed" data-collapsible-target="#expert-move,#expert-prepare,#expert-stack,#expert-setup">Expert Mode <span class="toggle-icon">▼</span></span>
             </div>
         </div>
 
         <div class="controls" id="controls">
-            <h1 id="expert-header" class="collapsible-header collapsed" data-collapsible-target="#expert-move,#expert-prepare,#expert-stack,#expert-setup">Expert Mode <span class="toggle-icon">▼</span></h1>
             <div class="control-section">
                 <h1>Move</h1>
                 <div class="button-grid-7">
@@ -78,7 +78,7 @@
             <div class="spacer">&nbsp;</div>
             <div class="control-section">
                 <h1>Prepare</h1>
-                <div class="button-grid-3">
+                <div class="button-grid-3 button-grid-tight">
                     <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">Set Lower Bound</button>
                     <div class="slider-control">
                         <div class="slider-header">
@@ -98,16 +98,8 @@
                 </div>
                 <div id="expert-prepare" class="collapsible-content collapsed expert-section">
                     <div class="input-group">
-                        <label>Go To Position (μm):</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="goto-position" value="0" step="10">
-                            <span class="unit-label">μm</span>
-                        </div>
-                        <button class="btn-primary" onclick="sendGoTo()">Go To</button>
-                    </div>
-                    <div class="input-group">
                         <label>Manual Bounds:</label>
-                        <div class="button-grid-3">
+                        <div class="button-grid-3 button-grid-tight">
                             <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To Current</button>
                             <div class="input-with-unit">
                                 <input type="number" id="bound" value="0" placeholder="Target μm">
@@ -183,13 +175,14 @@
                 </div>
             </div>
         </div>
+
+        <div id="status" class="disconnected">
+            Not connected. Click "Connect to ZephyrRail" to begin.
+        </div>
         
             
         <div class="controls" id="controls-setup">
             <div class="control-section">
-                <div id="status" class="disconnected">
-                    Not connected. Click "Connect to ZephyrRail" to begin.
-                </div>
                 <div id="expert-setup" class="collapsible-content collapsed expert-section">
                     <div class="input-group custom-command">
                         <label for="custom-command-input">Send custom command</label>

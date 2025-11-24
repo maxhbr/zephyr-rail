@@ -274,6 +274,12 @@ label {
     cursor: pointer;
     font-size: 22px;
     user-select: none;
+    background: #718096;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin: 10px 5px 15px 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .toggle-icon {
@@ -448,6 +454,10 @@ label {
     grid-template-columns: repeat(3, 1fr);
 }
 
+.button-grid-3.button-grid-tight {
+    grid-template-columns: 20% 60% 20%;
+}
+
 .button-grid-5 button, .button-grid-7 button, .button-grid-3 button {
     margin: 0;
     min-height: 80px;
@@ -479,7 +489,7 @@ label {
         padding: 16px;
         border-radius: 0;
         box-shadow: none;
-        min-height: 100vh;
+        /* min-height: 100vh; */
     }
     
     button {
