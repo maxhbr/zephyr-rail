@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   if (pairButton) {
-    pairButton.addEventListener('click', () => sendCommand('PAIR'));
+    pairButton.addEventListener('click', () => sendCommand('cam pair'));
   }
 
   if (!bluetoothSupported && connectButton) {
@@ -182,47 +182,53 @@ async function sendCommand(cmd) {
     return;
   }
 
+  const trimmed = (cmd || '').toString().trim();
+  if (!trimmed.length) {
+    return;
+  }
+
   try {
     const encoder = new TextEncoder();
-    await commandChar.writeValue(encoder.encode(cmd));
-    console.log('Command sent:', cmd);
+    await commandChar.writeValue(encoder.encode(trimmed));
+    console.log('Command sent:', trimmed);
   } catch (error) {
     console.error('Command failed:', error);
-    updateStatus('Failed to send command: ' + cmd, 'connected');
+    updateStatus('Failed to send command: ' + trimmed, 'connected');
   }
 }
 
 // Helper functions for commands with parameters
 function sendGo(times) {
   const distance = readNumber('go-distance');
-  sendCommand('GO ' + Math.ceil(distance * times * 1000));
+  const distanceNm = Math.round(distance * times * 1000);
+  sendCommand('rail go_nm ' + distanceNm);
 }
 
-function sendGoPct(pct) { sendCommand('GO_PCT ' + pct); }
+function sendGoPct(pct) { sendCommand('rail go_pct ' + pct); }
 
 function sendGoTo() {
   const position = readNumber('goto-position');
-  sendCommand('GO_TO ' + Math.ceil(position * 1000));
+  sendCommand('rail go_to ' + Math.round(position));
 }
 
 function sendSetLowerBound() {
   const value = readNumber('bound');
-  sendCommand('SET_LOWER_BOUND ' + Math.ceil(value * 1000));
+  sendCommand('rail lower ' + Math.round(value));
 }
 
 function sendSetUpperBound() {
   const value = readNumber('bound');
-  sendCommand('SET_UPPER_BOUND ' + Math.ceil(value * 1000));
+  sendCommand('rail upper ' + Math.round(value));
 }
 
 function sendSetWaitBefore() {
   const value = Math.max(0, readNumber('wait-before'));
-  sendCommand('SET_WAIT_BEFORE ' + Math.round(value));
+  sendCommand('rail wait_before ' + Math.round(value));
 }
 
 function sendSetWaitAfter() {
   const value = Math.max(0, readNumber('wait-after'));
-  sendCommand('SET_WAIT_AFTER ' + Math.round(value));
+  sendCommand('rail wait_after ' + Math.round(value));
 }
 
 function sendWaitSettings() {
@@ -234,17 +240,19 @@ function sendSetSpeedPreset(preset) {
   if (!preset) {
     return;
   }
-  sendCommand('SET_SPEED ' + String(preset).toUpperCase());
+  sendCommand('rail set_speed ' + String(preset).toLowerCase());
 }
 
 function sendSetSpeedRpm() {
   const rpm = Math.max(1, Math.round(readNumber('speed-rpm', 1)));
-  sendCommand('SET_SPEED_RPM ' + rpm);
+  sendCommand('rail set_rpm ' + rpm);
 }
 
 function sendStartStack(expected_step_size_nm) {
   sendWaitSettings();
-  sendCommand('START_STACK ' + expected_step_size_nm);
+  const stepSize =
+      expected_step_size_nm !== undefined ? expected_step_size_nm : 1000;
+  sendCommand('rail stack_nm ' + Math.round(stepSize));
 }
 
 function sendStartStackCount(length) {
@@ -252,7 +260,7 @@ function sendStartStackCount(length) {
                           ? length
                           : Math.max(1, readNumber('stack-length', 1));
   sendWaitSettings();
-  sendCommand('START_STACK_COUNT ' + Math.round(stackLength));
+  sendCommand('rail stack_count ' + Math.round(stackLength));
 }
 
 function updateStatus(text, className) {
@@ -413,7 +421,7 @@ function setupCustomCommandInput() {
     if (value.length === 0) {
       return;
     }
-    sendCommand(value.toUpperCase());
+    sendCommand(value);
     customInput.value = '';
   };
 

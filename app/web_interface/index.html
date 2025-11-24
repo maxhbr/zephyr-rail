@@ -36,14 +36,14 @@
                 </div>
 
                 <div class="controls" id="controls-setup">
-                    <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
+                    <button class="btn-warning" onclick="sendCommand('cam shoot')">Take Single Photo</button>
                     <div id="expert-setup" class="collapsible-content collapsed expert-section">
                         <div class="input-group custom-command">
                             <label for="custom-command-input">Send custom command</label>
                             <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
                             <button id="send-custom-command" class="btn-primary">Send</button>
                         </div>
-                        <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
+                        <button class="btn-secondary" onclick="sendCommand('rail status')">No Operation</button>
                     </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                         </div>
                     </div>
                     <div class="button-grid-3 button-grid-tight">
-                        <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">Set Lower Bound</button>
+                        <button class="btn-info" onclick="sendCommand('rail lower')">Set Lower Bound</button>
                         <div class="slider-control">
                             <div class="slider-header">
                                 <span>Rail position, relative to boundaries</span>
@@ -110,7 +110,7 @@
                                 <button type="button" class="btn-secondary slider-tick" data-value="100">100%</button>
                             </div>
                         </div>
-                        <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">Set Upper Bound</button>
+                        <button class="btn-info" onclick="sendCommand('rail upper')">Set Upper Bound</button>
                     </div>
                     <div id="expert-prepare" class="collapsible-content collapsed expert-section">
                         <div class="input-group">
