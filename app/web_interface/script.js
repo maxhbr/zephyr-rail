@@ -223,17 +223,17 @@ function sendSetUpperBound() {
 
 function sendSetWaitBefore() {
   const value = Math.max(0, readNumber('wait-before'));
-  sendCommand('rail wait_before ' + Math.round(value));
+  return sendCommand('rail wait_before ' + Math.round(value));
 }
 
 function sendSetWaitAfter() {
   const value = Math.max(0, readNumber('wait-after'));
-  sendCommand('rail wait_after ' + Math.round(value));
+  return sendCommand('rail wait_after ' + Math.round(value));
 }
 
-function sendWaitSettings() {
-  sendSetWaitBefore();
-  sendSetWaitAfter();
+async function sendWaitSettings() {
+  await sendSetWaitBefore();
+  await sendSetWaitAfter();
 }
 
 function sendSetSpeedPreset(preset) {
@@ -248,19 +248,19 @@ function sendSetSpeedRpm() {
   sendCommand('rail set_rpm ' + rpm);
 }
 
-function sendStartStack(expected_step_size_nm) {
-  sendWaitSettings();
+async function sendStartStack(expected_step_size_nm) {
+  await sendWaitSettings();
   const stepSize =
       expected_step_size_nm !== undefined ? expected_step_size_nm : 1000;
-  sendCommand('rail stack_nm ' + Math.round(stepSize));
+  await sendCommand('rail stack_nm ' + Math.round(stepSize));
 }
 
-function sendStartStackCount(length) {
+async function sendStartStackCount(length) {
   const stackLength = length !== undefined
                           ? length
                           : Math.max(1, readNumber('stack-length', 1));
-  sendWaitSettings();
-  sendCommand('rail stack_count ' + Math.round(stackLength));
+  await sendWaitSettings();
+  await sendCommand('rail stack_count ' + Math.round(stackLength));
 }
 
 function updateStatus(text, className) {
