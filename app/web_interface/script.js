@@ -233,7 +233,9 @@ function sendSetWaitAfter() {
 
 async function sendWaitSettings() {
   await sendSetWaitBefore();
+  await new Promise((resolve) => setTimeout(resolve, 300));
   await sendSetWaitAfter();
+  await new Promise((resolve) => setTimeout(resolve, 300));
 }
 
 function sendSetSpeedPreset(preset) {
