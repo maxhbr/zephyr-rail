@@ -38,6 +38,53 @@ h1 {
     font-size: 14px;
 }
 
+.tab-container {
+    margin-top: 20px;
+}
+
+.tab-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.tab-button {
+    background: #e2e8f0;
+    color: #2d3748;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tab-button.active {
+    background: #4299e1;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(66, 153, 225, 0.35);
+}
+
+.tab-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.expert-toggle {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
 button {
     margin: 5px;
     padding: 12px 24px;
@@ -256,7 +303,7 @@ label {
     border: 2px solid #dc3545;
 }
 
-#controls, #controls-setup {
+#controls-setup {
     display: none;
 }
 
@@ -504,10 +551,6 @@ label {
     .connection-bar {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .input-with-unit {
-        width: 100%;
     }
 
     .input-with-unit {

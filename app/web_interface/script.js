@@ -10,6 +10,9 @@ const PERSISTED_FIELDS = [
 
 let device, server, service, commandChar, statusChar;
 let connectionIndicatorEl, connectionLabelEl;
+let tabButtons = [];
+let tabPanels = [];
+let activeTabId = 'tab-connection';
 const bluetoothSupported = !!navigator.bluetooth;
 
 // Check Web Bluetooth support
@@ -67,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
   restorePersistedInputs();
   setupSlider();
   setupCustomCommandInput();
+  setupTabs();
 
   const connectButton = document.getElementById('connect');
   const pairButton = document.getElementById('pair-camera');
@@ -284,17 +288,15 @@ function setConnectionState(state, labelText) {
 }
 
 function toggleControls(isConnected) {
-  const controls = document.getElementById('controls');
+  const allowExtended = isConnected || DEBUG_MODE;
+  setTabAvailability(allowExtended);
+
   const setupControls = document.getElementById('controls-setup');
   const disconnectButton = document.getElementById('disconnect');
   const pairButton = document.getElementById('pair-camera');
 
-  if (controls) {
-    controls.style.display = (isConnected || DEBUG_MODE) ? 'block' : 'none';
-  }
   if (setupControls) {
-    setupControls.style.display =
-        (isConnected || DEBUG_MODE) ? 'block' : 'none';
+    setupControls.style.display = allowExtended ? 'block' : 'none';
   }
   if (disconnectButton) {
     disconnectButton.disabled = !isConnected;
@@ -420,6 +422,59 @@ function setupCustomCommandInput() {
       send();
     }
   });
+}
+
+function setupTabs() {
+  tabButtons = Array.from(document.querySelectorAll('.tab-button'));
+  tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+
+  if (!tabButtons.length || !tabPanels.length) {
+    return;
+  }
+
+  tabButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.disabled) {
+        return;
+      }
+      activateTab(button.dataset.tabTarget);
+    });
+  });
+
+  activateTab(activeTabId);
+}
+
+function activateTab(targetId) {
+  if (!targetId) {
+    return;
+  }
+  activeTabId = targetId;
+  tabButtons.forEach((button) => {
+    const isActive = button.dataset.tabTarget === targetId;
+    button.classList.toggle('active', isActive);
+  });
+  tabPanels.forEach(
+      (panel) => { panel.classList.toggle('active', panel.id === targetId); });
+}
+
+function setTabAvailability(enableConnectedTabs) {
+  if (!tabButtons.length) {
+    return;
+  }
+  let shouldReset = false;
+  tabButtons.forEach((button) => {
+    const requiresConnection = button.dataset.requiresConnection === 'true';
+    if (!requiresConnection) {
+      return;
+    }
+    button.disabled = !enableConnectedTabs;
+    if (!enableConnectedTabs && button.dataset.tabTarget === activeTabId) {
+      shouldReset = true;
+    }
+  });
+  if (shouldReset) {
+    activateTab('tab-connection');
+  }
 }
 
 function throttle(fn, delay) {
