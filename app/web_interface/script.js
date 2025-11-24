@@ -12,6 +12,8 @@ let device, server, service, commandChar, statusChar;
 let connectionIndicatorEl, connectionLabelEl;
 let tabButtons = [];
 let tabPanels = [];
+let allTabsButton = null;
+let allTabsActive = false;
 let activeTabId = 'tab-home';
 const bluetoothSupported = !!navigator.bluetooth;
 
@@ -425,10 +427,15 @@ function setupCustomCommandInput() {
 }
 
 function setupTabs() {
-  tabButtons = Array.from(document.querySelectorAll('.tab-button'));
+  const allButtonEl = document.querySelector('.tab-button-all');
+  allTabsButton = allButtonEl || null;
+
+  tabButtons =
+      Array.from(document.querySelectorAll('.tab-button'))
+          .filter((button) => !button.classList.contains('tab-button-all'));
   tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
 
-  if (!tabButtons.length || !tabPanels.length) {
+  if (!tabPanels.length) {
     return;
   }
 
@@ -441,6 +448,15 @@ function setupTabs() {
     });
   });
 
+  if (allTabsButton) {
+    allTabsButton.addEventListener('click', () => {
+      if (allTabsButton.disabled) {
+        return;
+      }
+      setAllTabsActive(true);
+    });
+  }
+
   activateTab(activeTabId);
 }
 
@@ -449,16 +465,15 @@ function activateTab(targetId) {
     return;
   }
   activeTabId = targetId;
-  tabButtons.forEach((button) => {
-    const isActive = button.dataset.tabTarget === targetId;
-    button.classList.toggle('active', isActive);
-  });
-  tabPanels.forEach(
-      (panel) => { panel.classList.toggle('active', panel.id === targetId); });
+  if (allTabsActive) {
+    setAllTabsActive(false);
+    return;
+  }
+  updateTabsDisplay();
 }
 
 function setTabAvailability(enableConnectedTabs) {
-  if (!tabButtons.length) {
+  if (!tabButtons.length && !allTabsButton) {
     return;
   }
   let shouldReset = false;
@@ -472,8 +487,44 @@ function setTabAvailability(enableConnectedTabs) {
       shouldReset = true;
     }
   });
+
+  if (allTabsButton && allTabsButton.dataset.requiresConnection === 'true') {
+    allTabsButton.disabled = !enableConnectedTabs;
+    if (!enableConnectedTabs && allTabsActive) {
+      setAllTabsActive(false);
+    }
+  }
+
   if (shouldReset) {
     activateTab('tab-home');
+  } else {
+    updateTabsDisplay();
+  }
+}
+
+function setAllTabsActive(value) {
+  allTabsActive = value;
+  updateTabsDisplay();
+}
+
+function updateTabsDisplay() {
+  if (allTabsActive) {
+    tabPanels.forEach((panel) => panel.classList.add('active'));
+    tabButtons.forEach((button) => button.classList.remove('active'));
+    if (allTabsButton) {
+      allTabsButton.classList.add('active');
+    }
+  } else {
+    tabPanels.forEach((panel) => {
+      panel.classList.toggle('active', panel.id === activeTabId);
+    });
+    tabButtons.forEach((button) => {
+      const isActive = button.dataset.tabTarget === activeTabId;
+      button.classList.toggle('active', isActive);
+    });
+    if (allTabsButton) {
+      allTabsButton.classList.remove('active');
+    }
   }
 }
 
