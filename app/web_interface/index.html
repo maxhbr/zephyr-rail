@@ -8,190 +8,184 @@
 </head>
 <body>
     <div class="container">
-        <h1>ZephyrRail Focus Stacking</h1>
-        <p class="subtitle"><a href="https://github.com/maxhbr/zephyr-rail">https://github.com/maxhbr/zephyr-rail</a></p>
-        
-        <div class="connection-bar">
-            <div class="status-pill">
-                <span id="connection-indicator" class="indicator disconnected"></span>
-                <div>
-                    <p class="status-label">Connection</p>
-                    <p id="connection-label">Not connected</p>
-                </div>
-            </div>
-            <div class="connection-actions">
-                <button id="connect" class="btn-primary">Connect to ZephyrRail</button>
-                <button id="pair-camera" class="btn-primary" disabled>Pair Camera</button>
-                <button id="disconnect" class="btn-success" disabled>Disconnect</button>
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-button active" data-tab-target="tab-home">Home</button>
+                <button class="tab-button" data-tab-target="tab-move" data-requires-connection="true">Move &amp; Prepare</button>
+                <button class="tab-button" data-tab-target="tab-stack" data-requires-connection="true">Stack</button>
+                <button class="tab-button" data-tab-target="tab-debug">Debug</button>
+                <button class="tab-button tab-button-all" data-requires-connection="true">All</button>
                 <span id="expert-header" class="collapsible-header collapsed" data-collapsible-target="#expert-move,#expert-prepare,#expert-stack,#expert-setup">Expert Mode <span class="toggle-icon">▼</span></span>
             </div>
-        </div>
-
-        <div class="controls" id="controls">
-            <div class="control-section">
-                <h1>Move</h1>
-                <div class="button-grid-7">
-                    <button class="btn-secondary" onclick="sendGo(-10)">-10</button>
-                    <button class="btn-secondary" onclick="sendGo(-5)">-5</button>
-                    <button class="btn-primary" onclick="sendGo(-1)">-1</button>
-                    <div class="select-with-label">
-                        <label for="go-distance">Step Size</label>
-                        <select id="go-distance" class="distance-select" data-default="100">
-                            <option value="1000">1 mm</option>
-                            <option value="100" selected>100 μm</option>
-                            <option value="10">10 μm</option>
-                            <option value="1">1 μm</option>
-                            <option value="0.1">100 nm</option>
-                            <option value="0.01">10 nm</option>
-                            <option value="0.001">1 nm</option>
-                        </select>
+            <div id="tab-home" class="tab-panel active">
+                <h1>ZephyrRail Focus Stacking</h1>
+                <p class="subtitle"><a href="https://github.com/maxhbr/zephyr-rail">https://github.com/maxhbr/zephyr-rail</a></p>
+                <div class="connection-bar">
+                    <div class="status-pill">
+                        <span id="connection-indicator" class="indicator disconnected"></span>
+                        <div>
+                            <p class="status-label">Connection</p>
+                            <p id="connection-label">Not connected</p>
+                        </div>
                     </div>
-                    <button class="btn-primary" onclick="sendGo(1)">+1</button>
-                    <button class="btn-secondary" onclick="sendGo(5)">+5</button>
-                    <button class="btn-secondary" onclick="sendGo(10)">+10</button>
+                    <div class="connection-actions">
+                        <button id="connect" class="btn-primary">Connect to ZephyrRail</button>
+                        <button id="pair-camera" class="btn-primary" disabled>Pair Camera</button>
+                        <button id="disconnect" class="btn-success" disabled>Disconnect</button>
+                    </div>
                 </div>
-                <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
-                <div id="expert-move" class="collapsible-content collapsed expert-section">
-                    <div class="input-group">
-                        <label>Go To Position:</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="goto-position" value="0" step="10">
-                            <span class="unit-label">μm</span>
+
+                <div class="controls" id="controls-setup">
+                    <button class="btn-warning" onclick="sendCommand('SHOOT')">Take Single Photo</button>
+                    <div id="expert-setup" class="collapsible-content collapsed expert-section">
+                        <div class="input-group custom-command">
+                            <label for="custom-command-input">Send custom command</label>
+                            <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
+                            <button id="send-custom-command" class="btn-primary">Send</button>
                         </div>
-                        <button class="btn-primary" onclick="sendGoTo()">Go To</button>
-                    </div>
-                    <div class="input-group">
-                        <h2>Speed:</h2>
-                        <div class="button-grid-3 speed-buttons">
-                            <button class="btn-secondary" onclick="sendSetSpeedPreset('slow')">Slow</button>
-                            <button class="btn-secondary" onclick="sendSetSpeedPreset('medium')">Medium</button>
-                            <button class="btn-secondary" onclick="sendSetSpeedPreset('fast')">Fast</button>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Motor Speed RPM:</label>
-                        <input type="number" id="speed-rpm" value="10" step="1" min="1">
-                        <button class="btn-primary" onclick="sendSetSpeedRpm()">Set RPM</button>
+                        <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
                     </div>
                 </div>
             </div>
-            <div class="spacer">&nbsp;</div>
-            <div class="control-section">
-                <h1>Prepare</h1>
-                <div class="button-grid-3 button-grid-tight">
-                    <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">Set Lower Bound</button>
-                    <div class="slider-control">
-                        <div class="slider-header">
-                            <span>Rail position, relative to boundaries</span>
-                            <span id="go-slider-value">50%</span>
+
+            <div id="tab-move" class="tab-panel" data-requires-connection="true">
+                <div class="controls">
+                    <h1>Move</h1>
+                    <div class="button-grid-7">
+                        <button class="btn-secondary" onclick="sendGo(-10)">-10</button>
+                        <button class="btn-secondary" onclick="sendGo(-5)">-5</button>
+                        <button class="btn-primary" onclick="sendGo(-1)">-1</button>
+                        <div class="select-with-label">
+                            <label for="go-distance">Step Size</label>
+                            <select id="go-distance" class="distance-select" data-default="100">
+                                <option value="1000">1 mm</option>
+                                <option value="100" selected>100 μm</option>
+                                <option value="10">10 μm</option>
+                                <option value="1">1 μm</option>
+                                <option value="0.1">100 nm</option>
+                                <option value="0.01">10 nm</option>
+                                <option value="0.001">1 nm</option>
+                            </select>
                         </div>
-                        <input type="range" id="go-slider" value="50" min="0" max="100" step="1">
-                        <div class="slider-ticks button-grid-5">
-                            <button type="button" class="btn-secondary slider-tick" data-value="0">0%</button>
-                            <button type="button" class="btn-secondary slider-tick" data-value="25">25%</button>
-                            <button type="button" class="btn-secondary slider-tick" data-value="50">50%</button>
-                            <button type="button" class="btn-secondary slider-tick" data-value="75">75%</button>
-                            <button type="button" class="btn-secondary slider-tick" data-value="100">100%</button>
-                        </div>
+                        <button class="btn-primary" onclick="sendGo(1)">+1</button>
+                        <button class="btn-secondary" onclick="sendGo(5)">+5</button>
+                        <button class="btn-secondary" onclick="sendGo(10)">+10</button>
                     </div>
-                    <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">Set Upper Bound</button>
-                </div>
-                <div id="expert-prepare" class="collapsible-content collapsed expert-section">
-                    <div class="input-group">
-                        <label>Manual Bounds:</label>
-                        <div class="button-grid-3 button-grid-tight">
-                            <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To Current</button>
+                    <div id="expert-move" class="collapsible-content collapsed expert-section">
+                        <div class="input-group">
+                            <label>Go To Position:</label>
                             <div class="input-with-unit">
-                                <input type="number" id="bound" value="0" placeholder="Target μm">
+                                <input type="number" id="goto-position" value="0" step="10">
                                 <span class="unit-label">μm</span>
                             </div>
-                            <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To Current</button>
+                            <button class="btn-primary" onclick="sendGoTo()">Go To</button>
+                        </div>
+                        <div class="input-group">
+                            <label>Speed Preset:</label>
+                            <div class="button-grid-3 button-grid-tight speed-buttons">
+                                <button class="btn-secondary" onclick="sendSetSpeedPreset('slow')">Slow</button>
+                                <button class="btn-secondary" onclick="sendSetSpeedPreset('medium')">Medium</button>
+                                <button class="btn-secondary" onclick="sendSetSpeedPreset('fast')">Fast</button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Motor Speed RPM:</label>
+                            <input type="number" id="speed-rpm" value="10" step="1" min="1">
+                            <button class="btn-primary" onclick="sendSetSpeedRpm()">Set RPM</button>
                         </div>
                     </div>
-                </div>
-                <div id="expert-prepare" class="collapsible-content collapsed expert-section">
-                    <div class="input-group">
-                        <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To</button>
-                        <div class="input-with-unit">
-                            <input type="number" id="bound" value="0" placeholder="Lower">
-                            <span class="unit-label">μm</span>
+                    <div class="button-grid-3 button-grid-tight">
+                        <button class="btn-info" onclick="sendCommand('SET_LOWER_BOUND')">Set Lower Bound</button>
+                        <div class="slider-control">
+                            <div class="slider-header">
+                                <span>Rail position, relative to boundaries</span>
+                                <span id="go-slider-value">50%</span>
+                            </div>
+                            <input type="range" id="go-slider" value="50" min="0" max="100" step="1">
+                            <div class="slider-ticks button-grid-5">
+                                <button type="button" class="btn-secondary slider-tick" data-value="0">0%</button>
+                                <button type="button" class="btn-secondary slider-tick" data-value="25">25%</button>
+                                <button type="button" class="btn-secondary slider-tick" data-value="50">50%</button>
+                                <button type="button" class="btn-secondary slider-tick" data-value="75">75%</button>
+                                <button type="button" class="btn-secondary slider-tick" data-value="100">100%</button>
+                            </div>
                         </div>
-                        <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To</button>
+                        <button class="btn-info" onclick="sendCommand('SET_UPPER_BOUND')">Set Upper Bound</button>
+                    </div>
+                    <div id="expert-prepare" class="collapsible-content collapsed expert-section">
+                        <div class="input-group">
+                            <label>Manual Bounds:</label>
+                            <div class="button-grid-3 button-grid-tight">
+                                <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To Current</button>
+                                <div class="input-with-unit">
+                                    <input type="number" id="bound" value="0" placeholder="Target μm">
+                                    <span class="unit-label">μm</span>
+                                </div>
+                                <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To Current</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="spacer">&nbsp;</div>
-            <div class="control-section">
-                <div class="button-grid-5">
-                    <h1>Stack</h1>
-                    <div>&nbsp;</div>
-                    <div>&nbsp;</div>
-                    <div>
-                        <label>Wait Before Shot:</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="wait-before" value="1000" step="100" min="0">
-                            <span class="unit-label">ms</span>
-                        </div>
-                    </div>
-                    <div>
-                        <label>Wait After Shot:</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="wait-after" value="500" step="100" min="0">
-                            <span class="unit-label">ms</span>
-                        </div>
-                    </div>
-                </div>
-                <div id="expert-stack" class="collapsible-content collapsed expert-section">
-                    <div class="input-group">
-                        <div class="button-grid-5">
-                            <div>&nbsp;</div>
-                            <div>&nbsp;</div>
-                            <div>&nbsp;</div>
-                            <button class="btn-primary" onclick="sendSetWaitBefore()">Apply Wait Before</button>
-                            <button class="btn-primary" onclick="sendSetWaitAfter()">Apply Wait After</button>
-                        </div>
-                    </div>
-                </div>
-                <h2>By step size</h2>
-                <div class="button-grid-5">
-                    <button class="btn-success" onclick="sendStartStack(5000)">Stack:5μm</button>
-                    <button class="btn-success" onclick="sendStartStack(1000)">Stack:1μm</button>
-                    <button class="btn-success" onclick="sendStartStack(500)">Stack:0.5μm</button>
-                    <button class="btn-success" onclick="sendStartStack(200)">Stack:0.2μm</button>
-                    <button class="btn-success" onclick="sendStartStack(100)">Stack:0.1μm</button>
-                </div>
-                <h2>By count</h2>
-                <div class="button-grid-5">
-                    <button class="btn-success" onclick="sendStartStackCount(50)">Stack#50</button>
-                    <button class="btn-success" onclick="sendStartStackCount(100)">Stack#100</button>
-                    <button class="btn-success" onclick="sendStartStackCount(300)">Stack#300</button>
-                    <button class="btn-success" onclick="sendStartStackCount(500)">Stack#500</button>
-                    <button class="btn-success" onclick="sendStartStackCount(1000)">Stack#1000</button>
-                </div>
-                <div class="input-group">
-                    <label>Expected Stack Length:</label>
-                    <input type="number" id="stack-length" value="300" step="5" min="1">
-                    <button class="btn-success" onclick="sendStartStack()">Start Stacking</button>
-                </div>
-            </div>
-        </div>
 
-        <div id="status" class="disconnected">
-            Not connected. Click "Connect to ZephyrRail" to begin.
-        </div>
-        
-            
-        <div class="controls" id="controls-setup">
-            <div class="control-section">
-                <div id="expert-setup" class="collapsible-content collapsed expert-section">
-                    <div class="input-group custom-command">
-                        <label for="custom-command-input">Send custom command</label>
-                        <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
-                        <button id="send-custom-command" class="btn-primary">Send</button>
+            <div id="tab-stack" class="tab-panel" data-requires-connection="true">
+                <div class="controls">
+                    <div class="button-grid-5">
+                        <h1>Stack</h1>
+                        <div>&nbsp;</div>
+                        <div>&nbsp;</div>
+                        <div class="input-group">
+                            <label>Wait Before Shot (ms):</label>
+                            <input type="number" id="wait-before" value="1000" step="100" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Wait After Shot (ms):</label>
+                            <input type="number" id="wait-after" value="500" step="100" min="0">
+                        </div>
                     </div>
-                    <button class="btn-secondary" onclick="sendCommand('NOOP')">No Operation</button>
+                    <div id="expert-stack" class="collapsible-content collapsed expert-section">
+                        <div class="input-group">
+                            <label>Timing overrides:</label>
+                            <div class="button-grid-3 button-grid-tight">
+                                <button class="btn-primary" onclick="sendSetWaitBefore()">Apply Wait Before</button>
+                                <div>&nbsp;</div>
+                                <button class="btn-primary" onclick="sendSetWaitAfter()">Apply Wait After</button>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>By step size</h2>
+                    <div class="button-grid-5">
+                        <button class="btn-success" onclick="sendStartStack(5000)">Stack:5μm</button>
+                        <button class="btn-success" onclick="sendStartStack(1000)">Stack:1μm</button>
+                        <button class="btn-success" onclick="sendStartStack(500)">Stack:0.5μm</button>
+                        <button class="btn-success" onclick="sendStartStack(200)">Stack:0.2μm</button>
+                        <button class="btn-success" onclick="sendStartStack(100)">Stack:0.1μm</button>
+                    </div>
+                    <h2>By count</h2>
+                    <div class="button-grid-5">
+                        <button class="btn-success" onclick="sendStartStackCount(50)">Stack#50</button>
+                        <button class="btn-success" onclick="sendStartStackCount(100)">Stack#100</button>
+                        <button class="btn-success" onclick="sendStartStackCount(300)">Stack#300</button>
+                        <button class="btn-success" onclick="sendStartStackCount(500)">Stack#500</button>
+                        <button class="btn-success" onclick="sendStartStackCount(1000)">Stack#1000</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Expected Stack Length:</label>
+                        <input type="number" id="stack-length" value="300" step="5" min="1">
+                        <button class="btn-success" onclick="sendStartStack()">Start Stacking</button>
+                    </div>
                 </div>
             </div>
+
+            <div id="tab-debug" class="tab-panel">
+                <div class="controls">
+                    <h1>Debug</h1>
+                </div>
+                <div id="status" class="disconnected">
+                    Not connected. Click "Connect to ZephyrRail" to begin.
+                </div>
+            </div>
+
         </div>
     </div>
 

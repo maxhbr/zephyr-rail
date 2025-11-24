@@ -10,6 +10,11 @@ const PERSISTED_FIELDS = [
 
 let device, server, service, commandChar, statusChar;
 let connectionIndicatorEl, connectionLabelEl;
+let tabButtons = [];
+let tabPanels = [];
+let allTabsButton = null;
+let allTabsActive = false;
+let activeTabId = 'tab-home';
 const bluetoothSupported = !!navigator.bluetooth;
 
 // Check Web Bluetooth support
@@ -67,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
   restorePersistedInputs();
   setupSlider();
   setupCustomCommandInput();
+  setupTabs();
 
   const connectButton = document.getElementById('connect');
   const pairButton = document.getElementById('pair-camera');
@@ -284,17 +290,15 @@ function setConnectionState(state, labelText) {
 }
 
 function toggleControls(isConnected) {
-  const controls = document.getElementById('controls');
+  const allowExtended = isConnected || DEBUG_MODE;
+  setTabAvailability(allowExtended);
+
   const setupControls = document.getElementById('controls-setup');
   const disconnectButton = document.getElementById('disconnect');
   const pairButton = document.getElementById('pair-camera');
 
-  if (controls) {
-    controls.style.display = (isConnected || DEBUG_MODE) ? 'block' : 'none';
-  }
   if (setupControls) {
-    setupControls.style.display =
-        (isConnected || DEBUG_MODE) ? 'block' : 'none';
+    setupControls.style.display = allowExtended ? 'block' : 'none';
   }
   if (disconnectButton) {
     disconnectButton.disabled = !isConnected;
@@ -420,6 +424,108 @@ function setupCustomCommandInput() {
       send();
     }
   });
+}
+
+function setupTabs() {
+  const allButtonEl = document.querySelector('.tab-button-all');
+  allTabsButton = allButtonEl || null;
+
+  tabButtons =
+      Array.from(document.querySelectorAll('.tab-button'))
+          .filter((button) => !button.classList.contains('tab-button-all'));
+  tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+
+  if (!tabPanels.length) {
+    return;
+  }
+
+  tabButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.disabled) {
+        return;
+      }
+      activateTab(button.dataset.tabTarget);
+    });
+  });
+
+  if (allTabsButton) {
+    allTabsButton.addEventListener('click', () => {
+      if (allTabsButton.disabled) {
+        return;
+      }
+      setAllTabsActive(true);
+    });
+  }
+
+  activateTab(activeTabId);
+}
+
+function activateTab(targetId) {
+  if (!targetId) {
+    return;
+  }
+  activeTabId = targetId;
+  if (allTabsActive) {
+    setAllTabsActive(false);
+    return;
+  }
+  updateTabsDisplay();
+}
+
+function setTabAvailability(enableConnectedTabs) {
+  if (!tabButtons.length && !allTabsButton) {
+    return;
+  }
+  let shouldReset = false;
+  tabButtons.forEach((button) => {
+    const requiresConnection = button.dataset.requiresConnection === 'true';
+    if (!requiresConnection) {
+      return;
+    }
+    button.disabled = !enableConnectedTabs;
+    if (!enableConnectedTabs && button.dataset.tabTarget === activeTabId) {
+      shouldReset = true;
+    }
+  });
+
+  if (allTabsButton && allTabsButton.dataset.requiresConnection === 'true') {
+    allTabsButton.disabled = !enableConnectedTabs;
+    if (!enableConnectedTabs && allTabsActive) {
+      setAllTabsActive(false);
+    }
+  }
+
+  if (shouldReset) {
+    activateTab('tab-home');
+  } else {
+    updateTabsDisplay();
+  }
+}
+
+function setAllTabsActive(value) {
+  allTabsActive = value;
+  updateTabsDisplay();
+}
+
+function updateTabsDisplay() {
+  if (allTabsActive) {
+    tabPanels.forEach((panel) => panel.classList.add('active'));
+    tabButtons.forEach((button) => button.classList.remove('active'));
+    if (allTabsButton) {
+      allTabsButton.classList.add('active');
+    }
+  } else {
+    tabPanels.forEach((panel) => {
+      panel.classList.toggle('active', panel.id === activeTabId);
+    });
+    tabButtons.forEach((button) => {
+      const isActive = button.dataset.tabTarget === activeTabId;
+      button.classList.toggle('active', isActive);
+    });
+    if (allTabsButton) {
+      allTabsButton.classList.remove('active');
+    }
+  }
 }
 
 function throttle(fn, delay) {
