@@ -12,7 +12,7 @@ let device, server, service, commandChar, statusChar;
 let connectionIndicatorEl, connectionLabelEl;
 let tabButtons = [];
 let tabPanels = [];
-let activeTabId = 'tab-connection';
+let activeTabId = 'tab-home';
 const bluetoothSupported = !!navigator.bluetooth;
 
 // Check Web Bluetooth support
@@ -473,7 +473,7 @@ function setTabAvailability(enableConnectedTabs) {
     }
   });
   if (shouldReset) {
-    activateTab('tab-connection');
+    activateTab('tab-home');
   }
 }
 
