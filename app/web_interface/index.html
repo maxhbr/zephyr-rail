@@ -35,6 +35,38 @@
                     </div>
                 </div>
 
+                <div id="rail-state-card" class="status-card">
+                    <div class="status-card-header">
+                        <div>
+                            <p class="status-label subtle">Rail State</p>
+                            <h2>Current bounds &amp; target</h2>
+                        </div>
+                        <p id="rail-state-updated" class="status-timestamp">Waiting for status...</p>
+                    </div>
+                    <div class="status-grid">
+                        <div class="status-row">
+                            <span>Position</span>
+                            <span id="rail-position-value">—</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Target</span>
+                            <span id="rail-target-value">—</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Lower bound</span>
+                            <span id="rail-lower-value">—</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Upper bound</span>
+                            <span id="rail-upper-value">—</span>
+                        </div>
+                    </div>
+                    <div id="rail-stack-row" class="status-row subtle">
+                        <span>Stack</span>
+                        <span id="rail-stack-value">Idle</span>
+                    </div>
+                </div>
+
                 <div class="controls" id="controls-setup">
                     <button class="btn-warning" onclick="sendCommand('cam shoot')">Take Single Photo</button>
                     <div id="expert-setup" class="collapsible-content collapsed expert-section">

@@ -62,6 +62,7 @@ public:
   void wait_and_pause();
 
   int get_position();
+  int32_t get_position_nm();
 
   int set_speed(StepperSpeed speed);
   int set_speed_rpm(int rpm);

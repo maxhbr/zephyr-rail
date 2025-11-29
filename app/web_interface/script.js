@@ -7,6 +7,7 @@ const PERSISTED_FIELDS = [
   'go-distance', 'goto-position', 'bound', 'wait-before', 'wait-after',
   'stack-length', 'speed-rpm'
 ];
+const textDecoder = new TextDecoder();
 
 let device, server, service, commandChar, statusChar;
 let connectionIndicatorEl, connectionLabelEl;
@@ -15,6 +16,19 @@ let tabPanels = [];
 let allTabsButton = null;
 let allTabsActive = false;
 let activeTabId = 'tab-home';
+let railState = {
+  position_nm : null,
+  target_nm : null,
+  lower_nm : null,
+  upper_nm : null,
+  stack_index : null,
+  stack_length : null,
+  wait_before_ms : null,
+  wait_after_ms : null,
+  moving : false,
+  last_update : null
+};
+let railStateEls = {};
 const bluetoothSupported = !!navigator.bluetooth;
 
 // Check Web Bluetooth support
@@ -42,6 +56,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   connectionIndicatorEl = document.getElementById('connection-indicator');
   connectionLabelEl = document.getElementById('connection-label');
+  railStateEls = {
+    card : document.getElementById('rail-state-card'),
+    updated : document.getElementById('rail-state-updated'),
+    position : document.getElementById('rail-position-value'),
+    target : document.getElementById('rail-target-value'),
+    lower : document.getElementById('rail-lower-value'),
+    upper : document.getElementById('rail-upper-value'),
+    stack : document.getElementById('rail-stack-value')
+  };
+  resetRailState();
 
   // Setup collapsible sections
   const collapsibleHeaders =
@@ -137,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
           updateStatus('Connected to ' + device.name + '!', 'connected');
           setConnectionState('connected', 'Connected to ' + device.name);
           toggleControls(true);
+          requestRailStatus();
 
         } catch (error) {
           handleError(error);
@@ -151,16 +176,24 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function handleStatusNotification(event) {
-  const value = new TextDecoder().decode(event.target.value);
-  const timestamp = new Date().toLocaleTimeString();
+  const value = textDecoder.decode(event.target.value);
+  const timestamp = new Date();
+  const parsedState = parseRailStateMessage(value);
 
-  updateStatus(`[${timestamp}] ${value}`, 'connected');
+  if (parsedState) {
+    railState =
+        Object.assign({}, railState, parsedState, {last_update : timestamp});
+    renderRailState();
+  }
+
+  updateStatus(`[${timestamp.toLocaleTimeString()}] ${value}`, 'connected');
 }
 
 function handleDisconnection() {
   updateStatus('Disconnected from device', 'disconnected');
   setConnectionState('disconnected', 'Not connected');
   toggleControls(false);
+  resetRailState();
 
   // Reset variables
   device = null;
@@ -196,6 +229,8 @@ async function sendCommand(cmd) {
     updateStatus('Failed to send command: ' + trimmed, 'connected');
   }
 }
+
+function requestRailStatus() { sendCommand('rail status'); }
 
 // Helper functions for commands with parameters
 function sendGo(times) {
@@ -277,6 +312,98 @@ function updateStatus(text, className) {
   // Limit to last 20 messages
   while (statusDiv.children.length > 20) {
     statusDiv.removeChild(statusDiv.lastChild);
+  }
+}
+
+function resetRailState() {
+  railState = {
+    position_nm : null,
+    target_nm : null,
+    lower_nm : null,
+    upper_nm : null,
+    stack_index : null,
+    stack_length : null,
+    wait_before_ms : null,
+    wait_after_ms : null,
+    moving : false,
+    last_update : null
+  };
+  renderRailState();
+}
+
+function formatMicrons(nm) {
+  if (!Number.isFinite(nm)) {
+    return '—';
+  }
+  return `${(nm / 1000).toFixed(3)} μm`;
+}
+
+function formatStackProgress(index, length) {
+  if (!Number.isFinite(index) || index < 0 || !Number.isFinite(length) ||
+      length <= 0) {
+    return 'Stack: idle';
+  }
+  return `Stack: ${index + 1} / ${length}`;
+}
+
+function renderRailState() {
+  if (!railStateEls || !railStateEls.position) {
+    return;
+  }
+
+  railStateEls.position.textContent = formatMicrons(railState.position_nm);
+  railStateEls.target.textContent = formatMicrons(railState.target_nm);
+  railStateEls.lower.textContent = formatMicrons(railState.lower_nm);
+  railStateEls.upper.textContent = formatMicrons(railState.upper_nm);
+  railStateEls.stack.textContent =
+      formatStackProgress(railState.stack_index, railState.stack_length);
+
+  if (railStateEls.updated) {
+    railStateEls.updated.textContent =
+        railState.last_update
+            ? `Updated ${railState.last_update.toLocaleTimeString()}`
+            : 'Waiting for status...';
+  }
+
+  if (railStateEls.card) {
+    railStateEls.card.classList.toggle('status-card--active',
+                                       !!railState.last_update);
+  }
+}
+
+function parseRailStateMessage(message) {
+  if (!message || !message.startsWith('STATE')) {
+    return null;
+  }
+  const jsonStart = message.indexOf('{');
+  if (jsonStart === -1) {
+    return null;
+  }
+  try {
+    const data = JSON.parse(message.slice(jsonStart));
+    const numberOrNull = (value) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const stackIndex = numberOrNull(data.stack_index);
+    const stackLength = numberOrNull(data.stack_length);
+
+    return {
+      position_nm : numberOrNull(data.position_nm),
+      target_nm : numberOrNull(data.target_nm),
+      lower_nm : numberOrNull(data.lower_nm),
+      upper_nm : numberOrNull(data.upper_nm),
+      stack_index : stackIndex !== null && stackIndex >= 0 ? stackIndex : null,
+      stack_length : stackLength !== null && stackLength > 0 ? stackLength
+                                                             : null,
+      wait_before_ms : numberOrNull(data.wait_before_ms),
+      wait_after_ms : numberOrNull(data.wait_after_ms),
+      moving : data.moving === true || data.moving === 1
+    };
+  } catch (err) {
+    console.warn('Failed to parse rail state payload', message, err);
+    return null;
   }
 }
 

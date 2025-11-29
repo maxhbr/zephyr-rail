@@ -172,6 +172,11 @@ int StepperWithTarget::get_position() {
   return pos;
 }
 
+int32_t StepperWithTarget::get_position_nm() {
+  int32_t pos = get_position();
+  return steps_to_nm(pos);
+}
+
 int32_t StepperWithTarget::go_relative(int32_t dist) {
   target_position += dist;
   return target_position;

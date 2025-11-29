@@ -460,6 +460,64 @@ label {
     gap: 10px;
 }
 
+.status-card {
+    background: linear-gradient(145deg, #f8fafc 0%, #ffffff 40%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 0 0 20px 0;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.status-card--active {
+    border-color: #63b3ed;
+    box-shadow: 0 14px 36px rgba(66, 153, 225, 0.18);
+}
+
+.status-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin: 12px 0 4px 0;
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #2d3748;
+    padding: 8px 10px;
+    background: rgba(226, 232, 240, 0.35);
+    border-radius: 10px;
+}
+
+.status-row.subtle {
+    font-weight: 500;
+    color: #4a5568;
+    background: transparent;
+    padding: 4px 0 0 0;
+}
+
+.status-timestamp {
+    font-size: 13px;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.subtle {
+    color: #718096;
+}
+
 .warning {
     background: #fff3cd;
     border: 2px solid #ffc107;
@@ -553,6 +611,10 @@ label {
     .connection-bar {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .status-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
 
     .input-with-unit {
