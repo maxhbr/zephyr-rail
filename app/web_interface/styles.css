@@ -181,7 +181,7 @@ input[type="number"] {
     font-weight: 600;
 }
 
-.distance-select {
+.distance-select, .stack-select {
     padding: 10px 12px;
     border-radius: 6px;
     border: 2px solid #e2e8f0;

@@ -168,16 +168,34 @@
                 <div class="controls">
                     <div class="button-grid-5">
                         <h1>Stack</h1>
-                        <div>&nbsp;</div>
-                        <div>&nbsp;</div>
                         <div class="input-group">
-                            <label>Wait Before Shot (ms):</label>
+                            <label for="stack-preset">Choose a stack preset</label>
+                            <select id="stack-preset" class="stack-select" data-default="step:1000">
+                                <option value="step:5000">Step size 5 μm</option>
+                                <option value="step:1000" selected>Step size 1 μm</option>
+                                <option value="step:750">Step size 0.75 μm</option>
+                                <option value="step:500">Step size 0.5 μm</option>
+                                <option value="step:200">Step size 0.2 μm</option>
+                                <option value="step:100">Step size 0.1 μm</option>
+                                <option value="count:20">Count 20</option>
+                                <option value="count:30">Count 30</option>
+                                <option value="count:50">Count 50</option>
+                                <option value="count:100">Count 100</option>
+                                <option value="count:300">Count 300</option>
+                                <option value="count:500">Count 500</option>
+                                <option value="count:1000">Count 1000</option>
+                                <option value="count:2000">Count 2000</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Wait Before Shot (ms): <span class="field-hint" id="wait-before-current">—</span></label>
                             <input type="number" id="wait-before" value="1000" step="100" min="0">
                         </div>
                         <div class="input-group">
-                            <label>Wait After Shot (ms):</label>
+                            <label>Wait After Shot (ms): <span class="field-hint" id="wait-after-current">—</span></label>
                             <input type="number" id="wait-after" value="500" step="100" min="0">
                         </div>
+                        <button class="btn-success" onclick="sendSelectedStack()">Start Stack</button>
                     </div>
                     <div id="expert-stack" class="collapsible-content collapsed expert-section">
                         <div class="input-group">
@@ -188,27 +206,6 @@
                                 <button class="btn-primary" onclick="sendSetWaitAfter()">Apply Wait After</button>
                             </div>
                         </div>
-                    </div>
-                    <h2>By step size</h2>
-                    <div class="button-grid-5">
-                        <button class="btn-success" onclick="sendStartStack(5000)">Stack:5μm</button>
-                        <button class="btn-success" onclick="sendStartStack(1000)">Stack:1μm</button>
-                        <button class="btn-success" onclick="sendStartStack(500)">Stack:0.5μm</button>
-                        <button class="btn-success" onclick="sendStartStack(200)">Stack:0.2μm</button>
-                        <button class="btn-success" onclick="sendStartStack(100)">Stack:0.1μm</button>
-                    </div>
-                    <h2>By count</h2>
-                    <div class="button-grid-5">
-                        <button class="btn-success" onclick="sendStartStackCount(50)">Stack#50</button>
-                        <button class="btn-success" onclick="sendStartStackCount(100)">Stack#100</button>
-                        <button class="btn-success" onclick="sendStartStackCount(300)">Stack#300</button>
-                        <button class="btn-success" onclick="sendStartStackCount(500)">Stack#500</button>
-                        <button class="btn-success" onclick="sendStartStackCount(1000)">Stack#1000</button>
-                    </div>
-                    <div class="input-group">
-                        <label>Expected Stack Length:</label>
-                        <input type="number" id="stack-length" value="300" step="5" min="1">
-                        <button class="btn-success" onclick="sendStartStack()">Start Stacking</button>
                     </div>
                 </div>
             </div>

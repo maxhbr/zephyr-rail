@@ -5,7 +5,7 @@ const STORAGE_PREFIX = 'zephyrRail.';
 const DEBUG_MODE = window.location.hash.toLowerCase() === '#debug';
 const PERSISTED_FIELDS = [
   'go-distance', 'goto-position', 'bound', 'wait-before', 'wait-after',
-  'stack-length', 'speed-rpm'
+  'speed-rpm'
 ];
 const textDecoder = new TextDecoder();
 
@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
     upper : document.getElementById('rail-upper-value'),
     stackStep : document.getElementById('rail-stack-step'),
     stackLength : document.getElementById('rail-stack-length'),
-    stackStatus : document.getElementById('rail-stack-status')
+    stackStatus : document.getElementById('rail-stack-status'),
+    waitBefore : document.getElementById('wait-before-current'),
+    waitAfter : document.getElementById('wait-after-current')
   };
   resetRailState();
 
@@ -294,11 +296,28 @@ async function sendStartStack(expected_step_size_nm) {
 }
 
 async function sendStartStackCount(length) {
-  const stackLength = length !== undefined
-                          ? length
-                          : Math.max(1, readNumber('stack-length', 1));
+  const stackLength = length !== undefined ? length : 100;
   await sendWaitSettings();
   await sendCommand('rail stack_count ' + Math.round(stackLength));
+}
+
+function sendSelectedStack() {
+  const select = document.getElementById('stack-preset');
+  if (!select) {
+    return;
+  }
+  const value = select.value || '';
+  if (value.startsWith('step:')) {
+    const stepNm = Number(value.split(':')[1]);
+    if (Number.isFinite(stepNm)) {
+      sendStartStack(stepNm);
+    }
+  } else if (value.startsWith('count:')) {
+    const count = Number(value.split(':')[1]);
+    if (Number.isFinite(count)) {
+      sendStartStackCount(count);
+    }
+  }
 }
 
 function updateStatus(text, className) {
@@ -366,6 +385,18 @@ function renderRailState() {
       hasStackLength ? String(railState.stack_length) : '—';
   railStateEls.stackStatus.textContent =
       railState.stack_running ? 'Running' : 'Idle';
+  if (railStateEls.waitBefore) {
+    railStateEls.waitBefore.textContent =
+        Number.isFinite(railState.wait_before_ms)
+            ? `(device: ${railState.wait_before_ms} ms)`
+            : '—';
+  }
+  if (railStateEls.waitAfter) {
+    railStateEls.waitAfter.textContent =
+        Number.isFinite(railState.wait_after_ms)
+            ? `(device: ${railState.wait_after_ms} ms)`
+            : '—';
+  }
 
   if (railStateEls.updated) {
     railStateEls.updated.textContent =
