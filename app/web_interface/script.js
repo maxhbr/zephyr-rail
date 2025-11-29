@@ -59,11 +59,12 @@ document.addEventListener('DOMContentLoaded', function() {
   railStateEls = {
     card : document.getElementById('rail-state-card'),
     updated : document.getElementById('rail-state-updated'),
-    position : document.getElementById('rail-position-value'),
     target : document.getElementById('rail-target-value'),
     lower : document.getElementById('rail-lower-value'),
     upper : document.getElementById('rail-upper-value'),
-    stack : document.getElementById('rail-stack-value')
+    stackStep : document.getElementById('rail-stack-step'),
+    stackLength : document.getElementById('rail-stack-length'),
+    stackStatus : document.getElementById('rail-stack-status')
   };
   resetRailState();
 
@@ -323,6 +324,7 @@ function resetRailState() {
     upper_nm : null,
     stack_index : null,
     stack_length : null,
+    stack_running : false,
     wait_before_ms : null,
     wait_after_ms : null,
     moving : false,
@@ -347,16 +349,23 @@ function formatStackProgress(index, length) {
 }
 
 function renderRailState() {
-  if (!railStateEls || !railStateEls.position) {
+  if (!railStateEls || !railStateEls.target) {
     return;
   }
 
-  railStateEls.position.textContent = formatMicrons(railState.position_nm);
   railStateEls.target.textContent = formatMicrons(railState.target_nm);
   railStateEls.lower.textContent = formatMicrons(railState.lower_nm);
   railStateEls.upper.textContent = formatMicrons(railState.upper_nm);
-  railStateEls.stack.textContent =
-      formatStackProgress(railState.stack_index, railState.stack_length);
+  const hasStackIndex =
+      Number.isFinite(railState.stack_index) && railState.stack_index >= 0;
+  const hasStackLength =
+      Number.isFinite(railState.stack_length) && railState.stack_length > 0;
+  railStateEls.stackStep.textContent =
+      hasStackIndex ? String(railState.stack_index + 1) : '—';
+  railStateEls.stackLength.textContent =
+      hasStackLength ? String(railState.stack_length) : '—';
+  railStateEls.stackStatus.textContent =
+      railState.stack_running ? 'Running' : 'Idle';
 
   if (railStateEls.updated) {
     railStateEls.updated.textContent =
@@ -397,6 +406,7 @@ function parseRailStateMessage(message) {
       stack_index : stackIndex !== null && stackIndex >= 0 ? stackIndex : null,
       stack_length : stackLength !== null && stackLength > 0 ? stackLength
                                                              : null,
+      stack_running : data.stack_running === true || data.stack_running === 1,
       wait_before_ms : numberOrNull(data.wait_before_ms),
       wait_after_ms : numberOrNull(data.wait_after_ms),
       moving : data.moving === true || data.moving === 1
