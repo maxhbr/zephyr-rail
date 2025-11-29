@@ -35,14 +35,21 @@
                     </div>
                 </div>
 
-                <div id="rail-state-card" class="status-card">
-                    <div class="status-card-header">
-                        <div>
-                            <p class="status-label subtle">Rail State</p>
-                            <h2>Current bounds &amp; target</h2>
+
+                <div class="controls" id="controls-setup">
+                    <button class="btn-warning" onclick="sendCommand('cam shoot')">Take Single Photo</button>
+                    <div id="expert-setup" class="collapsible-content collapsed expert-section">
+                        <div class="input-group custom-command">
+                            <label for="custom-command-input">Send custom command</label>
+                            <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
+                            <button id="send-custom-command" class="btn-primary">Send</button>
                         </div>
-                        <p id="rail-state-updated" class="status-timestamp">Waiting for status...</p>
+                        <button class="btn-secondary" onclick="sendCommand('rail status')">No Operation</button>
                     </div>
+                </div>
+            </div>
+
+                <div id="rail-state-card">
                     <div class="status-grid">
                         <div class="status-row">
                             <span>Target</span>
@@ -66,24 +73,12 @@
                         </div>
                     </div>
                     <div id="rail-stack-row" class="status-row subtle">
-                        <span>Stack status</span>
-                        <span id="rail-stack-status">Idle</span>
+                    <div class="status-card-header">
+                        <p id="rail-state-updated" class="status-timestamp">Waiting for status...</p>
+                    </div>
+                        <span>Stack status: <span id="rail-stack-status">Idle</span> </span>
                     </div>
                 </div>
-
-                <div class="controls" id="controls-setup">
-                    <button class="btn-warning" onclick="sendCommand('cam shoot')">Take Single Photo</button>
-                    <div id="expert-setup" class="collapsible-content collapsed expert-section">
-                        <div class="input-group custom-command">
-                            <label for="custom-command-input">Send custom command</label>
-                            <input type="text" id="custom-command-input" placeholder="TYPE ARGUMENT">
-                            <button id="send-custom-command" class="btn-primary">Send</button>
-                        </div>
-                        <button class="btn-secondary" onclick="sendCommand('rail status')">No Operation</button>
-                    </div>
-                </div>
-            </div>
-
             <div id="tab-move" class="tab-panel" data-requires-connection="true">
                 <div class="controls">
                     <h1>Move</h1>

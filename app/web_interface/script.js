@@ -307,6 +307,18 @@ function sendSelectedStack() {
     return;
   }
   const value = select.value || '';
+  const label = select.options[select.selectedIndex]
+                    ? select.options[select.selectedIndex].textContent
+                    : value;
+
+  const confirmStart =
+      confirm(`Start stack with preset: ${label}\nWait Before: ${
+          document.getElementById('wait-before').value} ms\nWait After: ${
+          document.getElementById('wait-after').value} ms`);
+  if (!confirmStart) {
+    return;
+  }
+
   if (value.startsWith('step:')) {
     const stepNm = Number(value.split(':')[1]);
     if (Number.isFinite(stepNm)) {
