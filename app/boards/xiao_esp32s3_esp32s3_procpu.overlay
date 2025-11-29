@@ -4,6 +4,10 @@
  */
 
 / {
+	chosen {
+		zephyr,settings-partition = &storage_partition;
+	};
+
 	stepper_motor: stepper_motor {
 		compatible = "simple-stepper";
 		status = "okay";

@@ -2,7 +2,7 @@
 #ifdef CONFIG_BT
 #include "pwa_service.h"
 #endif
-LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_DBG);
 
 // ############################################################################
 // initialize ZBus
@@ -15,6 +15,7 @@ ZBUS_CHAN_DEFINE(event_msg_chan,   /* Name */
 #ifdef CONFIG_BT
 static void publish_pwa_status(const struct s_object *s) {
   if (!PwaService::isConnected()) {
+    LOG_DBG("PWA not connected, skipping status publish");
     return;
   }
 
@@ -34,10 +35,14 @@ static void publish_pwa_status(const struct s_object *s) {
            stack_status.lower_bound, stack_status.upper_bound, stack_index,
            stack_status.length_of_stack, s->wait_before_ms, s->wait_after_ms,
            stepper_status.is_moving ? 1 : 0);
+  LOG_DBG("Publishing PWA status: %s", status_payload);
   PwaService::notifyStatus(status_payload);
 }
 #else
-static void publish_pwa_status(const struct s_object *s) { ARG_UNUSED(s); }
+static void publish_pwa_status(const struct s_object *s) {
+  ARG_UNUSED(s);
+  LOG_DBG("PWA not enabled, skipping status publish");
+}
 #endif
 
 static int event_pub(event event, int value) {

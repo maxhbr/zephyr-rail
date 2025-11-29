@@ -255,17 +255,22 @@ int main(void) {
   k_msleep(200);
 
 #ifdef CONFIG_BT
+  LOG_INF("initialize settings ...");
+#ifdef CONFIG_BT_SETTINGS
+  if (int err = settings_subsys_init(); err) {
+    LOG_ERR("settings_subsys_init failed (%d)", err);
+  } else if (int err = settings_load(); err) {
+    LOG_ERR("settings_load failed (%d), but continue...", err);
+  } else {
+    LOG_INF("settings loaded");
+  }
+#endif
+
   LOG_INF("initialize Bluetooth ...");
   if (int err = bt_enable(nullptr); err) {
     LOG_ERR("bt_enable failed (%d)", err);
     return err;
   }
-#ifdef CONFIG_BT_SETTINGS
-  // Load Bluetooth settings (bonding info, etc.)
-  if (int err = settings_load(); err) {
-    LOG_ERR("settings_load failed (%d), but continue...", err);
-  }
-#endif
 
   // Initialize PWA service
   LOG_INF("initialize PWA service ...");
