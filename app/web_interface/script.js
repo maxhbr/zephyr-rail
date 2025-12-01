@@ -3,10 +3,7 @@ const STATUS_UUID = '12345636-5678-1234-1234-123456789abc';
 const COMMAND_UUID = '12345635-5678-1234-1234-123456789abc';
 const STORAGE_PREFIX = 'zephyrRail.';
 const DEBUG_MODE = window.location.hash.toLowerCase() === '#debug';
-const PERSISTED_FIELDS = [
-  'go-distance', 'goto-position', 'bound', 'wait-before', 'wait-after',
-  'speed-rpm'
-];
+const PERSISTED_FIELDS = [ 'go-distance', 'wait-before', 'wait-after' ];
 const textDecoder = new TextDecoder();
 
 let device, server, service, commandChar, statusChar;
@@ -301,34 +298,78 @@ async function sendStartStackCount(length) {
   await sendCommand('rail stack_count ' + Math.round(stackLength));
 }
 
+function parseStackValue(rawValue) {
+  const value = (rawValue || '').toString().trim();
+  if (!value.length) {
+    return null;
+  }
+  const [prefix, ...rest] = value.split(':');
+  const amount = Number(rest.join(':'));
+  if (!rest.length || !Number.isFinite(amount) || amount <= 0) {
+    return null;
+  }
+
+  const normalizedPrefix = prefix.toLowerCase();
+  if (normalizedPrefix === 'step' || normalizedPrefix === 'count') {
+    return {type : normalizedPrefix, value : amount};
+  }
+  return null;
+}
+
+function describeStackSelection(selection) {
+  if (!selection) {
+    return '';
+  }
+  if (selection.type === 'step') {
+    return `Step size ${formatMicrons(selection.value)}`;
+  }
+  if (selection.type === 'count') {
+    return `Count ${selection.value}`;
+  }
+  return '';
+}
+
 function sendSelectedStack() {
   const select = document.getElementById('stack-preset');
-  if (!select) {
+  const manualInput = document.getElementById('stack-manual');
+  const manualRaw = manualInput ? manualInput.value.trim() : '';
+  const parsedManual = parseStackValue(manualRaw);
+  if (manualRaw && !parsedManual) {
+    alert('Enter custom stack as "step:<nm>" or "count:<shots>".');
     return;
   }
-  const value = select.value || '';
-  const label = select.options[select.selectedIndex]
-                    ? select.options[select.selectedIndex].textContent
-                    : value;
 
+  let selection = parsedManual;
+  let label = parsedManual ? describeStackSelection(parsedManual)
+              : (select && select.options[select.selectedIndex])
+                  ? select.options[select.selectedIndex].textContent
+                  : '';
+
+  if (!selection && select) {
+    selection = parseStackValue(select.value || '');
+  }
+
+  if (!selection) {
+    alert('Choose a preset or enter a custom value like "step:750".');
+    return;
+  }
+
+  const waitBeforeInput = document.getElementById('wait-before');
+  const waitAfterInput = document.getElementById('wait-after');
+  const waitBefore = waitBeforeInput ? waitBeforeInput.value : '—';
+  const waitAfter = waitAfterInput ? waitAfterInput.value : '—';
   const confirmStart =
-      confirm(`Start stack with preset: ${label}\nWait Before: ${
-          document.getElementById('wait-before').value} ms\nWait After: ${
-          document.getElementById('wait-after').value} ms`);
+      confirm(`Start stack with ${parsedManual ? 'custom value' : 'preset'}: ${
+          label || describeStackSelection(selection)}\nWait Before: ${
+          waitBefore} ms\nWait After: ${waitAfter} ms`);
   if (!confirmStart) {
     return;
   }
 
-  if (value.startsWith('step:')) {
-    const stepNm = Number(value.split(':')[1]);
-    if (Number.isFinite(stepNm)) {
-      sendStartStack(stepNm);
-    }
-  } else if (value.startsWith('count:')) {
-    const count = Number(value.split(':')[1]);
-    if (Number.isFinite(count)) {
-      sendStartStackCount(count);
-    }
+  if (selection.type === 'step') {
+    sendStartStack(selection.value);
+  } else if (selection.type === 'count') {
+    sendStartStackCount(selection.value);
   }
 }
 
