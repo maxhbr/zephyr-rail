@@ -202,7 +202,7 @@ static enum smf_state_result s_interactive_run(void *o) {
           k_msleep(100);
         }
         break;
-      case EVENT_START_STACK:
+      case EVENT_START_STACK_WITH_STEP_SIZE:
         LOG_INF("Starting stack..., %d images", msg.value);
         s->stack.set_expected_step_size(msg.value);
         smf_set_state(SMF_CTX(o), s_stack_ptr);

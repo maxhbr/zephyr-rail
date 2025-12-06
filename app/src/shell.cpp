@@ -14,7 +14,7 @@ static int cmd_rail_go(const struct shell *sh, size_t argc, char **argv) {
   int multiplier =
       is_nm_command ? 1 : 1000; // go_nm uses nm directly, go uses um
 
-  int distance_nm = atoi(argv[1]) * multiplier;
+  int distance_nm = atof(argv[1]) * multiplier;
   event_pub(EVENT_GO, distance_nm);
 
   return 0;
@@ -26,7 +26,7 @@ static int cmd_rail_go_to(const struct shell *sh, size_t argc, char **argv) {
     return -EINVAL;
   }
 
-  int position_um = atoi(argv[1]);
+  int position_um = atof(argv[1]);
   int position_nm = position_um * 1000;
   event_pub(EVENT_GO_TO, position_nm);
 
@@ -53,7 +53,7 @@ static int cmd_rail_go_pct(const struct shell *sh, size_t argc, char **argv) {
 static int cmd_rail_setLowerBound(const struct shell *sh, size_t argc,
                                   char **argv) {
   if (argc == 2) {
-    int position_um = atoi(argv[1]);
+    int position_um = atof(argv[1]);
     int position_nm = position_um * 1000;
     event_pub(EVENT_SET_LOWER_BOUND_TO, position_nm);
   } else {
@@ -65,7 +65,8 @@ static int cmd_rail_setLowerBound(const struct shell *sh, size_t argc,
 static int cmd_rail_setUpperBound(const struct shell *sh, size_t argc,
                                   char **argv) {
   if (argc == 2) {
-    int position_um = atoi(argv[1]);
+    int position_um = atof(argv[1]);
+
     int position_nm = position_um * 1000;
     event_pub(EVENT_SET_UPPER_BOUND_TO, position_nm);
   } else {
@@ -144,21 +145,13 @@ static int cmd_rail_startStackWithStepSize(const struct shell *sh, size_t argc,
       is_nm_command ? 1 : 1000; // stack_nm uses nm directly, stack uses um
 
   if (argc == 2) {
-    int expected_step_size_nm = atoi(argv[1]) * multiplier;
-    event_pub(EVENT_START_STACK, expected_step_size_nm);
-  } else if (argc == 4) {
-    int expected_step_size_nm = atoi(argv[1]) * multiplier;
-    int lower_nm = atoi(argv[2]) * multiplier;
-    int upper_nm = atoi(argv[3]) * multiplier;
-    event_pub(EVENT_SET_UPPER_BOUND_TO, upper_nm);
-    event_pub(EVENT_SET_LOWER_BOUND_TO, lower_nm);
-    event_pub(EVENT_START_STACK, expected_step_size_nm);
+    int expected_step_size_nm = atof(argv[1]) * multiplier;
+    event_pub(EVENT_START_STACK_WITH_STEP_SIZE, expected_step_size_nm);
   } else if (argc > 2) {
-    shell_print(sh, "Usage: rail %s <expected_step_size> [lower upper]",
-                argv[0]);
+    shell_print(sh, "Usage: rail %s <expected_step_size>", argv[0]);
     return -EINVAL;
   } else {
-    event_pub(EVENT_START_STACK, 1000);
+    event_pub(EVENT_START_STACK_WITH_STEP_SIZE, 1000);
   }
   return 0;
 }
@@ -166,13 +159,6 @@ static int cmd_rail_startStackWithLength(const struct shell *sh, size_t argc,
                                          char **argv) {
   if (argc == 2) {
     int expected_length_of_stack = atoi(argv[1]);
-    event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length_of_stack);
-  } else if (argc == 4) {
-    int expected_length_of_stack = atoi(argv[1]);
-    int lower_nm = atoi(argv[2]) * 1000;
-    int upper_nm = atoi(argv[3]) * 1000;
-    event_pub(EVENT_SET_UPPER_BOUND_TO, upper_nm);
-    event_pub(EVENT_SET_LOWER_BOUND_TO, lower_nm);
     event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length_of_stack);
   } else if (argc > 2) {
     shell_print(sh, "Usage: rail startStack <expected_length_of_stack>");

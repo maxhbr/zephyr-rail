@@ -198,30 +198,17 @@ bool handleRailCommand(const char *subcmd, char **saveptr) {
     int multiplier = is_nm_command ? 1 : 1000;
 
     param1 = strtok_r(nullptr, " ", saveptr);
-    param2 = strtok_r(nullptr, " ", saveptr);
-    param3 = strtok_r(nullptr, " ", saveptr);
 
-    if (param3) {
-      int expected_step_size_nm = atoi(param1) * multiplier;
-      int lower = atoi(param2) * multiplier;
-      int upper = atoi(param3) * multiplier;
-      LOG_INF("→ Command: rail %s step_size=%dnm lower=%d upper=%d", subcmd,
-              expected_step_size_nm, lower, upper);
-      event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
-      event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
-      event_pub(EVENT_START_STACK, expected_step_size_nm);
-      snprintf(response, sizeof(response), "ACK:rail %s %d %d %d", subcmd,
-               expected_step_size_nm, lower, upper);
-    } else if (param1) {
+    if (param1) {
       int expected_step_size_nm = atoi(param1) * multiplier;
       LOG_INF("→ Command: rail %s step_size=%dnm", subcmd,
               expected_step_size_nm);
-      event_pub(EVENT_START_STACK, expected_step_size_nm);
+      event_pub(EVENT_START_STACK_WITH_STEP_SIZE, expected_step_size_nm);
       snprintf(response, sizeof(response), "ACK:rail %s %d", subcmd,
                expected_step_size_nm);
     } else {
       LOG_INF("→ Command: rail %s step_size=1000nm (default)", subcmd);
-      event_pub(EVENT_START_STACK, 1000);
+      event_pub(EVENT_START_STACK_WITH_STEP_SIZE, 1000);
       snprintf(response, sizeof(response), "ACK:rail %s 1000", subcmd);
     }
     PwaService::notifyStatus(response);
@@ -230,21 +217,8 @@ bool handleRailCommand(const char *subcmd, char **saveptr) {
 
   if (strcasecmp(subcmd, "stack_count") == 0) {
     param1 = strtok_r(nullptr, " ", saveptr);
-    param2 = strtok_r(nullptr, " ", saveptr);
-    param3 = strtok_r(nullptr, " ", saveptr);
 
-    if (param3) {
-      int expected_length = atoi(param1);
-      int lower = atoi(param2) * 1000;
-      int upper = atoi(param3) * 1000;
-      LOG_INF("→ Command: rail stack_count length=%d lower=%d upper=%d",
-              expected_length, lower, upper);
-      event_pub(EVENT_SET_UPPER_BOUND_TO, upper);
-      event_pub(EVENT_SET_LOWER_BOUND_TO, lower);
-      event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length);
-      snprintf(response, sizeof(response), "ACK:rail stack_count %d %d %d",
-               expected_length, lower, upper);
-    } else if (param1) {
+    if (param1) {
       int expected_length = atoi(param1);
       LOG_INF("→ Command: rail stack_count length=%d", expected_length);
       event_pub(EVENT_START_STACK_WITH_LENGTH, expected_length);
