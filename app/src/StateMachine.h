@@ -35,7 +35,8 @@ enum event {
   EVENT_SET_WAIT_AFTER_MS,
   EVENT_SET_SPEED,
   EVENT_SET_SPEED_RPM,
-  EVENT_PAIR_CAMERA,
+  EVENT_CAMERA_START_SCAN,
+  EVENT_CAMERA_STOP_SCAN,
   EVENT_START_STACK,
   EVENT_START_STACK_WITH_LENGTH,
   EVENT_SHOOT,
@@ -56,9 +57,6 @@ enum stack_state {
   S_PARENT_INTERACTIVE,
   S_INTERACTIVE,
 
-  S_PARENT_CAMERA_PAIRING,
-  S_WAIT_FOR_CAMERA,
-
   S_PARENT_STACKING,
   S_STACK,
   S_STACK_MOVE,
@@ -68,7 +66,6 @@ enum stack_state {
 
 struct s_object {
   struct smf_ctx ctx;
-  int retry_counter = 0;
   /* Other state specific data add here */
   const StepperWithTarget *stepper;
   const SonyRemote *remote;

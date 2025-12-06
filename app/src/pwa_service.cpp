@@ -290,13 +290,6 @@ bool handleCamCommand(const char *subcmd, char **saveptr) {
     return true;
   }
 
-  if (strcasecmp(subcmd, "pair") == 0) {
-    LOG_INF("→ Command: cam pair");
-    event_pub(EVENT_PAIR_CAMERA);
-    PwaService::notifyStatus("ACK:cam pair");
-    return true;
-  }
-
   return false;
 }
 } // namespace

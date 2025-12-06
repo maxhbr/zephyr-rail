@@ -80,6 +80,6 @@ public:
 
 void start_stepper(StepperWithTarget *_started_stepper_ptr);
 
-static float nm_as_um(int nm) { return nm / 1000.0; }
+static double nm_as_um(int nm) { return nm / 1000.0; }
 
 #endif // STEPPERWITHTARGET_H_

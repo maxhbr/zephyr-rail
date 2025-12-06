@@ -56,7 +56,6 @@ ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 // initialize StateMachine
 
 struct smf_state *s0_ptr;
-struct smf_state *s_wait_for_camera_ptr;
 struct smf_state *s_interactive_ptr;
 struct smf_state *s_stack_ptr;
 struct smf_state *s_stack_move_ptr;
@@ -185,9 +184,23 @@ static enum smf_state_result s_interactive_run(void *o) {
         LOG_INF("Setting movement speed to %d RPM", msg.value);
         s->stepper->set_speed_rpm(msg.value);
         break;
-      case EVENT_PAIR_CAMERA:
-        LOG_INF("Starting camera pairing");
-        smf_set_state(SMF_CTX(o), s_wait_for_camera_ptr);
+      case EVENT_CAMERA_START_SCAN:
+        LOG_INF("Starting camera startScan");
+        if (!s->remote) {
+          LOG_WRN("No remote available");
+        } else {
+          s->remote->startScan();
+          k_msleep(100);
+        }
+        break;
+      case EVENT_CAMERA_STOP_SCAN:
+        LOG_INF("Starting camera stopScan");
+        if (!s->remote) {
+          LOG_WRN("No remote available");
+        } else {
+          s->remote->startScan();
+          k_msleep(100);
+        }
         break;
       case EVENT_START_STACK:
         LOG_INF("Starting stack..., %d images", msg.value);
@@ -218,51 +231,6 @@ static enum smf_state_result s_interactive_run(void *o) {
   } else {
     LOG_ERR("failed to wait for zbus");
   }
-  return SMF_EVENT_HANDLED;
-}
-
-static void s_parent_camera_pairing_entry(void *o) {
-  LOG_INF("Entering camera pairing mode");
-
-  struct s_object *s = (struct s_object *)o;
-  if (!s->remote) {
-    LOG_WRN("No remote available for pairing");
-    smf_set_state(SMF_CTX(o), s_interactive_ptr);
-    return;
-  }
-  s->retry_counter = 0;
-
-  k_msleep(100);
-  s->remote->startScan();
-  k_msleep(100);
-}
-
-static void s_parent_camera_pairing_exit(void *o) {
-  LOG_INF("Exiting camera pairing mode");
-  struct s_object *s = (struct s_object *)o;
-  s->remote->stopScan();
-  k_msleep(100);
-}
-
-static enum smf_state_result s_wait_for_camera_run(void *o) {
-  struct s_object *s = (struct s_object *)o;
-
-  if (s->remote->ready()) {
-    LOG_INF("Camera paired successfully");
-    s->remote->log_state();
-    smf_set_state(SMF_CTX(o), s_interactive_ptr);
-    return SMF_EVENT_HANDLED;
-  }
-
-  if (s->retry_counter++ > 10) {
-    LOG_WRN("Camera pairing failed");
-    smf_set_state(SMF_CTX(o), s_interactive_ptr);
-    return SMF_EVENT_HANDLED;
-  }
-
-  LOG_DBG("Waiting for camera to pair (%d)...", s->retry_counter);
-  k_sleep(K_MSEC(1000));
-
   return SMF_EVENT_HANDLED;
 }
 
@@ -344,11 +312,6 @@ static struct smf_state stack_states[] = {
                      NULL), // S_PARENT_INTERACTIVE
     SMF_CREATE_STATE(s_log_state, s_interactive_run, NULL, NULL,
                      NULL), // S_INTERACTIVE
-    SMF_CREATE_STATE(s_parent_camera_pairing_entry, NULL,
-                     s_parent_camera_pairing_exit, NULL,
-                     NULL), // S_PARENT_CAMERA_PAIRING
-    SMF_CREATE_STATE(NULL, s_wait_for_camera_run, NULL, NULL,
-                     NULL), // S_WAIT_FOR_CAMERA
     SMF_CREATE_STATE(s_parent_stacking_entry, NULL, s_parent_stacking_exit,
                      NULL, NULL),                          // S_PARENT_STACKING
     SMF_CREATE_STATE(NULL, s_stack_run, NULL, NULL, NULL), // S_STACK
@@ -364,15 +327,12 @@ StateMachine::StateMachine(const StepperWithTarget *stepper,
 
   // Set up parent pointers after array initialization
   stack_states[S_INTERACTIVE].parent = &stack_states[S_PARENT_INTERACTIVE];
-  stack_states[S_WAIT_FOR_CAMERA].parent =
-      &stack_states[S_PARENT_CAMERA_PAIRING];
   stack_states[S_STACK].parent = &stack_states[S_PARENT_STACKING];
   stack_states[S_STACK_MOVE].parent = &stack_states[S_PARENT_STACKING];
   stack_states[S_STACK_SETTLE].parent = &stack_states[S_PARENT_STACKING];
   stack_states[S_STACK_IMG].parent = &stack_states[S_PARENT_STACKING];
 
   s0_ptr = &stack_states[S0];
-  s_wait_for_camera_ptr = &stack_states[S_WAIT_FOR_CAMERA];
   s_interactive_ptr = &stack_states[S_INTERACTIVE];
   s_stack_ptr = &stack_states[S_STACK];
   s_stack_move_ptr = &stack_states[S_STACK_MOVE];

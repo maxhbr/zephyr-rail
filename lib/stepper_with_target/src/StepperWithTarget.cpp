@@ -120,10 +120,7 @@ char *StepperWithTarget::state() {
   return buffer;
 }
 
-void StepperWithTarget::log_state() {
-  int32_t pos = get_position();
-  LOG_INF("%s", state());
-}
+void StepperWithTarget::log_state() { LOG_INF("%s", state()); }
 
 int StepperWithTarget::enable() {
   int ret = stepper_enable(stepper_dev);

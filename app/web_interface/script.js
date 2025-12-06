@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
   setupTabs();
 
   const connectButton = document.getElementById('connect');
-  const pairButton = document.getElementById('pair-camera');
   const disconnectButton = document.getElementById('disconnect');
 
   toggleControls(false);
@@ -107,10 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (DEMO_MODE) {
     updateStatus('Demo mode: controls forced visible', 'connected');
-  }
-
-  if (pairButton) {
-    pairButton.addEventListener('click', () => sendCommand('cam pair'));
   }
 
   if (!bluetoothSupported && connectButton) {
@@ -210,6 +205,11 @@ function handleError(error) {
 }
 
 async function sendCommand(cmd) {
+  updateStatus('$ ' + cmd);
+  if (DEMO_MODE) {
+    alert('would send: "' + cmd + '"');
+    return;
+  }
   if (!commandChar) {
     alert('Not connected! Please connect first.');
     return;
@@ -375,7 +375,9 @@ function sendSelectedStack() {
 
 function updateStatus(text, className) {
   const statusDiv = document.getElementById('status');
-  statusDiv.className = className;
+  if (className) {
+    statusDiv.className = className;
+  }
 
   // Add new message at the top
   const newLine = document.createElement('div');
@@ -526,16 +528,12 @@ function toggleControls(isConnected) {
 
   const setupControls = document.getElementById('controls-setup');
   const disconnectButton = document.getElementById('disconnect');
-  const pairButton = document.getElementById('pair-camera');
 
   if (setupControls) {
     setupControls.style.display = allowExtended ? 'block' : 'none';
   }
   if (disconnectButton) {
     disconnectButton.disabled = !isConnected;
-  }
-  if (pairButton) {
-    pairButton.disabled = !isConnected;
   }
 }
 

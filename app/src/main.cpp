@@ -269,7 +269,6 @@ int main(void) {
 
   // Initialize PWA service
   LOG_INF("initialize PWA service ...");
-  // PwaService::init();
 
   // Start advertising for PWA connections (peripheral role)
   if (int err = PwaService::startAdvertising(); err) {
@@ -281,6 +280,10 @@ int main(void) {
   LOG_INF("initialize Sony Remote ...");
   SonyRemote remote("9C:50:D1:AF:76:5F"); // A7Riv
   // SonyRemote remote("CC:C0:79:DA:94:B6"); // A7iii
+
+  k_msleep(100);
+  remote.startScan();
+  k_msleep(100);
 
   bt_conn_cb_register(&kConnCbs);
   bt_conn_auth_cb_register(&kAuthCbs);

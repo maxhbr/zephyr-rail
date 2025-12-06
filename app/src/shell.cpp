@@ -228,14 +228,21 @@ static int cmd_cam_record(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
-static int cmd_cam_pair(const struct shell *sh, size_t argc, char **argv) {
-  event_pub(EVENT_PAIR_CAMERA);
+static int cmd_cam_startScan(const struct shell *sh, size_t argc, char **argv) {
+  event_pub(EVENT_CAMERA_START_SCAN);
+  return 0;
+}
+
+static int cmd_cam_stopScan(const struct shell *sh, size_t argc, char **argv) {
+  event_pub(EVENT_CAMERA_STOP_SCAN);
   return 0;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_cam, SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_cam_shoot),
     SHELL_CMD(record, NULL, "Toggle camera recording.", cmd_cam_record),
-    SHELL_CMD(pair, NULL, "Pair camera", cmd_cam_pair), SHELL_SUBCMD_SET_END);
-SHELL_CMD_REGISTER(cam, &sub_cam, "cam commands", cmd_cam_pair);
-SHELL_CMD_REGISTER(c, &sub_cam, "cam commands", cmd_cam_pair);
+    SHELL_CMD(scan, NULL, "Scan for camera", cmd_cam_startScan),
+    SHELL_CMD(stopScan, NULL, "Stop scan for camera", cmd_cam_stopScan),
+    SHELL_SUBCMD_SET_END);
+SHELL_CMD_REGISTER(cam, &sub_cam, "cam commands", NULL);
+SHELL_CMD_REGISTER(c, &sub_cam, "cam commands", NULL);

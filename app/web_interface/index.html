@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>ZephyrRail - Focus Stacking Control</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="container">
         <div class="tab-container">
             <div class="tab-nav">
                 <button class="tab-button active" data-tab-target="tab-home">Home</button>
-                <button class="tab-button" data-tab-target="tab-move" data-requires-connection="true">Move &amp; Prepare</button>
+                <button class="tab-button" data-tab-target="tab-move" data-requires-connection="true">Move &amp;
+                    Prepare</button>
                 <button class="tab-button" data-tab-target="tab-stack" data-requires-connection="true">Stack</button>
                 <button class="tab-button" data-tab-target="tab-debug">Debug</button>
                 <button class="tab-button tab-button-all" data-requires-connection="true">All</button>
-                <span id="expert-header" class="collapsible-header collapsed" data-collapsible-target="#expert-move,#expert-prepare,#expert-stack,#expert-setup">Expert Mode <span class="toggle-icon">▼</span></span>
-            </div>
-            <div id="tab-home" class="tab-panel active">
-                <h1>ZephyrRail Focus Stacking</h1>
-                <p class="subtitle"><a href="https://github.com/maxhbr/zephyr-rail">https://github.com/maxhbr/zephyr-rail</a></p>
-                <div class="connection-bar">
+                <span id="expert-header" class="collapsible-header collapsed"
+                    data-collapsible-target="#expert-move,#expert-prepare,#expert-stack,#expert-setup">Expert Mode <span
+                        class="toggle-icon">▼</span></span>
                     <div class="status-pill">
                         <span id="connection-indicator" class="indicator disconnected"></span>
                         <div>
@@ -28,11 +28,17 @@
                             <p id="connection-label">Not connected</p>
                         </div>
                     </div>
-                    <div class="connection-actions">
-                        <button id="connect" class="btn-primary">Connect to ZephyrRail</button>
-                        <button id="pair-camera" class="btn-primary" disabled>Pair Camera</button>
-                        <button id="disconnect" class="btn-success" disabled>Disconnect</button>
+            </div>
+            <div id="tab-home" class="tab-panel active">
+                <!-- <div class="connection-bar"> -->
+                <div class="button-grid-3">
+                    <div>
+                        <h1>ZephyrRail Focus Stacking</h1>
+                        <p class="subtitle"><a
+                                href="https://github.com/maxhbr/zephyr-rail">https://github.com/maxhbr/zephyr-rail</a></p>
                     </div>
+                    <div>&nbsp;</div>
+                    <button id="connect" class="btn-primary">Connect to ZephyrRail</button>
                 </div>
 
 
@@ -45,40 +51,41 @@
                             <button id="send-custom-command" class="btn-primary">Send</button>
                         </div>
                         <button class="btn-secondary" onclick="sendCommand('rail status')">No Operation</button>
+                        <button id="disconnect" class="btn-success" disabled>Disconnect</button>
                     </div>
                 </div>
             </div>
 
-                <div id="rail-state-card">
-                    <div class="status-grid">
-                        <div class="status-row">
-                            <span>Target</span>
-                            <span id="rail-target-value">—</span>
-                        </div>
-                        <div class="status-row">
-                            <span>Lower bound</span>
-                            <span id="rail-lower-value">—</span>
-                        </div>
-                        <div class="status-row">
-                            <span>Upper bound</span>
-                            <span id="rail-upper-value">—</span>
-                        </div>
-                        <div class="status-row">
-                            <span>Stack step</span>
-                            <span id="rail-stack-step">—</span>
-                        </div>
-                        <div class="status-row">
-                            <span>Stack length</span>
-                            <span id="rail-stack-length">—</span>
-                        </div>
+            <div id="rail-state-card">
+                <div class="status-grid">
+                    <div class="status-row">
+                        <span>Target</span>
+                        <span id="rail-target-value">—</span>
                     </div>
-                    <div id="rail-stack-row" class="status-row subtle">
+                    <div class="status-row">
+                        <span>Lower bound</span>
+                        <span id="rail-lower-value">—</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Upper bound</span>
+                        <span id="rail-upper-value">—</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Stack step</span>
+                        <span id="rail-stack-step">—</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Stack length</span>
+                        <span id="rail-stack-length">—</span>
+                    </div>
+                </div>
+                <div id="rail-stack-row" class="status-row subtle">
                     <div class="status-card-header">
                         <p id="rail-state-updated" class="status-timestamp">Waiting for status...</p>
                     </div>
-                        <span>Stack status: <span id="rail-stack-status">Idle</span> </span>
-                    </div>
+                    <span>Stack status: <span id="rail-stack-status">Idle</span> </span>
                 </div>
+            </div>
             <div id="tab-move" class="tab-panel" data-requires-connection="true">
                 <div class="controls">
                     <h1>Move</h1>
@@ -147,12 +154,14 @@
                         <div class="input-group">
                             <label>Manual Bounds:</label>
                             <div class="button-grid-3 button-grid-tight">
-                                <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To Current</button>
+                                <button class="btn-secondary" onclick="sendSetLowerBound()">Set Lower To
+                                    Current</button>
                                 <div class="input-with-unit">
                                     <input type="number" id="bound" value="0" placeholder="Target μm">
                                     <span class="unit-label">μm</span>
                                 </div>
-                                <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To Current</button>
+                                <button class="btn-secondary" onclick="sendSetUpperBound()">Set Upper To
+                                    Current</button>
                             </div>
                         </div>
                     </div>
@@ -185,18 +194,21 @@
                             </select>
                         </div>
                         <div class="input-group">
-                            <label>Wait Before Shot (ms): <span class="field-hint" id="wait-before-current">—</span></label>
+                            <label>Wait Before Shot (ms): <span class="field-hint"
+                                    id="wait-before-current">—</span></label>
                             <input type="number" id="wait-before" value="1000" step="100" min="0">
                         </div>
                         <div class="input-group">
-                            <label>Wait After Shot (ms): <span class="field-hint" id="wait-after-current">—</span></label>
+                            <label>Wait After Shot (ms): <span class="field-hint"
+                                    id="wait-after-current">—</span></label>
                             <input type="number" id="wait-after" value="500" step="100" min="0">
                         </div>
                         <button class="btn-success" onclick="sendSelectedStack()">Start Stack</button>
                     </div>
                     <div id="expert-stack" class="collapsible-content collapsed expert-section">
                         <div class="input-group">
-                            <label for="stack-manual">Or enter a custom stack value <span class="field-hint">(step:number-in-nm / count:shots)</span></label>
+                            <label for="stack-manual">Or enter a custom stack value <span
+                                    class="field-hint">(step:number-in-nm / count:shots)</span></label>
                             <input type="text" id="stack-manual" placeholder="step:750 or count:120">
                         </div>
                         <div class="input-group">
@@ -220,7 +232,7 @@
                     <a href="#demo">#demo</a>
                 </div>
                 <div id="status" class="disconnected">
-                    Not connected. Click "Connect to ZephyrRail" to begin.
+                    Not connected.
                 </div>
             </div>
 
@@ -229,4 +241,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
