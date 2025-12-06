@@ -2,7 +2,7 @@ const SERVICE_UUID = '12345634-5678-1234-1234-123456789abc';
 const STATUS_UUID = '12345636-5678-1234-1234-123456789abc';
 const COMMAND_UUID = '12345635-5678-1234-1234-123456789abc';
 const STORAGE_PREFIX = 'zephyrRail.';
-const DEBUG_MODE = window.location.hash.toLowerCase() === '#debug';
+const DEMO_MODE = window.location.hash.toLowerCase() === '#demo';
 const PERSISTED_FIELDS = [ 'go-distance', 'wait-before', 'wait-after' ];
 const textDecoder = new TextDecoder();
 
@@ -29,7 +29,7 @@ let railStateEls = {};
 const bluetoothSupported = !!navigator.bluetooth;
 
 // Check Web Bluetooth support
-if (!bluetoothSupported && !DEBUG_MODE) {
+if (!bluetoothSupported && !DEMO_MODE) {
   document.body.innerHTML = `
         <div class="container">
             <div class="warning">
@@ -47,7 +47,7 @@ if (!bluetoothSupported && !DEBUG_MODE) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  if (!bluetoothSupported && !DEBUG_MODE) {
+  if (!bluetoothSupported && !DEMO_MODE) {
     return;
   }
 
@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleControls(false);
   setConnectionState('disconnected', 'Not connected');
 
-  if (DEBUG_MODE) {
-    updateStatus('Debug mode: controls forced visible', 'connected');
+  if (DEMO_MODE) {
+    updateStatus('Demo mode: controls forced visible', 'connected');
   }
 
   if (pairButton) {
@@ -515,13 +515,13 @@ function setConnectionState(state, labelText) {
   const connectButton = document.getElementById('connect');
   if (connectButton) {
     const shouldDisable =
-        state === 'connecting' || (state === 'connected' && !DEBUG_MODE);
+        state === 'connecting' || (state === 'connected' && !DEMO_MODE);
     connectButton.disabled = shouldDisable;
   }
 }
 
 function toggleControls(isConnected) {
-  const allowExtended = isConnected || DEBUG_MODE;
+  const allowExtended = isConnected || DEMO_MODE;
   setTabAvailability(allowExtended);
 
   const setupControls = document.getElementById('controls-setup');
