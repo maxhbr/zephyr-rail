@@ -475,8 +475,8 @@ int PwaService::startAdvertising() {
               sizeof(CONFIG_BT_DEVICE_NAME) - 1),
   };
 
-  int err =
-      bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad), sd, ARRAY_SIZE(sd));
+  int err = bt_le_adv_start(BT_LE_ADV_CONN_FAST_1, ad, ARRAY_SIZE(ad), sd,
+                            ARRAY_SIZE(sd));
   if (err) {
     LOG_ERR("Advertising failed to start (err %d)", err);
     return err;

@@ -7,10 +7,18 @@ LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_INF);
 // ############################################################################
 // initialize ZBus
 
-ZBUS_CHAN_DEFINE(event_msg_chan,   /* Name */
-                 struct event_msg, /* Message type */
-                 NULL, NULL, ZBUS_OBSERVERS(event_sub),
-                 ZBUS_MSG_INIT(.evt = {}));
+ZBUS_CHAN_DEFINE(event_msg_chan, struct event_msg, NULL, NULL,
+                 ZBUS_OBSERVERS(event_sub), ZBUS_MSG_INIT(.evt = {}));
+
+ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
+
+static int event_pub(event event, int value) {
+  LOG_DBG("send msg: event=%d with value=%d", event, value);
+  struct event_msg msg = {event, value};
+  return zbus_chan_pub(&event_msg_chan, &msg, K_MSEC(200));
+}
+
+static int event_pub(event event) { return event_pub(event, 0); }
 
 #ifdef CONFIG_BT
 static void publish_pwa_status(const struct s_object *s) {
@@ -41,16 +49,6 @@ static void publish_pwa_status(const struct s_object *s) {
 #else
 static void publish_pwa_status(const struct s_object *s) { ARG_UNUSED(s); }
 #endif
-
-static int event_pub(event event, int value) {
-  LOG_DBG("send msg: event=%d with value=%d", event, value);
-  struct event_msg msg = {event, value};
-  return zbus_chan_pub(&event_msg_chan, &msg, K_MSEC(200));
-}
-
-static int event_pub(event event) { return event_pub(event, 0); }
-
-ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 
 // ############################################################################
 // initialize StateMachine

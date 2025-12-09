@@ -1,139 +1,139 @@
-# SPDX-License-Identifier: MIT
-# Original author: Martin Rubli
-# Source: https://github.com/NixOS/nixpkgs/issues/355181#issuecomment-2649138897
-# Subsequent comments/contributions: DavidEGrayson
-# Maintainer/Recent updates: spike314
-#
-# This package is distributed under the terms of the MIT license.
-# See the LICENSE file for details.
+# Based on: https://github.com/NixOS/nixpkgs/issues/355181#issuecomment-3595404667
 
 {
   lib,
   stdenv,
   requireFile,
-  unzip,
   autoPatchelfHook,
-  jdk17,
-  writeTextFile,
+  unzip,
+  openjdk,
+  writeShellScript,
   buildFHSEnv,
   libusb1,
   glib,
   libz,
   libkrb5,
+  openssl,
+  xorg,
+  icoutils,
+  qt6Packages,
+  gtk3,
+  pcsclite,
+  wrapGAppsHook3,
+  makeWrapper,
+  copyDesktopItems,
+  makeDesktopItem,
 }:
 
 let
-  version = "2.20.0";
+  pname = "stm32cubeprog";
+  version = "2.21.0";
   fileVerStr = builtins.replaceStrings [ "." ] [ "-" ] version;
+  jdk = openjdk.override (
+    lib.optionalAttrs stdenv.hostPlatform.isLinux {
+      enableJavaFX = true;
+    }
+  );
 in
 stdenv.mkDerivation {
-  inherit version;
-  pname = "STM32CubeProg";
+  inherit version pname;
 
   src = requireFile rec {
     name = "stm32cubeprg-lin-v${fileVerStr}.zip";
     url = "https://www.st.com/en/development-tools/stm32cubeprog.html";
-    message = ''
-      This Nix expression requires that ${name} already be part of the store. To
-      obtain it you need to navigate to ${url} and download it.
-
-      and then add the file to the Nix store using either:
-
-        nix-store --add-fixed sha256 ${name}
-
-      or
-
-        nix-prefetch-url --type sha256 file:///path/to/${name}
-    '';
-    sha256 = "07j0y7r4kw44p82zrq5ka84znv7bzl931al798xjriy0a29nmqjz";
+    sha256 = "85e35c46793b2f65f7d19cc06e593cabfbbd459e970d58fb962460a918697af2";
   };
 
   nativeBuildInputs = [
+    jdk
     unzip
+    qt6Packages.wrapQtAppsHook
+    wrapGAppsHook3
+    copyDesktopItems
     autoPatchelfHook
+    icoutils
   ];
+
   buildInputs = [
-    jdk17
+    jdk
     libusb1
     glib
     libz
     libkrb5
+    openssl
+    pcsclite
+    xorg.libX11
+    qt6Packages.qtbase
+    qt6Packages.qtserialport
+    qt6Packages.qtwayland
+    gtk3
   ];
 
   unpackCmd = ''
-    unzip $curSrc
-    rm -r jre
-    rm *.linux
-    mkdir stm32inst
-    mv *.exe stm32inst
+    unzip -d stm32cubeprg $curSrc SetupSTM32CubeProgrammer-${version}.exe
+    mkdir -p stm32cubeprg/jre/bin
+    touch stm32cubeprg/jre/bin/java
   '';
 
   installPhase =
     let
-      auto-install = writeTextFile {
-        name = "auto-install.xml";
-        text =
-          let
-            programmer = lib.boolToString true;
-            packageCreator = lib.boolToString false;
-          in
-          ''
-            <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-            <AutomatedInstallation langpack="eng">
-                <com.st.CustomPanels.CheckedHelloPorgrammerPanel id="Hello.panel"/>
-                <com.izforge.izpack.panels.info.InfoPanel id="Info.panel"/>
-                <com.izforge.izpack.panels.licence.LicencePanel id="Licence.panel"/>
-                <com.st.CustomPanels.TargetProgrammerPanel id="target.panel">
-                    <installpath>./tmpInst</installpath>
-                </com.st.CustomPanels.TargetProgrammerPanel>
-                <com.st.CustomPanels.AnalyticsPanel id="analytics.panel"/>
-                <com.st.CustomPanels.PacksProgrammerPanel id="Packs.panel">
-                    <pack index="0" name="Core Files" selected="true"/>
-                    <pack index="1" name="STM32CubeProgrammer" selected="${programmer}"/>
-                    <pack index="2" name="STM32TrustedPackageCreator" selected="${packageCreator}"/>
-                </com.st.CustomPanels.PacksProgrammerPanel>
-                <com.izforge.izpack.panels.install.InstallPanel id="Install.panel"/>
-                <com.izforge.izpack.panels.shortcut.ShortcutPanel id="Shortcut.panel">
-                    <createMenuShortcuts>false</createMenuShortcuts>
-                    <programGroup>STMicroelectronics\STM32CubeProgrammer</programGroup>
-                    <createDesktopShortcuts>false</createDesktopShortcuts>
-                    <createStartupShortcuts>false</createStartupShortcuts>
-                    <shortcutType>user</shortcutType>
-                </com.izforge.izpack.panels.shortcut.ShortcutPanel>
-                <com.st.CustomPanels.FinishProgrammerPanel id="finish.panel"/>
-            </AutomatedInstallation>
-          '';
-      };
-
       installEnv = buildFHSEnv {
         name = "installer-env";
-        runScript = "java -jar SetupSTM32CubeProgrammer-${version}.exe";
+        targetPkgs = pkgs: with pkgs; [ jdk ];
+        runScript = "java";
       };
     in
     ''
       runHook preInstall
 
-      mkdir $out
-      substituteAll ${auto-install} auto-install.xml
-      ${installEnv}/bin/${installEnv.name} auto-install.xml || echo hi
-      mv ./tmpInst/* $out/
-      rm -r $out/bin/STM32CubeProgrammerLauncher
-      rm $out/lib/libQt6* $out/lib/libicu*
-      addAutoPatchelfSearchPath $out/lib
+      ${installEnv}/bin/${installEnv.name} -jar -DINSTALL_PATH=stm32cubeprg SetupSTM32CubeProgrammer-${version}.exe -options-system
+      rm -r stm32cubeprg/bin/jre
 
-      chmod +x $out/bin/STM32*
+      mkdir $out
+      mv ./stm32cubeprg/* $out
+
+      mkdir newjar
+      cd newjar
+      jar -xf $out/bin/STM32CubeProgrammerLauncher
+      jar -cfm $out/bin/STM32CubeProgrammerLauncher META-INF/MANIFEST.MF .
+      cd ..
+
+      mkdir icons/
+      icotool -x $out/util/Programmer.ico -o icons/
+      cd icons/
+      ls | awk -v prefix=$out/share/icons/hicolor/ -F'[_x.]' '{ dest=prefix $3 "x" $4; print "mkdir -p " dest "/apps/ && mv " $0 " " dest "/apps/" "${pname}" "." $NF}' | bash
+      cd ..
+
+      mkdir -p $out/lib/udev/rules.d/
+      mv $out/Drivers/rules/* $out/lib/udev/rules.d/
 
       autoPatchelf $out/bin/STM32_Programmer_CLI
       autoPatchelf $out/bin/STM32_SigningTool_CLI
       autoPatchelf $out/bin/STM32_KeyGen_CLI
-      autoPatchelf $out/lib/libSTLinkUSBDriver.so
+
+      makeWrapper ${installEnv}/bin/${installEnv.name} $out/bin/${pname} --add-flags "-jar $out/bin/STM32CubeProgrammerLauncher"
 
       runHook postInstall
     '';
 
-  autoPatchelfIgnoreMissingDeps = [ "*" ];
+  autoPatchelfIgnoreMissingDeps = [
+    "libSTLinkUSBDriver.so"
+    "libhsmp11.so"
+    "libcrypto.so.1.0.0"
+    "libQt5Core.so.5"
+    "libQt6WaylandEglClientHwIntegration.so.6"
+  ];
 
-  doCheck = true;
+  desktopItems = [
+    (makeDesktopItem {
+      name = pname;
+      icon = pname;
+      desktopName = "STM32CubeProgrammer";
+      comment = "All-in-one multi-OS software tool for programming STM32 products";
+      exec = pname;
+      categories = [ "Development" ];
+    })
+  ];
 
   meta = with lib; {
     description = "All-in-one multi-OS software tool for programming STM32 products";

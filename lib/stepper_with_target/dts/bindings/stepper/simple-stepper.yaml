@@ -34,6 +34,7 @@ compatible: "simple-stepper"
 
 include:
   - name: stepper-controller.yaml
+  - name: step-dir-timing.yaml
 
 properties:
   invert-pins:

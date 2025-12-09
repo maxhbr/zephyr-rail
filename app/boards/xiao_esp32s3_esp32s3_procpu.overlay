@@ -10,6 +10,7 @@
         step-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
         dir-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
         en-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+		step-width-ns = <2500>;
 		micro-step-res = <256>;
 		invert-pins;
 	};
