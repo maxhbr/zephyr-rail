@@ -73,6 +73,7 @@ struct s_object {
   const Stack stack;
   int wait_before_ms = 1000;
   int wait_after_ms = 500;
+  int64_t last_event_ms = 0;
 };
 
 class StateMachine {

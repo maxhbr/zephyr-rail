@@ -8,6 +8,7 @@ StepperWithTarget::StepperWithTarget(const struct device *dev,
   stepper_dev = dev;
   pitch_per_rev_nm = _pitch_per_rev_mm * 1000000;
   pulses_per_rev = _pulses_per_rev;
+  last_motion_ms = k_uptime_get();
 
   if (!device_is_ready(stepper_dev)) {
     LOG_ERR("Stepper device is not ready");
@@ -92,15 +93,15 @@ void StepperWithTarget::event_callback_wrapper(const struct device *dev,
   switch (event) {
   case STEPPER_EVENT_STEPS_COMPLETED:
     LOG_INF("Movement completed!");
-    instance->is_moving = false;
+    instance->note_motion_stop();
     break;
   case STEPPER_EVENT_STALL_DETECTED:
     LOG_WRN("Stall detected!");
-    instance->is_moving = false;
+    instance->note_motion_stop();
     break;
   case STEPPER_EVENT_STOPPED:
     LOG_DBG("Stepper stopped");
-    instance->is_moving = false;
+    instance->note_motion_stop();
     break;
   default:
     LOG_DBG("Stepper event: %d", event);
@@ -146,7 +147,7 @@ void StepperWithTarget::start() {
 
 void StepperWithTarget::pause() {
   stepper_stop(stepper_dev);
-  is_moving = false;
+  note_motion_stop();
 }
 
 void StepperWithTarget::wait_and_pause() {
@@ -184,6 +185,20 @@ void StepperWithTarget::set_target_position(int32_t _target_position) {
 }
 
 int32_t StepperWithTarget::get_target_position() { return target_position; }
+
+void StepperWithTarget::note_motion_start() {
+  last_motion_ms = k_uptime_get();
+  is_moving = true;
+}
+
+void StepperWithTarget::note_motion_stop() {
+  last_motion_ms = k_uptime_get();
+  is_moving = false;
+}
+
+int64_t StepperWithTarget::last_motion_timestamp_ms() const {
+  return is_moving ? k_uptime_get() : last_motion_ms;
+}
 
 int32_t StepperWithTarget::steps_to_nm(int32_t steps) {
   // Use int64_t for calculation to avoid overflow
@@ -232,11 +247,11 @@ bool StepperWithTarget::step_towards_target() {
   LOG_DBG("step_towards_target: current=%d, target=%d, delta=%d", current_pos,
           target_position, steps_to_move);
 
-  is_moving = true;
+  note_motion_start();
   int ret = stepper_move_by(stepper_dev, steps_to_move);
   if (ret < 0) {
     LOG_ERR("Failed to move stepper: %d", ret);
-    is_moving = false;
+    note_motion_stop();
     return false;
   }
 

@@ -33,6 +33,7 @@ class StepperWithTarget {
   bool is_moving = false;
   int32_t target_position = 0;
   bool enabled = false;
+  int64_t last_motion_ms = 0;
 
   int pitch_per_rev_nm = 0;
   int pulses_per_rev = 0;
@@ -59,6 +60,8 @@ public:
   int disable();
   void start();
   void pause();
+  void note_motion_start();
+  void note_motion_stop();
   void wait_and_pause();
 
   int get_position();
@@ -72,6 +75,9 @@ public:
   int32_t get_target_position_nm();
 
   bool step_towards_target();
+  bool is_enabled() const { return enabled; }
+  bool is_moving_now() const { return is_moving; }
+  int64_t last_motion_timestamp_ms() const;
 
   bool is_in_target_position();
 

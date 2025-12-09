@@ -12,6 +12,36 @@ ZBUS_CHAN_DEFINE(event_msg_chan, struct event_msg, NULL, NULL,
 
 ZBUS_SUBSCRIBER_DEFINE(event_sub, 20);
 
+static constexpr int64_t INACTIVITY_AUTO_DISABLE_MS = 5 * 60 * 1000;
+static struct s_object *auto_disable_ctx = nullptr;
+
+static void auto_disable_work_handler(struct k_work *work);
+K_WORK_DELAYABLE_DEFINE(auto_disable_work, auto_disable_work_handler);
+
+static void auto_disable_work_handler(struct k_work *work) {
+  ARG_UNUSED(work);
+  if (!auto_disable_ctx) {
+    return;
+  }
+
+  const int64_t now = k_uptime_get();
+  const int64_t event_age = now - auto_disable_ctx->last_event_ms;
+  const int64_t motion_age =
+      now - auto_disable_ctx->stepper->last_motion_timestamp_ms();
+
+  if (event_age >= INACTIVITY_AUTO_DISABLE_MS &&
+      motion_age >= INACTIVITY_AUTO_DISABLE_MS &&
+      auto_disable_ctx->stepper->is_enabled() &&
+      !auto_disable_ctx->stepper->is_moving_now()) {
+    auto_disable_ctx->stepper->pause();
+    auto_disable_ctx->stepper->disable();
+    LOG_INF("Auto-disabled stepper after idle: events %lld ms, motion %lld ms",
+            (long long)event_age, (long long)motion_age);
+  }
+
+  k_work_reschedule(&auto_disable_work, K_SECONDS(30));
+}
+
 static int event_pub(event event, int value) {
   LOG_DBG("send msg: event=%d with value=%d", event, value);
   struct event_msg msg = {event, value};
@@ -96,6 +126,7 @@ static enum smf_state_result s_interactive_run(void *o) {
         return SMF_EVENT_HANDLED;
       }
 
+      s->last_event_ms = k_uptime_get();
       switch (msg.evt.value()) {
       case EVENT_DISABLE:
       case EVENT_CAMERA_START_SCAN:
@@ -104,13 +135,14 @@ static enum smf_state_result s_interactive_run(void *o) {
       case EVENT_RECORD:
       case EVENT_STATUS:
         break;
-      default: {
-        int err = s->stepper->enable();
-        if (err != 0) {
-          LOG_WRN("Failed to enable stepper: %d", err);
+      default:
+        if (!s->stepper->is_enabled()) {
+          int err = s->stepper->enable();
+          if (err != 0) {
+            LOG_WRN("Failed to enable stepper: %d", err);
+          }
+          k_sleep(K_MSEC(300));
         }
-        break;
-      }
       }
 
       switch (msg.evt.value()) {
@@ -363,6 +395,9 @@ StateMachine::StateMachine(const StepperWithTarget *stepper,
   s_obj.remote = remote;
   Stack stack;
   s_obj.stack = stack;
+  s_obj.last_event_ms = k_uptime_get();
+  auto_disable_ctx = &s_obj;
+  k_work_reschedule(&auto_disable_work, K_SECONDS(30));
 
   smf_set_initial(SMF_CTX(&s_obj), s0_ptr);
 }
