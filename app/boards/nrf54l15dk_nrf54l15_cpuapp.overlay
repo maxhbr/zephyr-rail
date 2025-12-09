@@ -10,6 +10,7 @@
 		step-gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;    /* Step/Clock signal (STCK1) */
 		dir-gpios = <&gpio1 14 GPIO_ACTIVE_HIGH>;     /* Direction signal (DIR1) */
 		en-gpios = <&gpio1 10 GPIO_ACTIVE_LOW>;       /* Enable/Standby signal (STBY) - active low */
+		step-width-ns = <2500>;
 		micro-step-res = <256>;
 	};
 };

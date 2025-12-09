@@ -11,6 +11,7 @@
 		step-gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
 		dir-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
 		en-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+		step-width-ns = <2500>;
 		micro-step-res = <256>;
 	};
 };
