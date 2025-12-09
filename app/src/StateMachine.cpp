@@ -97,6 +97,23 @@ static enum smf_state_result s_interactive_run(void *o) {
       }
 
       switch (msg.evt.value()) {
+      case EVENT_DISABLE:
+      case EVENT_CAMERA_START_SCAN:
+      case EVENT_CAMERA_STOP_SCAN:
+      case EVENT_SHOOT:
+      case EVENT_RECORD:
+      case EVENT_STATUS:
+        break;
+      default: {
+        int err = s->stepper->enable();
+        if (err != 0) {
+          LOG_WRN("Failed to enable stepper: %d", err);
+        }
+        break;
+      }
+      }
+
+      switch (msg.evt.value()) {
       case EVENT_GO:
         LOG_INF("go to position %.3fum", nm_as_um(msg.value));
         s->stepper->go_relative_nm(msg.value);
@@ -181,6 +198,11 @@ static enum smf_state_result s_interactive_run(void *o) {
         }
         LOG_INF("Setting movement speed to %d RPM", msg.value);
         s->stepper->set_speed_rpm(msg.value);
+        break;
+      case EVENT_DISABLE:
+        LOG_INF("Disabling stepper until next event");
+        s->stepper->pause();
+        s->stepper->disable();
         break;
       case EVENT_CAMERA_START_SCAN:
         LOG_INF("Starting camera startScan");

@@ -240,6 +240,13 @@ bool handleRailCommand(const char *subcmd, char **saveptr) {
     return true;
   }
 
+  if (strcasecmp(subcmd, "disable") == 0) {
+    LOG_INF("→ Command: rail disable");
+    event_pub(EVENT_DISABLE);
+    PwaService::notifyStatus("ACK:rail disable");
+    return true;
+  }
+
   return false;
 }
 
