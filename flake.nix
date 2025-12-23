@@ -29,7 +29,6 @@
     (flake-utils.lib.eachDefaultSystem (
       system:
       let
-        # allow unfree in nixpkgs
         pkgs =
           let
             config = {
@@ -53,7 +52,6 @@
                 ];
               segger-jlink.acceptLicense = true;
               permittedInsecurePackages = [
-                # "segger-jlink-qt4-824"
                 "segger-jlink-qt4-874"
               ];
             };

@@ -234,6 +234,17 @@ static int cmd_cam_stopScan(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
+#ifdef CONFIG_REBOOT
+static int cmd_system_reboot(const struct shell *sh, size_t argc, char **argv) {
+  ARG_UNUSED(sh);
+  ARG_UNUSED(argc);
+  ARG_UNUSED(argv);
+  shell_print(sh, "Rebooting MCU...");
+  sys_reboot(SYS_REBOOT_COLD);
+  return 0;
+}
+#endif
+
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_cam, SHELL_CMD(shoot, NULL, "Trigger camera shoot.", cmd_cam_shoot),
     SHELL_CMD(record, NULL, "Toggle camera recording.", cmd_cam_record),
@@ -242,3 +253,6 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(cam, &sub_cam, "cam commands", NULL);
 SHELL_CMD_REGISTER(c, &sub_cam, "cam commands", NULL);
+#ifdef CONFIG_REBOOT
+SHELL_CMD_REGISTER(reboot, NULL, "Reboot the MCU.", cmd_system_reboot);
+#endif
