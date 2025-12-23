@@ -1,5 +1,13 @@
 # A macro stacking rail
 
+<table>
+  <tr>
+    <td><img src="./slidev/assets/tripod.jpeg" alt="1" height="200px"></td>
+    <td><img src="./slidev/assets/setup.jpeg" alt="2" height="200px"></td>
+   </tr> 
+  </tr>
+</table>
+
 ## Firmware
 The firmware is written with zephyr. The code is in [./app](./app).
 
