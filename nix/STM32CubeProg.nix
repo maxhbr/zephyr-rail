@@ -26,7 +26,7 @@
 }:
 
 let
-  pname = "stm32cubeprog";
+  pname = "STM32CubeProg";
   version = "2.21.0";
   fileVerStr = builtins.replaceStrings [ "." ] [ "-" ] version;
   jdk = openjdk.override (
