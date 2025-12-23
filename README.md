@@ -2,8 +2,8 @@
 
 <table>
   <tr>
-    <td><img src="./slidev/assets/tripod.jpeg" alt="1" height="300px"></td>
-    <td><img src="./slidev/assets/setup.jpeg" alt="2" height="300px"></td>
+    <td><img src="./slidev/assets/tripod.jpeg" alt="1" height="400px"></td>
+    <td><img src="./slidev/assets/setup.jpeg" alt="2" height="400px"></td>
    </tr> 
   </tr>
 </table>
