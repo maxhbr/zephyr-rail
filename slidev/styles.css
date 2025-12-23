@@ -1,0 +1,5 @@
+.slidev-layout h1 + p {
+  /* Keep first paragraphs the same color and opacity as the rest of the text */
+  color: inherit;
+  opacity: 1 !important;
+}
