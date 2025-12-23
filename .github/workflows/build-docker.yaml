@@ -1,0 +1,43 @@
+name: Build (Zephyr CI container)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  zephyr-ci-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board:
+          - native_sim
+          - nrf54l15dk_nrf54l15_cpuapp
+          - xiao_ble
+          - xiao_esp32c6_esp32c6_hpcore
+          - xiao_esp32s3_esp32s3_procpu
+          - xiao_nrf54l15_nrf54l15_cpuapp
+      fail-fast: false
+    container:
+      image: ghcr.io/zephyrproject-rtos/ci:v0.26.8
+      options: --entrypoint /bin/bash
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains/zephyr-sdk-0.16.5-1
+      LLVM_TOOLCHAIN_PATH: /usr/lib/llvm-16
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config --global user.email "bot@maxhbr.de"
+          git config --global user.name "Maxhbr Bot"
+          git config --global --add safe.directory "$(readlink -f .)"
+
+      - name: Initialize West
+        run: |
+          west init -l app
+          west update --narrow
+
+      - name: Build (Zephyr CI container)
+        run: |
+          west build -b ${{ matrix.board }} app
