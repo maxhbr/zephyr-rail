@@ -189,6 +189,30 @@
               in
               "${scad-build}/bin/scad-build";
           };
+
+          slidev = {
+            type = "app";
+            program =
+              let
+                slidevDev = pkgs.writeShellApplication {
+                  name = "slidev-dev";
+                  runtimeInputs = [
+                    pkgs.nodejs_20
+                    pkgs.pnpm
+                  ];
+                  text = ''
+                    set -euo pipefail
+                    if [ -d "$PWD/slidev" ]; then
+                      cd "$PWD/slidev"
+                    else
+                      cd "${./slidev}"
+                    fi
+                    exec pnpm dev -- --host
+                  '';
+                };
+              in
+              "${slidevDev}/bin/slidev-dev";
+          };
         };
         formatter =
           let
