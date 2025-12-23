@@ -13,7 +13,7 @@ let tabPanels = [];
 let allTabsButton = null;
 let allTabsActive = false;
 let activeTabId = 'tab-home';
-let tabNavEl = null;
+let railStateCardEl = null;
 let railState = {
   position_nm : null,
   target_nm : null,
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     waitBefore : document.getElementById('wait-before-current'),
     waitAfter : document.getElementById('wait-after-current')
   };
-  tabNavEl = document.querySelector('.tab-nav');
+  railStateCardEl = document.getElementById('rail-state-card');
   resetRailState();
 
   // Setup collapsible sections
@@ -431,7 +431,7 @@ function resetRailState() {
     moving : false,
     last_update : null
   };
-  updateTabNavProgress(null);
+  updateStateCardProgress(null, false);
   renderRailState();
 }
 
@@ -460,19 +460,25 @@ function calculateStackProgress(index, length) {
   return Math.min(100, Math.max(0, Math.round(percentage)));
 }
 
-function updateTabNavProgress(percentage) {
-  if (!tabNavEl) {
-    tabNavEl = document.querySelector('.tab-nav');
+function updateStateCardProgress(percentage, isStacking) {
+  if (!railStateCardEl) {
+    railStateCardEl = document.getElementById('rail-state-card');
   }
-  if (!tabNavEl) {
+  if (!railStateCardEl) {
     return;
   }
-  if (!Number.isFinite(percentage) || percentage <= 0) {
-    tabNavEl.style.removeProperty('--tab-progress');
+
+  const shouldReset = !isStacking || !Number.isFinite(percentage) ||
+                      percentage <= 0 || percentage >= 100;
+  if (shouldReset) {
+    railStateCardEl.style.removeProperty('background');
     return;
   }
+
   const clamped = Math.min(100, Math.max(0, percentage));
-  tabNavEl.style.setProperty('--tab-progress', `${clamped}%`);
+  railStateCardEl.style.background =
+      `linear-gradient(90deg, #cbd5e0 0%, #cbd5e0 ${clamped}%, transparent ${
+          clamped}%, transparent 100%)`;
 }
 
 function renderRailState() {
@@ -541,9 +547,10 @@ function parseRailStateMessage(message) {
         stackIndex !== null && stackIndex >= 0 ? stackIndex : null;
     const normalizedStackLength =
         stackLength !== null && stackLength > 0 ? stackLength : null;
+    const isStacking = data.stack_running === true || data.stack_running === 1;
     const stackProgress =
         calculateStackProgress(normalizedStackIndex, normalizedStackLength);
-    updateTabNavProgress(stackProgress);
+    updateStateCardProgress(stackProgress, isStacking);
 
     return {
       position_nm : numberOrNull(data.position_nm),
@@ -552,7 +559,7 @@ function parseRailStateMessage(message) {
       upper_nm : numberOrNull(data.upper_nm),
       stack_index : normalizedStackIndex,
       stack_length : normalizedStackLength,
-      stack_running : data.stack_running === true || data.stack_running === 1,
+      stack_running : isStacking,
       wait_before_ms : numberOrNull(data.wait_before_ms),
       wait_after_ms : numberOrNull(data.wait_after_ms),
       moving : data.moving === true || data.moving === 1

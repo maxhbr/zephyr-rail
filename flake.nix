@@ -38,6 +38,7 @@
                 builtins.elem (lib.getName pkg) [
                   "segger-jlink"
                   "STM32CubeProg"
+                  "stm32cubeprog"
                   "segger-jlink"
                   "nrfutil"
                   "nrfutil-device"

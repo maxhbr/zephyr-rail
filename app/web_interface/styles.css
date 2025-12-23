@@ -46,8 +46,7 @@ h1 {
     padding: 0 30px;
     border-bottom: 2px solid #e2e8f0;
     border-radius: 12px 12px 0 0;
-    --tab-progress: 0%;
-    background: linear-gradient(90deg, #e2e8f0 0%, #e2e8f0 var(--tab-progress, 0%), #f7fafc var(--tab-progress, 0%), #f7fafc 100%);
+    background: #f7fafc;
 }
 
 .tab-button {
@@ -462,14 +461,14 @@ label {
     background: linear-gradient(145deg, #f8fafc 0%, #ffffff 40%, #f8fafc 100%);
     border: 2px solid #e2e8f0;
     border-radius: 16px;
-    padding: 16px;
+    padding: 0 16px;
     margin: 0 0 20px 0;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    /* transition: border-color 0.2s ease, box-shadow 0.2s ease; */
 }
 
 .status-card--active {
-    border-color: #63b3ed;
+    /* border-color: #63b3ed; */
     box-shadow: 0 14px 36px rgba(66, 153, 225, 0.18);
 }
 
