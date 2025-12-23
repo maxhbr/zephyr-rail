@@ -13,6 +13,7 @@ let tabPanels = [];
 let allTabsButton = null;
 let allTabsActive = false;
 let activeTabId = 'tab-home';
+let tabNavEl = null;
 let railState = {
   position_nm : null,
   target_nm : null,
@@ -65,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     waitBefore : document.getElementById('wait-before-current'),
     waitAfter : document.getElementById('wait-after-current')
   };
+  tabNavEl = document.querySelector('.tab-nav');
   resetRailState();
 
   // Setup collapsible sections
@@ -168,6 +170,31 @@ document.addEventListener('DOMContentLoaded', function() {
       device.gatt.disconnect();
     }
   });
+
+  if (DEMO_MODE) {
+    setTimeout(() => {
+      let index = 0;
+      let length = 100;
+      let startPosition = -200;
+      let targetPosition = 12000;
+      const intervalId = setInterval(() => {
+        if (index >= length) {
+          clearInterval(intervalId);
+          return;
+        }
+        let position =
+            startPosition + ((targetPosition - startPosition) / length) * index;
+        let demoMessage = `STATE {"position_nm":${
+            Math.round(position)},"target_nm":${
+            Math.round(position)},"lower_nm":${startPosition},"upper_nm":${
+            targetPosition},"stack_index":${index},"stack_length":${
+            length},"stack_running":true,"wait_before_ms":500,"wait_after_ms":300,"moving":true}`;
+        handleStatusNotification(
+            {target : {value : new TextEncoder().encode(demoMessage)}});
+        index++;
+      }, 800);
+    }, 100);
+  }
 });
 
 function handleStatusNotification(event) {
@@ -404,6 +431,7 @@ function resetRailState() {
     moving : false,
     last_update : null
   };
+  updateTabNavProgress(null);
   renderRailState();
 }
 
@@ -420,6 +448,31 @@ function formatStackProgress(index, length) {
     return 'Stack: idle';
   }
   return `Stack: ${index + 1} / ${length}`;
+}
+
+function calculateStackProgress(index, length) {
+  if (!Number.isFinite(index) || index < 0 || !Number.isFinite(length) ||
+      length <= 0) {
+    return null;
+  }
+  const cappedIndex = Math.min(index, length - 1);
+  const percentage = ((cappedIndex + 1) / length) * 100;
+  return Math.min(100, Math.max(0, Math.round(percentage)));
+}
+
+function updateTabNavProgress(percentage) {
+  if (!tabNavEl) {
+    tabNavEl = document.querySelector('.tab-nav');
+  }
+  if (!tabNavEl) {
+    return;
+  }
+  if (!Number.isFinite(percentage) || percentage <= 0) {
+    tabNavEl.style.removeProperty('--tab-progress');
+    return;
+  }
+  const clamped = Math.min(100, Math.max(0, percentage));
+  tabNavEl.style.setProperty('--tab-progress', `${clamped}%`);
 }
 
 function renderRailState() {
@@ -482,16 +535,23 @@ function parseRailStateMessage(message) {
     };
 
     const stackIndex = numberOrNull(data.stack_index);
-    const stackLength = numberOrNull(data.stack_length);
+    const stackLengthValue = data.stack_length;
+    const stackLength = numberOrNull(stackLengthValue);
+    const normalizedStackIndex =
+        stackIndex !== null && stackIndex >= 0 ? stackIndex : null;
+    const normalizedStackLength =
+        stackLength !== null && stackLength > 0 ? stackLength : null;
+    const stackProgress =
+        calculateStackProgress(normalizedStackIndex, normalizedStackLength);
+    updateTabNavProgress(stackProgress);
 
     return {
       position_nm : numberOrNull(data.position_nm),
       target_nm : numberOrNull(data.target_nm),
       lower_nm : numberOrNull(data.lower_nm),
       upper_nm : numberOrNull(data.upper_nm),
-      stack_index : stackIndex !== null && stackIndex >= 0 ? stackIndex : null,
-      stack_length : stackLength !== null && stackLength > 0 ? stackLength
-                                                             : null,
+      stack_index : normalizedStackIndex,
+      stack_length : normalizedStackLength,
       stack_running : data.stack_running === true || data.stack_running === 1,
       wait_before_ms : numberOrNull(data.wait_before_ms),
       wait_after_ms : numberOrNull(data.wait_after_ms),
