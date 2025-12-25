@@ -21,10 +21,12 @@ let railState = {
   upper_nm : null,
   stack_index : null,
   stack_length : null,
+  stack_running : false,
   wait_before_ms : null,
   wait_after_ms : null,
   moving : false,
-  last_update : null
+  last_update : null,
+  stack_start : null
 };
 let railStateEls = {};
 const bluetoothSupported = !!navigator.bluetooth;
@@ -203,8 +205,18 @@ function handleStatusNotification(event) {
   const parsedState = parseRailStateMessage(value);
 
   if (parsedState) {
+    const isStackRunning = parsedState.stack_running === true;
+    let stackStart = railState.stack_start;
+    if (isStackRunning) {
+      if (!railState.stack_running || !railState.stack_start) {
+        stackStart = timestamp;
+      }
+    } else {
+      stackStart = null;
+    }
     railState =
-        Object.assign({}, railState, parsedState, {last_update : timestamp});
+        Object.assign({}, railState, parsedState,
+                      {last_update : timestamp, stack_start : stackStart});
     renderRailState();
   }
 
@@ -429,7 +441,8 @@ function resetRailState() {
     wait_before_ms : null,
     wait_after_ms : null,
     moving : false,
-    last_update : null
+    last_update : null,
+    stack_start : null
   };
   updateStateCardProgress(null, false);
   renderRailState();
@@ -513,10 +526,35 @@ function renderRailState() {
   }
 
   if (railStateEls.updated) {
-    railStateEls.updated.textContent =
-        railState.last_update
-            ? `Updated ${railState.last_update.toLocaleTimeString()}`
-            : 'Waiting for status...';
+    if (!railState.last_update) {
+      railStateEls.updated.textContent = 'Waiting for status...';
+    } else if (railState.stack_running && railState.stack_start) {
+      const etaProgress =
+          Number.isFinite(railState.stack_index) &&
+                  Number.isFinite(railState.stack_length) &&
+                  railState.stack_length > 0 && railState.stack_index > 0
+              ? Math.min(railState.stack_index, railState.stack_length) /
+                    railState.stack_length * 100
+              : null;
+      if (Number.isFinite(etaProgress) && etaProgress > 0) {
+        const elapsedMs =
+            railState.last_update.getTime() - railState.stack_start.getTime();
+        const estimatedTotalMs = elapsedMs / (etaProgress / 100);
+        const eta =
+            new Date(railState.stack_start.getTime() + estimatedTotalMs);
+        const totalSeconds = Math.round(estimatedTotalMs / 1000);
+        railStateEls.updated.textContent =
+            `Updated ${railState.last_update.toLocaleTimeString()}, start ${
+                railState.stack_start.toLocaleTimeString()}, ETA ${
+                eta.toLocaleTimeString()}, length ${totalSeconds}s`;
+      } else {
+        railStateEls.updated.textContent =
+            `Updated ${railState.last_update.toLocaleTimeString()}`;
+      }
+    } else {
+      railStateEls.updated.textContent =
+          `Updated ${railState.last_update.toLocaleTimeString()}`;
+    }
   }
 
   if (railStateEls.card) {
