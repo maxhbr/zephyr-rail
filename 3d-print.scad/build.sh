@@ -1,9 +1,11 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash -p openscad
+# shellcheck shell=bash
 
 set -euo pipefail
 
 
-version="1.1.6-unstable"
+version="1.1.7-unstable"
 scad="rail.scad"
 
 buildPart() (

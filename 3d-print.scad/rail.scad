@@ -695,6 +695,7 @@ if (mode == "assembly") {
   translate([300,0,0]) print_view();
   translate([300,200,0]) ball_base_mount();
   translate([300,350,0]) ringclamp();
+  translate([190,350,0]) import("Sony-90mm-Ringclamp/Sony-90mm-Ringclamp (Meshed).stl", convexity=3);
 
   if ($preview) {
     translate([-200,0,0])
