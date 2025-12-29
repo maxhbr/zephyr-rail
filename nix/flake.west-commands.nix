@@ -68,6 +68,11 @@ in
     "-t"
     "flash"
   ])
+  (mkWestBuildBoardCommand "raytac_an7002q_db/nrf5340/cpuapp" "" [ ])
+  (mkWestBuildBoardCommand "raytac_an7002q_db/nrf5340/cpuapp" "-and-flash" [
+    "-t"
+    "flash"
+  ])
   (mkWestBuildBoardCommand "native_sim" "" [ ])
   (pkgs.writeShellScriptBin "west-native_sim-build-and-run" ''
     set -euo pipefail
