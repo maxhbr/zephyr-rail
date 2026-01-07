@@ -49,6 +49,7 @@
                   "nrfutil-sdk-manager"
                   "nrfutil-suit"
                   "nrfutil-toolchain-manager"
+                  "nrf-command-line-tools"
                 ];
               segger-jlink.acceptLicense = true;
               permittedInsecurePackages = [
@@ -122,6 +123,7 @@
               "nrfutil-suit"
               "nrfutil-toolchain-manager"
             ])
+            nrf-command-line-tools
             esptool
           ]);
           postBuild = ''
