@@ -5,7 +5,7 @@
 set -euo pipefail
 
 
-version="1.1.7-unstable"
+version="1.1.8-unstable"
 scad="rail.scad"
 
 buildPart() (
@@ -77,6 +77,7 @@ if [[ $# -gt 0 ]]; then
         all)
             time "$0" print &
             time "$0" ball_base_mount & 
+
             time "$0" ringclamp &
             wait
             ;;

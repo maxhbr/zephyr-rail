@@ -354,7 +354,7 @@ module motorAdapterFlangeF3() {
 
 }
 
-module pcbMount(shroud=false) {
+module pcbMount() {
   holeDistance=24;
   render() {
     translate([-30,0,0]) {
@@ -373,9 +373,6 @@ module pcbMount(shroud=false) {
                 }
               }
               translate([-37,0,0]) cube([4,8,14-0.5]);
-              if (shroud) {
-                translate([-35,0,0])  cube([55,1,60]);
-              }
             }
           }
           translate([0,-18,0]) rotate([0,0,45]) cube([10,15,4]);
