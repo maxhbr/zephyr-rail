@@ -1,4 +1,4 @@
-mode="develop"; // [ "print", "develop", "assembly", "carriageToClampV2", "motorAdapterFlangeF3", "pcbMount", "feetArcaSwiss", "ball_base_mount" , "ringclamp" ]
+mode="develop"; // [ "print", "develop", "assembly", "carriageToClampV2", "motorAdapterFlangeF3", "pcbMount", "pcbDoubleMount", "feetArcaSwiss", "ball_base_mount" , "ringclamp" ]
 
 $fn=100;
 
@@ -460,6 +460,11 @@ module pcbMount() {
   }
 }
 
+module pcbDoubleMount() {
+  mirror_horizontally()
+  pcbMount();
+}
+
 module motorCoupling() {
   render()
   difference() {
@@ -653,6 +658,7 @@ module print_view() {
   // translate([-52,0,0]) rotate([180,0,90]) feetVslot();
   translate([40,50,0]) motorAdapterFlangeF3();
   translate([-40,10,0]) rotate([0,0,-90]) pcbMount();
+  translate([-70,60,0]) rotate([0,0,-135]) pcbDoubleMount();
   translate([0,-65,0])
   rotate([0,0,90])
   translate([0,-40,0]) feetArcaSwiss();
@@ -751,6 +757,8 @@ if (mode == "assembly") {
   motorAdapterFlangeF3();
 } else if (mode == "pcbMount") {
   pcbMount();
+} else if (mode == "pcbDoubleMount") {
+  pcbDoubleMount();
 } else if (mode == "feetArcaSwiss") {
   feetArcaSwiss();
 } else if (mode == "ball_base_mount") {
