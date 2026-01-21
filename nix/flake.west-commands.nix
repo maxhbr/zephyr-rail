@@ -53,13 +53,23 @@ in
       --build-dir "builds/$(echo "$board" | sed 's%/%_%g')" \
       -b "$board" "$@"
   '')
-  (mkWestBuildBoardCommand "xiao_nrf54l15/nrf54l15/cpuapp" "" [ ])
+  (mkWestBuildBoardCommand "xiao_nrf54l15/nrf54l15/cpuapp" "" [
+    "--shield"
+    "gpio-stepper-rail"
+  ])
   (mkWestBuildBoardCommand "xiao_nrf54l15/nrf54l15/cpuapp" "-and-flash" [
+    "--shield"
+    "gpio-stepper-rail"
     "-t"
     "flash"
   ])
-  (mkWestBuildBoardCommand "xiao_ble" "" [ ])
+  (mkWestBuildBoardCommand "xiao_ble" "" [
+    "--shield"
+    "gpio-stepper-rail"
+  ])
   (mkWestBuildBoardCommand "xiao_ble" "-and-flash" [
+    "--shield"
+    "gpio-stepper-rail"
     "-t"
     "flash"
   ])
@@ -80,13 +90,23 @@ in
     west-native_sim-build "$@"
     ./builds/native_sim/zephyr/zephyr.exe
   '')
-  (mkWestBuildBoardCommand "xiao_esp32s3/esp32s3/procpu" "" [ ])
+  (mkWestBuildBoardCommand "xiao_esp32s3/esp32s3/procpu" "" [
+    "--shield"
+    "gpio-stepper-rail"
+  ])
   (mkWestBuildBoardCommand "xiao_esp32s3/esp32s3/procpu" "-and-flash" [
+    "--shield"
+    "gpio-stepper-rail"
     "-t"
     "flash"
   ])
-  (mkWestBuildBoardCommand "xiao_esp32c6/esp32c6/hpcore" "" [ ])
+  (mkWestBuildBoardCommand "xiao_esp32c6/esp32c6/hpcore" "" [
+    "--shield"
+    "gpio-stepper-rail"
+  ])
   (mkWestBuildBoardCommand "xiao_esp32c6/esp32c6/hpcore" "-and-flash" [
+    "--shield"
+    "gpio-stepper-rail"
     "-t"
     "flash"
   ])

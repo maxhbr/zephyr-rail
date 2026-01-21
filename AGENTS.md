@@ -13,9 +13,10 @@ This is firmware for an automated macro stacking rail system controlled via a Pr
 
 1. Run `nix run .#init` after cloning to bootstrap west and sync modules
 2. Enter `nix develop` for a dev shell with west, clang, and pre-commit hooks
-3. Build: `nix run .#west -- build -b <board> app` (e.g., `-b xiao_ble`)
-4. Flash: `nix run .#west -- flash -d app/build`
-5. Connect PWA via Bluetooth at `https://maxhbr.github.io/zephyr-rail/`
+3. cd into `app`
+4. Build with board-specific command (see Board-Specific Build Commands below)
+5. Flash with `-and-flash` variant of the build command
+6. Connect PWA via Bluetooth at `https://maxhbr.github.io/zephyr-rail/`
 
 ## Project Structure & Module Organization
 
@@ -25,20 +26,39 @@ The Zephyr firmware lives in `app/` with build configs in `CMakeLists.txt`, `Kco
 
 - `nix run .#init` bootstraps west, fetches modules, and applies repo chores after cloning or pin bumps.
 - `nix develop` opens a shell with west, clang, and pre-commit hooks configured.
-- `nix run .#west -- build -b <board> app` configures and compiles into `app/build/`.
+- `nix run .#west -- build -b <board> app` configures and compiles into `app/build/` (use board-specific commands below).
 - `nix run .#west -- flash -d app/build` loads the image onto the connected target.
 - `nix run .#west -- twister -T app/tests` runs Zephyr tests; append `--device-testing` for hardware loops.
 
+### Board-Specific Build Commands
+
+Prefer these commands over generic west calls - they automatically apply board-specific shields and configurations.
+
+**In `nix develop` shell** (cd into `app` first, then use):
+- `west-xiao_nrf54l15_nrf54l15_cpuapp-build` / `west-xiao_nrf54l15_nrf54l15_cpuapp-build-and-flash`
+- `west-xiao_ble-build` / `west-xiao_ble-build-and-flash`
+- `west-xiao_esp32s3_esp32s3_procpu-build` / `west-xiao_esp32s3_esp32s3_procpu-build-and-flash`
+- `west-xiao_esp32c6_esp32c6_hpcore-build` / `west-xiao_esp32c6_esp32c6_hpcore-build-and-flash`
+- `west-nrf54l15dk_nrf54l15_cpuapp-build` / `west-nrf54l15dk_nrf54l15_cpuapp-build-and-flash`
+- `west-raytac_an7002q_db_nrf5340_cpuapp-build` / `west-raytac_an7002q_db_nrf5340_cpuapp-build-and-flash`
+- `west-native_sim-build` / `west-native_sim-build-and-run` (for unit tests)
+
+**Outside dev shell** (wrap with nix run):
+- `nix develop --command west-xiao_ble-build` (run from `app/` directory)
+
 ## Supported Boards
 
-All board overlays are in `app/boards/`. Replace `<board>` in build commands with:
-- `raytac_an7002q_db_nrf5340_cpuapp`
-- `xiao_nrf54l15_nrf54l15_cpuapp`
-- `xiao_esp32s3_esp32s3_procpu`
-- `xiao_esp32c6_esp32c6_hpcore`
-- `xiao_ble`
-- `nrf54l15dk_nrf54l15_cpuapp`
-- `native_sim` (for unit tests without hardware)
+All board overlays are in `app/boards/`. Shield overlays are in `app/boards/shields/`.
+
+- `raytac_an7002q_db_nrf5340_cpuapp` - Raytac nRF5340
+- `xiao_nrf54l15_nrf54l15_cpuapp` - Seeed XIAO nRF54L15 (requires `gpio-stepper-rail` shield)
+- `xiao_esp32s3_esp32s3_procpu` - Seeed XIAO ESP32S3 (requires `gpio-stepper-rail` shield)
+- `xiao_esp32c6_esp32c6_hpcore` - Seeed XIAO ESP32C6 (requires `gpio-stepper-rail` shield)
+- `xiao_ble` - Seeed XIAO nRF52840 (requires `gpio-stepper-rail` shield)
+- `nrf54l15dk_nrf54l15_cpuapp` - nRF54L15 DK
+- `native_sim` - For unit tests without hardware
+
+The `gpio-stepper-rail` shield defines the stepper motor interface using the XIAO gpio connector pins (D3, D4, D5).
 
 ## Bluetooth Workflow
 
