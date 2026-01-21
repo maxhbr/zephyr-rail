@@ -8,7 +8,8 @@ const textDecoder = new TextDecoder();
 
 let device, server, service, commandChar, statusChar;
 let connectionIndicatorEl, connectionLabelEl;
-let tabButtons = [];
+let pwaConnected = false;
+let camConnected = false;
 let tabPanels = [];
 let allTabsButton = null;
 let allTabsActive = false;
@@ -25,6 +26,7 @@ let railState = {
   wait_before_ms : null,
   wait_after_ms : null,
   moving : false,
+  cam_connected : false,
   last_update : null,
   stack_start : null
 };
@@ -37,13 +39,14 @@ if (!bluetoothSupported && !DEMO_MODE) {
         <div class="container">
             <div class="warning">
                 <h2>Web Bluetooth Not Supported</h2>
-                <p>Your browser doesn't support Web Bluetooth API.</p>
+                <p>Your browser doesn\'t support Web Bluetooth API.</p>
                 <p><strong>Supported browsers:</strong></p>
                 <ul>
                     <li>Chrome/Edge/Opera on Windows, macOS, Linux, Android</li>
                     <li>Samsung Internet on Android</li>
                 </ul>
                 <p><strong>Not supported:</strong> Firefox, Safari, iOS browsers</p>
+                <p><br><a href="#demo" onclick="window.location.hash = '#demo'; window.location.reload();">Try Demo Mode</a></p>
             </div>
         </div>
     `;
@@ -106,9 +109,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const disconnectButton = document.getElementById('disconnect');
 
   toggleControls(false);
-  setConnectionState('disconnected', 'Not connected');
+  pwaConnected = false;
+  camConnected = false;
+  updateConnectionStatus();
 
   if (DEMO_MODE) {
+    pwaConnected = true;
+    updateConnectionStatus();
     updateStatus('Demo mode: controls forced visible', 'connected');
   }
 
@@ -158,7 +165,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                   handleDisconnection);
 
           updateStatus('Connected to ' + device.name + '!', 'connected');
-          setConnectionState('connected', 'Connected to ' + device.name);
+          pwaConnected = true;
+          updateConnectionStatus();
           toggleControls(true);
           requestRailStatus();
 
@@ -190,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Math.round(position)},"target_nm":${
             Math.round(position)},"lower_nm":${startPosition},"upper_nm":${
             targetPosition},"stack_index":${index},"stack_length":${
-            length},"stack_running":true,"wait_before_ms":500,"wait_after_ms":300,"moving":true}`;
+            length},"stack_running":true,"wait_before_ms":500,"wait_after_ms":300,"moving":true,"cam_connected":true}`;
         handleStatusNotification(
             {target : {value : new TextEncoder().encode(demoMessage)}});
         index++;
@@ -217,6 +225,9 @@ function handleStatusNotification(event) {
     railState =
         Object.assign({}, railState, parsedState,
                       {last_update : timestamp, stack_start : stackStart});
+    camConnected =
+        parsedState.cam_connected === true || parsedState.cam_connected === 1;
+    updateConnectionStatus();
     renderRailState();
   }
 
@@ -225,7 +236,9 @@ function handleStatusNotification(event) {
 
 function handleDisconnection() {
   updateStatus('Disconnected from device', 'disconnected');
-  setConnectionState('disconnected', 'Not connected');
+  pwaConnected = false;
+  camConnected = false;
+  updateConnectionStatus();
   toggleControls(false);
   resetRailState();
 
@@ -441,6 +454,7 @@ function resetRailState() {
     wait_before_ms : null,
     wait_after_ms : null,
     moving : false,
+    cam_connected : false,
     last_update : null,
     stack_start : null
   };
@@ -590,6 +604,9 @@ function parseRailStateMessage(message) {
         calculateStackProgress(normalizedStackIndex, normalizedStackLength);
     updateStateCardProgress(stackProgress, isStacking);
 
+    const camConnected =
+        data.cam_connected === true || data.cam_connected === 1;
+
     return {
       position_nm : numberOrNull(data.position_nm),
       target_nm : numberOrNull(data.target_nm),
@@ -600,7 +617,8 @@ function parseRailStateMessage(message) {
       stack_running : isStacking,
       wait_before_ms : numberOrNull(data.wait_before_ms),
       wait_after_ms : numberOrNull(data.wait_after_ms),
-      moving : data.moving === true || data.moving === 1
+      moving : data.moving === true || data.moving === 1,
+      cam_connected : camConnected
     };
   } catch (err) {
     console.warn('Failed to parse rail state payload', message, err);
@@ -611,7 +629,7 @@ function parseRailStateMessage(message) {
 function setConnectionState(state, labelText) {
   if (connectionIndicatorEl) {
     connectionIndicatorEl.classList.remove('connected', 'connecting',
-                                           'disconnected');
+                                           'disconnected', 'no-cam');
     connectionIndicatorEl.classList.add(state);
   }
 
@@ -624,6 +642,25 @@ function setConnectionState(state, labelText) {
     const shouldDisable =
         state === 'connecting' || (state === 'connected' && !DEMO_MODE);
     connectButton.disabled = shouldDisable;
+  }
+}
+
+function updateConnectionStatus() {
+  if (!connectionIndicatorEl || !connectionLabelEl) {
+    return;
+  }
+
+  connectionIndicatorEl.classList.remove('connected', 'no-cam');
+
+  if (!pwaConnected) {
+    connectionIndicatorEl.classList.add('disconnected');
+    connectionLabelEl.textContent = 'Not connected';
+  } else if (camConnected) {
+    connectionIndicatorEl.classList.add('connected');
+    connectionLabelEl.textContent = 'Connected';
+  } else {
+    connectionIndicatorEl.classList.add('no-cam');
+    connectionLabelEl.textContent = 'No Cam';
   }
 }
 

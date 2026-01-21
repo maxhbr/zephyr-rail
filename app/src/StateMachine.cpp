@@ -64,16 +64,17 @@ static void publish_pwa_status(const struct s_object *s) {
                               : -1;
   const int stack_running = s->stack.stack_in_progress() ? 1 : 0;
 
-  char status_payload[220];
+  char status_payload[240];
   snprintf(status_payload, sizeof(status_payload),
            "STATE {\"position_nm\":%d,\"target_nm\":%d,\"lower_nm\":%d,"
            "\"upper_nm\":%d,\"stack_index\":%d,\"stack_length\":%d,"
            "\"stack_running\":%d,\"wait_before_ms\":%d,\"wait_after_ms\":%d,"
-           "\"moving\":%d}",
+           "\"moving\":%d,\"cam_connected\":%d}",
            s->stepper->get_position_nm(), s->stepper->get_target_position_nm(),
            stack_status.lower_bound, stack_status.upper_bound, stack_index,
            stack_status.length_of_stack, stack_running, s->wait_before_ms,
-           s->wait_after_ms, stepper_status.is_moving ? 1 : 0);
+           s->wait_after_ms, stepper_status.is_moving ? 1 : 0,
+           s->remote->ready() ? 1 : 0);
   PwaService::notifyStatus(status_payload);
 }
 #else

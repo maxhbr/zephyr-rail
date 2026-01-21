@@ -449,7 +449,12 @@ label {
 .indicator.connected {
     background: #48bb78;
     box-shadow: 0 0 0 6px rgba(72, 187, 120, 0.2);
-}
+  }
+
+.indicator.no-cam {
+    background: #ed8936;
+    box-shadow: 0 0 0 6px rgba(237, 137, 54, 0.2);
+  }
 
 .connection-actions {
     display: flex;
@@ -503,7 +508,7 @@ label {
     color: #4a5568;
     background: transparent;
     padding: 4px 0 0 0;
-}
+  }
 
 .status-timestamp {
     font-size: 13px;
