@@ -13,7 +13,7 @@ This is firmware for an automated macro stacking rail system controlled via a Pr
 
 1. Run `nix run .#init` after cloning to bootstrap west and sync modules
 2. Enter `nix develop` for a dev shell with west, clang, and pre-commit hooks
-3. cd into `app`
+3. cd into `app` (required for build commands to work)
 4. Build with board-specific command (see Board-Specific Build Commands below)
 5. Flash with `-and-flash` variant of the build command
 6. Connect PWA via Bluetooth at `https://maxhbr.github.io/zephyr-rail/`
