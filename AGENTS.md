@@ -106,10 +106,11 @@ Place new suites next to the relevant feature or under `app/tests/<feature>/` wi
 ## Troubleshooting
 
 - **Flash failures**: Check power supply, JTAG connection, and verify correct board is selected
-- **West manifest sync errors**: Run `nix run .#init` to resync `app/west.yml` with `flake.nix` pins
-- **Twister failures**: Check `sample.yaml` hardware requirements and use `--device-testing` for hardware-dependent tests
-- **Bluetooth connection drops**: Verify `CONFIG_BT_MAX_CONN=2` in `prj.conf`, check power management settings
-- **Build errors**: Ensure all modules are fetched (`nix run .#init`), check toolchain in `nix develop`
+ - **West manifest sync errors**: Run `nix run .#init` to resync `app/west.yml` with `flake.nix` pins
+ - **Twister failures**: Check `sample.yaml` hardware requirements and use `--device-testing` for hardware-dependent tests
+ - **Bluetooth connection drops**: Verify `CONFIG_BT_MAX_CONN=2` in `prj.conf`, check power management settings
+ - **Build errors**: Ensure all modules are fetched (`nix run .#init`), check toolchain in `nix develop`
+ - **Amended commits**: Never use `git commit --amend` as it changes history and requires force push to shared branches. Create a new commit instead.
 
 ## Commit & Pull Request Guidelines
 
