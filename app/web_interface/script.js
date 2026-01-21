@@ -229,6 +229,7 @@ function handleStatusNotification(event) {
         parsedState.cam_connected === true || parsedState.cam_connected === 1;
     updateConnectionStatus();
     renderRailState();
+    updateStopButton();
   }
 
   updateStatus(`[${timestamp.toLocaleTimeString()}] ${value}`, 'connected');
@@ -241,6 +242,7 @@ function handleDisconnection() {
   updateConnectionStatus();
   toggleControls(false);
   resetRailState();
+  updateStopButton();
 
   // Reset variables
   device = null;
@@ -349,6 +351,8 @@ async function sendStartStackCount(length) {
   await sendWaitSettings();
   await sendCommand('rail stack_count ' + Math.round(stackLength));
 }
+
+function sendStopStack() { sendCommand('rail stop'); }
 
 function parseStackValue(rawValue) {
   const value = (rawValue || '').toString().trim();
@@ -460,6 +464,7 @@ function resetRailState() {
   };
   updateStateCardProgress(null, false);
   renderRailState();
+  updateStopButton();
 }
 
 function formatMicrons(nm) {
@@ -607,6 +612,11 @@ function parseRailStateMessage(message) {
     const camConnected =
         data.cam_connected === true || data.cam_connected === 1;
 
+    const isStackComplete = normalizedStackIndex !== null &&
+                            normalizedStackLength !== null &&
+                            normalizedStackIndex >= normalizedStackLength - 1;
+    const finalStackRunning = isStackComplete ? false : isStacking;
+
     return {
       position_nm : numberOrNull(data.position_nm),
       target_nm : numberOrNull(data.target_nm),
@@ -614,7 +624,7 @@ function parseRailStateMessage(message) {
       upper_nm : numberOrNull(data.upper_nm),
       stack_index : normalizedStackIndex,
       stack_length : normalizedStackLength,
-      stack_running : isStacking,
+      stack_running : finalStackRunning,
       wait_before_ms : numberOrNull(data.wait_before_ms),
       wait_after_ms : numberOrNull(data.wait_after_ms),
       moving : data.moving === true || data.moving === 1,
@@ -930,6 +940,17 @@ function readNumber(id, defaultValue = 0) {
   }
   const parsed = Number(element.value);
   return Number.isFinite(parsed) ? parsed : defaultValue;
+}
+
+function updateStopButton() {
+  const stopStackBtn = document.getElementById('stop-stack-btn');
+  if (stopStackBtn) {
+    if (railState.stack_running) {
+      stopStackBtn.classList.add('visible');
+    } else {
+      stopStackBtn.classList.remove('visible');
+    }
+  }
 }
 
 // Log to console for debugging

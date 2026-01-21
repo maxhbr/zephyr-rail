@@ -146,6 +146,15 @@ static int cmd_rail_disable(const struct shell *sh, size_t argc, char **argv) {
   return 0;
 }
 
+static int cmd_rail_stop(const struct shell *sh, size_t argc, char **argv) {
+  ARG_UNUSED(sh);
+  ARG_UNUSED(argc);
+  ARG_UNUSED(argv);
+  event_pub(EVENT_STOP);
+  shell_print(sh, "Stopping stack...");
+  return 0;
+}
+
 static int cmd_rail_startStackWithStepSize(const struct shell *sh, size_t argc,
                                            char **argv) {
   bool is_nm_command = (strcmp(argv[0], "stack_nm") == 0);
@@ -201,6 +210,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
               cmd_rail_setSpeedRpm),
     SHELL_CMD(disable, NULL, "Disable stepper until the next event.",
               cmd_rail_disable),
+    SHELL_CMD(stop, NULL, "Stop running stack.", cmd_rail_stop),
     SHELL_CMD(s, NULL, "Start stacking with step size.",
               cmd_rail_startStackWithStepSize),
     SHELL_CMD(stack, NULL, "Start stacking with step size.",

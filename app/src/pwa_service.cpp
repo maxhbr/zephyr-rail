@@ -247,6 +247,13 @@ bool handleRailCommand(const char *subcmd, char **saveptr) {
     return true;
   }
 
+  if (strcasecmp(subcmd, "stop") == 0) {
+    LOG_INF("→ Command: rail stop");
+    event_pub(EVENT_STOP);
+    PwaService::notifyStatus("ACK:rail stop");
+    return true;
+  }
+
   return false;
 }
 

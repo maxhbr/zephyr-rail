@@ -49,6 +49,7 @@ public:
   std::optional<int> get_index_in_stack();
   std::optional<int> get_length_of_stack();
   void increment_target();
+  void stop_stack();
   bool stack_in_progress();
 
   // configuring stack

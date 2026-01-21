@@ -386,6 +386,24 @@ label {
     color: white;
 }
 
+.btn-stop {
+    background: #e53e3e;
+    color: white;
+}
+
+.btn-stop {
+    display: none;
+}
+
+.btn-stop.visible {
+    display: inline-block;
+}
+
+.btn-stop:disabled {
+    background: #fc8181;
+    opacity: 0.6;
+}
+
 .btn-info {
     background: #38b2ac;
     color: white;

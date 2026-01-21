@@ -5,6 +5,15 @@
 LOG_MODULE_REGISTER(state_machine, LOG_LEVEL_INF);
 
 // ############################################################################
+// Atomic stop flag for interrupting stacking
+
+static atomic_t stop_requested = ATOMIC_INIT(0);
+
+static void request_stop() { atomic_set(&stop_requested, 1); }
+static bool stop_is_requested() { return atomic_get(&stop_requested) != 0; }
+static void clear_stop_request() { atomic_set(&stop_requested, 0); }
+
+// ############################################################################
 // initialize ZBus
 
 ZBUS_CHAN_DEFINE(event_msg_chan, struct event_msg, NULL, NULL,
@@ -43,6 +52,11 @@ static void auto_disable_work_handler(struct k_work *work) {
 }
 
 static int event_pub(event event, int value) {
+  if (event == EVENT_STOP) {
+    LOG_INF("Stop requested (flag set)");
+    request_stop();
+    return 0;
+  }
   LOG_DBG("send msg: event=%d with value=%d", event, value);
   struct event_msg msg = {event, value};
   return zbus_chan_pub(&event_msg_chan, &msg, K_MSEC(200));
@@ -316,6 +330,14 @@ static void s_parent_stacking_exit(void *o) {
 static enum smf_state_result s_stack_run(void *o) {
   struct s_object *s = (struct s_object *)o;
   if (s->stack.stack_in_progress()) {
+    if (stop_is_requested()) {
+      LOG_INF("Stop requested, ending stack");
+      clear_stop_request();
+      s->stack.stop_stack();
+      smf_set_state(SMF_CTX(o), s_interactive_ptr);
+      publish_pwa_status(s);
+      return SMF_EVENT_HANDLED;
+    }
     LOG_INF("Stacking:");
     s->stack.log_state();
     int current_target = s->stack.get_current_target().value();

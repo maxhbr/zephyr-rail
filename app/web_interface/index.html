@@ -203,7 +203,18 @@
                                     id="wait-after-current">—</span></label>
                             <input type="number" id="wait-after" value="500" step="100" min="0">
                         </div>
-                        <button class="btn-success" onclick="sendSelectedStack()">Start Stack</button>
+                        <div class="input-group">
+                            <button class="btn-success" onclick="sendSelectedStack()">Start Stack</button>
+                        </div>
+                    </div>
+                    <div class="button-grid-5">
+                        <div>&nbsp;</div>
+                        <div>&nbsp;</div>
+                        <div>&nbsp;</div>
+                        <div>&nbsp;</div>
+                        <div class="input-group">
+                            <button id="stop-stack-btn" class="btn-stop" onclick="sendStopStack()">Stop Stack</button>
+                        </div>
                     </div>
                     <div id="expert-stack" class="collapsible-content collapsed expert-section">
                         <div class="input-group">
