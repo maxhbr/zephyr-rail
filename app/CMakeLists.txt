@@ -9,6 +9,10 @@ set(BOARD xiao_nrf54l15/nrf54l15/cpuapp)
 
 # Add DTS bindings path BEFORE find_package(Zephyr)
 list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../lib/stepper_with_target)
+list(APPEND DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/boards)
+
+# Add shield root BEFORE find_package(Zephyr)
+list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Capture Git commit hash before find_package
 execute_process(

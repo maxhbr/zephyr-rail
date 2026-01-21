@@ -1,0 +1,6 @@
+shield:
+  name: gpio_stepper_rail
+  full_name: GPIO Stepper Rail Shield for XIAO boards
+  vendor: custom
+  supported_features:
+    - gpio

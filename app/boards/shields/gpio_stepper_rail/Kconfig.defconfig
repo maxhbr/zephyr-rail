@@ -1,0 +1,8 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+if SHIELD_GPIO_STEPPER_RAIL
+
+# No shield-specific configurations needed
+
+endif # SHIELD_GPIO_STEPPER_RAIL

@@ -48,7 +48,7 @@ Prefer these commands over generic west calls - they automatically apply board-s
 
 ## Supported Boards
 
-All board overlays are in `app/boards/`. Shield definitions are in `zephyr/boards/shields/`.
+All board overlays are in `app/boards/`. Shield definitions are in `app/boards/shields/`.
 
 - `raytac_an7002q_db_nrf5340_cpuapp` - Raytac nRF5340
 - `xiao_nrf54l15_nrf54l15_cpuapp` - Seeed XIAO nRF54L15 (requires `gpio_stepper_rail` shield)
