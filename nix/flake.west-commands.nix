@@ -55,21 +55,21 @@ in
   '')
   (mkWestBuildBoardCommand "xiao_nrf54l15/nrf54l15/cpuapp" "" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
   ])
   (mkWestBuildBoardCommand "xiao_nrf54l15/nrf54l15/cpuapp" "-and-flash" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
     "-t"
     "flash"
   ])
   (mkWestBuildBoardCommand "xiao_ble" "" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
   ])
   (mkWestBuildBoardCommand "xiao_ble" "-and-flash" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
     "-t"
     "flash"
   ])
@@ -92,21 +92,21 @@ in
   '')
   (mkWestBuildBoardCommand "xiao_esp32s3/esp32s3/procpu" "" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
   ])
   (mkWestBuildBoardCommand "xiao_esp32s3/esp32s3/procpu" "-and-flash" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
     "-t"
     "flash"
   ])
   (mkWestBuildBoardCommand "xiao_esp32c6/esp32c6/hpcore" "" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
   ])
   (mkWestBuildBoardCommand "xiao_esp32c6/esp32c6/hpcore" "-and-flash" [
     "--shield"
-    "gpio-stepper-rail"
+    "gpio_stepper_rail"
     "-t"
     "flash"
   ])

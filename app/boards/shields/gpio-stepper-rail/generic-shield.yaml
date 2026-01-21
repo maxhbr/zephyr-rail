@@ -1,5 +1,0 @@
-description: GPIO Stepper Rail Shield for XIAO boards
-
-compatible: "seeed,xiao-gpio"
-
-include: base.yaml

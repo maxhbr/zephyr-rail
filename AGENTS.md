@@ -48,17 +48,17 @@ Prefer these commands over generic west calls - they automatically apply board-s
 
 ## Supported Boards
 
-All board overlays are in `app/boards/`. Shield overlays are in `app/boards/shields/`.
+All board overlays are in `app/boards/`. Shield definitions are in `zephyr/boards/shields/`.
 
 - `raytac_an7002q_db_nrf5340_cpuapp` - Raytac nRF5340
-- `xiao_nrf54l15_nrf54l15_cpuapp` - Seeed XIAO nRF54L15 (requires `gpio-stepper-rail` shield)
-- `xiao_esp32s3_esp32s3_procpu` - Seeed XIAO ESP32S3 (requires `gpio-stepper-rail` shield)
-- `xiao_esp32c6_esp32c6_hpcore` - Seeed XIAO ESP32C6 (requires `gpio-stepper-rail` shield)
-- `xiao_ble` - Seeed XIAO nRF52840 (requires `gpio-stepper-rail` shield)
+- `xiao_nrf54l15_nrf54l15_cpuapp` - Seeed XIAO nRF54L15 (requires `gpio_stepper_rail` shield)
+- `xiao_esp32s3_esp32s3_procpu` - Seeed XIAO ESP32S3 (requires `gpio_stepper_rail` shield)
+- `xiao_esp32c6_esp32c6_hpcore` - Seeed XIAO ESP32C6 (requires `gpio_stepper_rail` shield)
+- `xiao_ble` - Seeed XIAO nRF52840 (requires `gpio_stepper_rail` shield)
 - `nrf54l15dk_nrf54l15_cpuapp` - nRF54L15 DK
 - `native_sim` - For unit tests without hardware
 
-The `gpio-stepper-rail` shield defines the stepper motor interface using the XIAO gpio connector pins (D3, D4, D5).
+The `gpio_stepper_rail` shield defines the stepper motor interface using the XIAO gpio connector pins (D3, D4, D5).
 
 ## Bluetooth Workflow
 
