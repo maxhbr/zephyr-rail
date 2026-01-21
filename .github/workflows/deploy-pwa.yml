@@ -40,6 +40,10 @@ jobs:
           cp app/web_interface/styles.css _site/styles.css
           cp app/web_interface/script.js _site/script.js
           cp .github/workflows/landing.html _site/landing.html
+          VERSION=${GITHUB_SHA::7}
+          DEPLOY_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          sed -i "s/{{VERSION}}/$VERSION/g" _site/index.html
+          sed -i "s/{{DEPLOY_TIME}}/$DEPLOY_TIME/g" _site/index.html
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
