@@ -5,7 +5,7 @@
 set -euo pipefail
 
 
-version="1.1.8-unstable"
+version="1.1.9-unstable"
 scad="rail.scad"
 
 buildPart() (

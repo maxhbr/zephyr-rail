@@ -355,7 +355,6 @@ module motorAdapterFlangeF3() {
 }
 
 module pcbMountStalk(length=70, width=30) {
-  // baseOffset=15
   halfWidth=width/2;
   hull() {
     translate([-5,halfWidth,0]) {
@@ -364,10 +363,10 @@ module pcbMountStalk(length=70, width=30) {
     }
     translate([-5-2,halfWidth-1,0]) cube([4,4,20]);
   }
-              hull() {
-                translate([-10-5/2,2,2]) cube([3,4,8], center=true);
-                translate([-7,(width/2)+3,3]) cube([2,2,10], center=true);
-              }
+  hull() {
+    translate([-10-5/2,2,2]) cube([3,4,8], center=true);
+    translate([-7,(width/2)+3,3]) cube([2,2,10], center=true);
+  }
   hull() {
     translate([-5,halfWidth,0]) {
       cube([10,10-4,4], center=true);
@@ -390,8 +389,9 @@ module pcbMountStalk(length=70, width=30) {
       translate([1,0,-2]) cube([2,10,4]);
     }
     hull() {
-      translate([-2,0,-2])  cube([8,4,4]);
+      translate([-2,0,-2]) cube([8,4,4]);
       translate([1,0,-2]) cube([2,10,4]);
+      translate([1,3,-2]) cube([2,2,8]);
     }
   }
             
@@ -426,10 +426,10 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
               translate([0,2,0]) cube([9,5.5-2,4]);
             }
             translate([0,5.5,0])
-            hull() {
-              cube([14-1,5.5,4]);
-              translate([0,1,0]) cube([14,5.5-2,4]);
-            }
+              hull() {
+                cube([14-1,5.5,4]);
+                translate([-1,1,0]) cube([15,5.5-2,4]);
+              }
           }
           translate([0,pcbOffset,2]) {
             translate([0,width / 2 - 15,0])
@@ -463,6 +463,11 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
             sphere(r=0.4);
           }
         translate([-8+30,-24,0]) rotate([45,0,0]) translate([-10,-5,0]) cube([80,13,15],center=true);
+
+        mirror([0,1,0]) {
+          offset = min(- width + 12,- 22);
+          translate([-8+30,offset,0]) rotate([45,0,0]) translate([-10,-5,0]) cube([80,13,15],center=true);
+        }
       }
     }
   }
@@ -636,7 +641,7 @@ module assembly_view() {
 
   translate([0,220+7,16]) rotate([90,0,0]) motorAdapterFlangeF3();
 
-  translate([0,150+10-4,16]) rotate([-90,0,0]) pcbMount();
+  translate([0,150+10-4,16]) rotate([-90,0,0]) pcbDoubleMount();
 
   //translate([0,5,35.5 + 0.5]) ledMount();
 
@@ -771,10 +776,6 @@ if (mode == "assembly") {
     translate([200,-100,0]) pcbMountStalk(width=50, length=70);
     translate([100,0,0]) pcbMount(width=40, length=60);
     translate([200,0,0]) pcbMount(width=50, length=70);
-    render() {
-      translate([100,100,0]) pcbMount(width=40, length=60);
-      translate([200,100,0]) pcbMount(width=50, length=70);
-    };
   }
 } else if (mode == "pcbDoubleMount") {
   pcbDoubleMount();
