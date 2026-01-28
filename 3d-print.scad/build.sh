@@ -77,11 +77,7 @@ fi
 if [[ $# -gt 0 ]]; then
     case "$1" in
         all)
-            time "$0" print &
-            time "$0" ball_base_mount & 
-
-            time "$0" ringclamp &
-            wait
+            build_all
             ;;
         print|ball_base_mount|ringclamp|pcbMount|pcbDoubleMount)
             buildPart "$1" "${1}_v${version}.stl"

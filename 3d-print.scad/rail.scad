@@ -423,17 +423,17 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
             }
           }
           translate([0,-18,0]) rotate([0,0,45]) cube([10,15,4]);
-          translate([-6,0,2]) cube([8,24,4], center=true);
           translate([-3,5,0]) rotate([0,0,45]) cube([8,4,4]);
           translate([-4,10+0.3,0]) {
             hull() {
               cube([9-2,5.5,4]);
               translate([0,2,0]) cube([9,5.5-2,4]);
             }
-            translate([0,5.5,0])
+          color("orange")
+            translate([5,5.5,0])
               hull() {
-                cube([14-1,5.5,4]);
-                translate([-1,1,0]) cube([15,5.5-2,4]);
+                cube([8,5.5,4]);
+                translate([-1,1,0]) cube([10,5.5-2,4]);
               }
           }
           difference() {
@@ -694,7 +694,7 @@ module print_view() {
   // translate([52,0,0]) rotate([180,0,90]) feetVslot();
   // translate([-52,0,0]) rotate([180,0,90]) feetVslot();
   translate([40,50,0]) motorAdapterFlangeF3();
-  translate([-40,10,0]) rotate([0,0,-90]) pcbMount();
+  translate([-30,10,0]) rotate([0,0,-90]) pcbMount();
   translate([-70,60,0]) rotate([0,0,-135]) pcbDoubleMount();
   translate([0,-65,0])
   rotate([0,0,90])
