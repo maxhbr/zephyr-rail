@@ -367,11 +367,13 @@ module pcbMountStalk(length=70, width=30) {
     translate([-10-5/2,2,2]) cube([3,4,8], center=true);
     translate([-7,(width/2)+3,3]) cube([2,2,10], center=true);
   }
+  color("red")
   hull() {
     translate([-5,halfWidth,0]) {
       cube([10,10-4,4], center=true);
       cube([10-4,10,4], center=true);
     }
+    translate([-5, 15,0]) cube([8,8,4], center=true);
     translate([-10,0,0]) cube([8,8,4], center=true);
   }
   translate([-5-2,halfWidth-1,0]) {
@@ -431,17 +433,20 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
                 translate([-1,1,0]) cube([15,5.5-2,4]);
               }
           }
-          translate([0,pcbOffset,2]) {
-            translate([0,width / 2 - 15,0])
-            mirror_vertically(){
-              pcbMountStalk(length=length, width=width); 
-            }
-            translate([-3,-15-2,0]) {
-              hull() {
-                translate([0,0.5,0]) cube([7,2,7]);
-                translate([-1,0.5,0]) cube([1,2,40]);
+          difference() {
+            translate([0,pcbOffset,2]) {
+              translate([0,width / 2 - 15,0])
+                mirror_vertically(){
+                  pcbMountStalk(length=length, width=width); 
+                }
+              translate([-3,-15-2,0]) {
+                hull() {
+                  translate([0,0.5,0]) cube([7,2,7]);
+                  translate([-1,0.5,0]) cube([1,2,40]);
+                }
               }
             }
+            translate([-20,-30-5,0]) cube([20,10,length]);
           }
         }
         translate([30,0,0]) {
@@ -462,7 +467,7 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
             }
             sphere(r=0.4);
           }
-        translate([-8+30,-24,0]) rotate([45,0,0]) translate([-10,-5,0]) cube([80,13,15],center=true);
+        translate([-8+30,-24,0]) rotate([45,0,0]) translate([-10,-5,0]) cube([80,13,20],center=true);
 
         mirror([0,1,0]) {
           offset = min(- width + 12,- 22);
@@ -475,7 +480,7 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
 
 module pcbDoubleMount() {
   pcbMount(width=40, length=60);
-  mirror([1,0,0]) pcbMount(width=50, length=70);
+  mirror([1,0,0]) pcbMount(width=50, length=70, pcbOffset=-5);
 }
 
 module motorCoupling() {
@@ -775,7 +780,7 @@ if (mode == "assembly") {
     translate([100,-100,0]) pcbMountStalk(width=40, length=60);
     translate([200,-100,0]) pcbMountStalk(width=50, length=70);
     translate([100,0,0]) pcbMount(width=40, length=60);
-    translate([200,0,0]) pcbMount(width=50, length=70);
+    translate([200,0,0]) pcbMount(width=50, length=70, pcbOffset=-5);
   }
 } else if (mode == "pcbDoubleMount") {
   pcbDoubleMount();

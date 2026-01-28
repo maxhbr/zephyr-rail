@@ -63,6 +63,8 @@ build_all() {
     time buildPart "print" "rail_v${version}.stl" &
     time buildPart "ball_base_mount" "ball_base_mount_v${version}.stl" &
     time buildPart "ringclamp" "ringclamp_v${version}.stl" &
+    time buildPart "pcbMount" "pcbMount_v${version}.stl" &
+    time buildPart "pcbDoubleMount" "pcbDoubleMount_v${version}.stl" &
 
     wait
 }
@@ -81,7 +83,7 @@ if [[ $# -gt 0 ]]; then
             time "$0" ringclamp &
             wait
             ;;
-        print|ball_base_mount|ringclamp)
+        print|ball_base_mount|ringclamp|pcbMount|pcbDoubleMount)
             buildPart "$1" "${1}_v${version}.stl"
             ;;
         render)
