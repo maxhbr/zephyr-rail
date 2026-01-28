@@ -401,7 +401,10 @@ module pcbMountStalk(length=70, width=30) {
 
 module pcbMount(length=70, width=30, pcbOffset=-3) {
   holeDistance=24;
-  render() {
+  rotateCenter=[0,20,0];
+  rotation=7;
+  render() 
+  {
     translate([-30,0,0]) {
       difference() {
         union() {
@@ -434,20 +437,32 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
               }
           }
           difference() {
-            translate([0,pcbOffset,2]) {
+              translate(-rotateCenter)
+                rotate([0,0,-rotation])
+                translate(rotateCenter)
+            translate([0,pcbOffset,2]) 
               translate([0,width / 2 - 15,0])
                 mirror_vertically(){
                   pcbMountStalk(length=length, width=width); 
                 }
+            translate([-20,-30-5,0]) cube([20,10,length]);
+          }
+
+            translate([0,pcbOffset,2]) 
+
               translate([-3,-15-2,0]) {
                 hull() {
                   translate([0,0.5,0]) cube([7,2,7]);
                   translate([-1,0.5,0]) cube([1,2,40]);
                 }
               }
-            }
-            translate([-20,-30-5,0]) cube([20,10,length]);
-          }
+          
+            color("blue")
+              translate(-rotateCenter)
+                rotate([0,0,-rotation])
+                translate(rotateCenter)
+                translate([-5,width / 2 - 15 + pcbOffset,2])
+                cube([5,width - 10,4], center=true);
         }
         translate([30,0,0]) {
           mirror_horizontally() translate([holeDistance/2,-20,9]) rotate([90,0,0]) {
@@ -458,6 +473,10 @@ module pcbMount(length=70, width=30, pcbOffset=-3) {
             }
           }
         }
+
+        translate(-rotateCenter)
+          rotate([0,0,-rotation])
+          translate(rotateCenter)
         translate([-5,width / 2 - 15 + pcbOffset,2])
           minkowski() {
             union() {
