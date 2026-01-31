@@ -54,6 +54,7 @@ FILE(GLOB app_sources src/*.cpp)
 
 if(NOT CONFIG_BT)
     list(FILTER app_sources EXCLUDE REGEX "pwa_service\\.cpp$")
+    list(FILTER app_sources EXCLUDE REGEX "bluetooth\\.cpp$")
 endif()
 
 target_sources(app PRIVATE ${app_sources})

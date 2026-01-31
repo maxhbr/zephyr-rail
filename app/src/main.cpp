@@ -1,25 +1,15 @@
+#include "maybe_bluetooth.h"
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/stepper.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#ifdef CONFIG_BT
-#include "bluetooth.h"
-#else
-#include "sony_remote/fake_sony_remote.h"
-#endif
 
 #ifdef CONFIG_SHELL
 #include "shell.h"
 #endif
 #include "StateMachine.h"
 #include "stepper_with_target/StepperWithTarget.h"
-
-#ifdef CONFIG_BT
-#include "sony_remote/sony_remote.h"
-#else
-#include "sony_remote/fake_sony_remote.h"
-#endif
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
@@ -104,16 +94,11 @@ int main(void) {
   trigger_async_led_blink(100);
   k_msleep(200);
 
-#ifdef CONFIG_BT
-  SonyRemote *remote = init_bluetooth();
+  SonyRemote *remote = init_maybe_bluetooth();
   if (!remote) {
     LOG_ERR("Failed to initialize Bluetooth");
     return -1;
   }
-#else
-  LOG_INF("initialize Dummy Sony Remote ...");
-  SonyRemote *remote;
-#endif
 
   trigger_async_led_blink(100);
   k_msleep(200);
@@ -127,11 +112,7 @@ int main(void) {
     return -1;
   }
 
-#ifdef CONFIG_BT
   StateMachine sm(stepper, remote);
-#else
-  StateMachine sm(stepper, remote);
-#endif
 
 #ifdef BUILD_COMMIT
   LOG_INF("Build commit: %s", BUILD_COMMIT);
