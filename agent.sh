@@ -2,4 +2,4 @@
 
 set -euo pipefail
 cd "$(dirname "$0")"
-nix develop -c opencode "$@"
+nix develop -c opencode-bwrap "$@"
