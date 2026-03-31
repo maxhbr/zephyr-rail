@@ -1,4 +1,4 @@
-mode="develop"; // [ "print", "develop", "assembly", "carriageToClampV2", "motorAdapterFlangeF3", "pcbMount", "pcbDoubleMount", "feetArcaSwiss", "ball_base_mount" , "ringclamp" ]
+mode="develop"; // [ "print", "develop", "assembly", "carriageToClampV2", "motorAdapterFlangeF3", "pcbMount", "pcbDoubleMount", "feetArcaSwiss", "ball_base_mount" , "ringclamp", "ofenrohr" ]
 
 $fn=100;
 
@@ -55,6 +55,14 @@ module m5insert(addH=0) {
 }
 module m5insertShort(addH=0) {
   insert(6.4,5.8+addH);
+}
+
+module m5hexNut() {
+  m5screw();
+  translate([0,0,-4])
+  cylinder(h=4,d=9,$fn=6);
+  translate([0,0,-8])
+  cylinder(h=4,d1=12,d2=9,$fn=6);
 }
 
 module quarterInchInsert(addH=0) {
@@ -659,6 +667,129 @@ module ringclamp() {
   }
 }
 
+module ofenrohrDummy (extend = 35) {
+  cylinder(h = 97+extend, d=69.5);
+  translate([0,0,72]) cylinder(h = extend, d=80);
+  translate([0,0,-30]) cylinder(h = 30, d=62);
+  translate([0,0,97+extend]) cylinder(h = 70, d=65);
+  translate([0,0,97+extend+70]) cylinder(h = 70, d=32);
+};
+
+module ofenrohrBand() {
+  h=25;
+  angle=70;
+  angleWithGap=angle+4;
+  holes=[7.5,17.5];
+  render()
+  difference() {
+    intersection() {
+      rotate([0,0,-90 + (angleWithGap/2)])
+        rotate_extrude(angle=360-angleWithGap, convexity = 10, $fn = 100)
+        translate([35, 0, 0])
+            square([10,h]);
+      translate([0,-5,0]) cylinder(d=83, h=h);
+    }
+    for(hole=holes) {
+      translate([0,0,hole])
+        mirror_horizontally()
+        rotate([0,0,(angle/2)])
+        translate([1,-40,0])
+        rotate([90,0,90]) 
+        {
+          m4screw(h=5,addH=100, addD=1);
+          hull() {
+            translate([0,0,5]) m4screw(h=0,addH=100, addD=-1);
+            translate([-15,0,5]) m4screw(h=0,addH=100, addD=-1);
+            translate([0,10,5]) m4screw(h=0,addH=100, addD=-1);
+          }
+        }
+    }
+  }
+}
+
+module ofenrohrBase(h=70,qHoles=[],holes=[]) {
+  basePlateHeight=10; /* 7 sufficient for inserts :( */
+  dToCenter=54-basePlateHeight;
+  angle=70;
+  render()
+  difference() {
+    hull() {
+      translate([0,-dToCenter,h/2]) cube([40,2,h], center=true);
+      rotate([0,0,-90 - (angle/2)])
+        rotate_extrude(angle=angle, convexity = 10, $fn = 100)
+        translate([35, 0, 0])
+            square([10,h]);
+    }
+    for (y=qHoles) {
+      translate([0,-dToCenter - 1 + 3,y])
+        rotate([90,0,0]) {
+          m5hexNut();
+          // hull(){
+          //   translate([0,0,-0.3]) cylinder(d=8,h=1);
+          //   cylinder(d=10,h=1);
+          // }
+          // translate([0,0,-0.3]) quarterInchInsert(addH=5);
+        }
+    }
+    for(hole=holes) {
+      translate([0,0,hole])
+      mirror_horizontally()
+      rotate([0,0,(angle/2)])
+      translate([1,-40,0])
+      rotate([90,0,90])
+      m4insert(addH=4);
+    }
+    cylinder(h = h, d=69.5);
+  }
+}
+
+module ofenrohr70() {
+  dToCenter=44;
+  h=70;
+  angle=70;
+  qHoles=[12, h/2, h-12];
+  holes=[7.5,17.5,h-17.5,h-7.5];
+  ofenrohrBase(h, qHoles, holes);
+}
+
+module ofenrohr25() {
+  dToCenter=44;
+  h=25;
+  angle=70;
+  qHoles=[h/4,3*h/4];
+  holes=[7.5, 17.5];
+  ofenrohrBase(h, qHoles, holes);
+}
+
+module ofenrohr_assembly() {
+  ofenrohr70();
+  ofenrohrBand();
+  translate([0,0,45]) ofenrohrBand();
+  translate([0,0,107]) ofenrohr25();
+  translate([0,0,107]) ofenrohrBand();;
+  if($preview) color("gray", 0.5) ofenrohrDummy();
+}
+
+module ofenrohr() {
+  translate([0,50,0]) ofenrohrBand();
+  translate([50,30,0]) rotate([0,0,180]) ofenrohrBand();
+  translate([-50,30,0]) rotate([0,0,180]) ofenrohrBand();
+
+  rotate([90,0,0]) translate([50,44,20]) ofenrohr70();
+  rotate([90,0,0]) translate([-50,44,20]) ofenrohr25();
+
+  if ($preview) {
+    color("lightblue") {
+      render()
+      difference() {
+        cube([250,250,2], center=true);
+        cube([248,248,3], center=true);
+      }
+    }
+    translate([200,0,0]) ofenrohr_assembly();
+  }
+}
+
 module assembly_view() {
 
   translate([0,88+25,26]) carriageToClampV2();
@@ -809,6 +940,8 @@ if (mode == "assembly") {
   ball_base_mount();
 } else if (mode == "ringclamp") {
   ringclamp();
+} else if (mode == "ofenrohr") {
+  ofenrohr();
 } else {
   print_view();
 }
