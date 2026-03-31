@@ -696,7 +696,7 @@ module ofenrohrBand() {
         translate([1,-40,0])
         rotate([90,0,90]) 
         {
-          m4screw(h=5,addH=100, addD=1);
+          m4screw(h=5,addH=3, addD=1);
           hull() {
             translate([0,0,5]) m4screw(h=0,addH=100, addD=-1);
             translate([-15,0,5]) m4screw(h=0,addH=100, addD=-1);
@@ -721,23 +721,22 @@ module ofenrohrBase(h=70,qHoles=[],holes=[]) {
             square([10,h]);
     }
     for (y=qHoles) {
-      translate([0,-dToCenter - 1 + 3,y])
-        rotate([90,0,0]) {
-          m5hexNut();
-          // hull(){
-          //   translate([0,0,-0.3]) cylinder(d=8,h=1);
-          //   cylinder(d=10,h=1);
-          // }
-          // translate([0,0,-0.3]) quarterInchInsert(addH=5);
-        }
+      translate([0,-dToCenter - 1 + 3,y]) rotate([90,0,0]) m5hexNut();
+      translate([0,-dToCenter - 1 + 3,h-y]) rotate([90,0,0]) m5hexNut();
     }
     for(hole=holes) {
       translate([0,0,hole])
-      mirror_horizontally()
-      rotate([0,0,(angle/2)])
-      translate([1,-40,0])
-      rotate([90,0,90])
-      m4insert(addH=4);
+        mirror_horizontally()
+        rotate([0,0,(angle/2)])
+        translate([1,-40,0])
+        rotate([90,0,90])
+        m4insert(addH=4);
+      translate([0,0,h-hole])
+        mirror_horizontally()
+        rotate([0,0,(angle/2)])
+        translate([1,-40,0])
+        rotate([90,0,90])
+        m4insert(addH=4);
     }
     cylinder(h = h, d=69.5);
   }
@@ -747,8 +746,9 @@ module ofenrohr70() {
   dToCenter=44;
   h=70;
   angle=70;
-  qHoles=[12, h/2, h-12];
-  holes=[7.5,17.5,h-17.5,h-7.5];
+  // qHoles=[12, h/2, h-12];
+  qHoles=[8, 21.5, h/2];
+  holes=[7.5,17.5];
   ofenrohrBase(h, qHoles, holes);
 }
 
@@ -756,8 +756,8 @@ module ofenrohr25() {
   dToCenter=44;
   h=25;
   angle=70;
-  qHoles=[h/4,3*h/4];
-  holes=[7.5, 17.5];
+  qHoles=[h/4];
+  holes=[7.5];
   ofenrohrBase(h, qHoles, holes);
 }
 
@@ -775,8 +775,8 @@ module ofenrohr() {
   translate([50,30,0]) rotate([0,0,180]) ofenrohrBand();
   translate([-50,30,0]) rotate([0,0,180]) ofenrohrBand();
 
-  rotate([90,0,0]) translate([50,44,20]) ofenrohr70();
-  rotate([90,0,0]) translate([-50,44,20]) ofenrohr25();
+  rotate([90,0,0]) translate([50,45,20]) ofenrohr70();
+  rotate([90,0,0]) translate([-50,45,20]) ofenrohr25();
 
   if ($preview) {
     color("lightblue") {
@@ -791,7 +791,6 @@ module ofenrohr() {
 }
 
 module assembly_view() {
-
   translate([0,88+25,26]) carriageToClampV2();
 
   translate([0,220+7,16]) rotate([90,0,0]) motorAdapterFlangeF3();
@@ -818,6 +817,7 @@ module assembly_view() {
     }
     color("gray", 0.2) translate([-20,20,46]) rotate([90,0,180]) import("./arcaswiss/150mm_Arcaswiss_Style_Rail.stl", convexity=3);
   }
+  // translate([0,160,101]) rotate([90,0,0]) ofenrohr_assembly();
 }
 
 module print_view() {
@@ -895,6 +895,9 @@ if (mode == "assembly") {
       }
     }
   }
+
+  translate([-100,500,0])
+  ofenrohr();
 } else if (mode == "carriageToClamp") {
   carriageToClamp();
   if ($preview) {
