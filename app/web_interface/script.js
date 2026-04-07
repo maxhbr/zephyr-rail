@@ -953,6 +953,14 @@ function updateStopButton() {
   }
 }
 
+// Prevent accidental reload (F5, Ctrl+R, swipe) while connected
+window.addEventListener('beforeunload', function(event) {
+  if (pwaConnected) {
+    event.preventDefault();
+    return '';
+  }
+});
+
 // Log to console for debugging
 console.log('ZephyrRail Focus Stacking Control');
 console.log('Service UUID:', SERVICE_UUID);
